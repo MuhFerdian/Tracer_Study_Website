@@ -1,0 +1,207 @@
+# ==============================================
+# LARAVEL STANDARD IGNORES
+# ==============================================
+
+# Environment files (RAHASIA - JANGAN PERNAH PUSH!)
+.env
+.env.*
+!.env.example
+!.env.testing
+.env.backup
+.env.production
+.env.local
+
+# Vendor & dependencies (install ulang via composer)
+/vendor
+composer.lock
+
+# Node.js dependencies (install ulang via npm)
+/node_modules
+/node_modules/*
+package-lock.json
+yarn.lock
+
+# ==============================================
+# LARAVEL CACHE & STORAGE
+# ==============================================
+
+# Storage
+/storage/*.key
+/storage/framework/cache/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*.log
+/public/storage
+
+# Laravel temp files
+/public/hot
+/public/hot/*
+/public/build
+/public/build/*
+
+# Laravel debug & logs
+*.log
+storage/logs/*.log
+
+# ==============================================
+# PHP & PHPUNIT
+# ==============================================
+
+# PHPUnit cache
+.phpunit.cache
+.phpunit.result.cache
+/.phpunit.cache
+/.phpunit.result.cache
+coverage/
+.phpbench/
+
+# ==============================================
+# IDE & EDITOR FILES
+# ==============================================
+
+# VS Code
+/.vscode
+/.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+*.code-workspace
+/.qodo
+
+# PHPStorm / IntelliJ IDEA
+/.idea
+/.idea/*
+*.iml
+*.iws
+*.ipr
+
+# Sublime Text
+*.sublime-*
+*.sublime-workspace
+*.sublime-project
+
+# Eclipse
+/.buildpath
+/.project
+/.settings
+.classpath
+
+# ==============================================
+# OPERATING SYSTEM FILES
+# ==============================================
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+Desktop.ini
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+$RECYCLE.BIN/
+
+# Linux
+.directory
+*.swp
+*.swo
+*~
+
+# ==============================================
+# COMPOSER & NPM
+# ==============================================
+
+# Composer
+composer.phar
+/auth.json
+/auth.json.*
+Homestead.json
+Homestead.yaml
+homestead.yaml
+.vagrant
+
+# NPM
+npm-debug.log
+yarn-error.log
+
+# ==============================================
+# TESTING & CODE COVERAGE
+# ==============================================
+
+# Testing
+/tests/coverage
+/tests/coverage/*
+/coverage
+/coverage/*
+.phpunit
+/.phpbench
+
+# ==============================================
+# DEPLOYMENT & CI/CD
+# ==============================================
+
+# Deployment
+/.docker
+/.docker/*
+docker-compose.override.yml
+.env.production
+.env.staging
+
+# ==============================================
+# TEMPORARY FILES
+# ==============================================
+
+# Temp files
+*.tmp
+*.temp
+*.cache
+.cache/
+*.bak
+*.old
+*.orig
+/temp
+/tmp
+
+# ==============================================
+# PROJECT SPECIFIC (PBL Tracer Study)
+# ==============================================
+
+# Backup files
+*.backup
+*.sql
+*.sql.gz
+database/*.sql
+database/*.dump
+
+# Manual backups
+backup/
+backups/
+.bkp/
+
+# Sesitive data (jika ada testing data)
+database/seeders/data/*.json
+database/seeders/data/*.csv
+
+# Screenshots (jika ada di project)
+screenshots/
+*.png
+*.jpg
+*.jpeg
+*.gif
+!.github/**/*.png
+
+# ==============================================
+# MISC (AMAN UNTUK DI-PUSH, TETAP DI SINI)
+# ==============================================
+
+# Ini BOLEH di-push, tetap di .gitignore untuk jaga-jaga
+/.phpunit.cache
+/.phpunit.result.cache
