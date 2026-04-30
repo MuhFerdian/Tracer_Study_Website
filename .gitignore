@@ -191,12 +191,12 @@ database/seeders/data/*.json
 database/seeders/data/*.csv
 
 # Screenshots (jika ada di project)
-screenshots/
-*.png
-*.jpg
-*.jpeg
-*.gif
-!.github/**/*.png
+# screenshots/
+# *.png
+# *.jpg
+# *.jpeg
+# *.gif
+# !.github/**/*.png
 
 # ==============================================
 # MISC (AMAN UNTUK DI-PUSH, TETAP DI SINI)
