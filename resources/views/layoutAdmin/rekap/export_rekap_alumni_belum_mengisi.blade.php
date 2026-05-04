@@ -20,10 +20,11 @@
                         <thead class="table-light">
                             <tr>
                                 <th style="width: 50px;">No</th>
-                                <th>Program Studi</th>
-                                <th>NIM</th>
                                 <th>Nama Alumni</th>
-                                <th>Tanggal Lulus</th>
+                                <th>NIM</th>
+                                <th>Program Studi</th>
+                                <th>Angkatan</th>
+                                <th>Tahun Lulus</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -31,10 +32,33 @@
                                 @foreach ($alumni as $index => $item)
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
-                                        <td>{{ $item->prodi }}</td>
-                                        <td>{{ $item->nim }}</td>
                                         <td>{{ $item->nama_alumni }}</td>
-                                        <td>{{ \Carbon\Carbon::parse($item->tanggal_lulus)->format('d-m-Y') }}</td>
+                                        <td>{{ $item->nim }}</td>
+                                        <td>{{ $item->prodi }}</td>
+                                                <td>
+                                                    @php
+                                                        $angk = $item->angkatan;
+                                                    @endphp
+                                                    @if (empty($angk))
+                                                        -
+                                                    @elseif (preg_match('/^\d{4}$/', (string) $angk))
+                                                        {{ $angk }}
+                                                    @else
+                                                        {{ \Carbon\Carbon::parse($angk)->format('Y') }}
+                                                    @endif
+                                                </td>
+                                                <td>
+                                                    @php
+                                                        $th = $item->tahun_lulus;
+                                                    @endphp
+                                                    @if (empty($th))
+                                                        -
+                                                    @elseif (preg_match('/^\d{4}$/', (string) $th))
+                                                        {{ $th }}
+                                                    @else
+                                                        {{ \Carbon\Carbon::parse($th)->format('Y') }}
+                                                    @endif
+                                                </td>
                                     </tr>
                                 @endforeach
                             @endif

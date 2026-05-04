@@ -39,7 +39,13 @@
                     <small id="error-email" class="error-text form-text text-danger"></small>
                 </div>
 
-                <div class="form-group">
+                 <div class="form-group">
+                    <label>Angkatan</label>
+                    <input type="number" name="angkatan" id="angkatan" class="form-control" min="1900" max="2100">
+                    <small id="error-angkatan" class="error-text form-text text-danger"></small>
+                </div>
+
+                 <div class="form-group">
                     <label>Tahun Lulus</label>
                     <input type="number" name="tanggal_lulus" id="tanggal_lulus" class="form-control" min="1900" max="2100">
                     <small id="error-tanggal_lulus" class="error-text form-text text-danger"></small>

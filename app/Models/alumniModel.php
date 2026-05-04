@@ -17,12 +17,13 @@ class alumniModel extends Authenticatable
 
     protected $fillable = [
         'user_id',
-        'nim',
         'nama',
+        'nim',
         'prodi',
         'no_hp',
         'email',
         'alamat',
+        'angkatan',
         'tahun_lulus',
         'status_pekerjaan',
         'nama_instansi',
@@ -31,6 +32,7 @@ class alumniModel extends Authenticatable
 
     protected $casts = [
         'user_id' => 'integer',
+        'angkatan' => 'integer',
         'tahun_lulus' => 'integer',
     ];
 
@@ -63,15 +65,18 @@ class alumniModel extends Authenticatable
     public function setTanggalLulusAttribute($value): void
     {
         if (empty($value)) {
+            $this->attributes['angkatan'] = null;
             $this->attributes['tahun_lulus'] = null;
             return;
         }
 
         if (is_numeric($value) && strlen((string) $value) === 4) {
+            $this->attributes['angkatan'] = (int) $value;
             $this->attributes['tahun_lulus'] = (int) $value;
             return;
         }
 
+        $this->attributes['angkatan'] = (int) Carbon::parse($value)->format('Y');
         $this->attributes['tahun_lulus'] = (int) Carbon::parse($value)->format('Y');
     }
 

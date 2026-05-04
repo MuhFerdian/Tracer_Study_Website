@@ -79,11 +79,11 @@
             width: 120px;
             height: 120px;
             background: white;
-            border-radius: 50%;
+            /* border-radius: 50%; */
             display: flex;
             align-items: center;
             justify-content: center;
-            margin-bottom: 30px;
+            margin-bottom: 10px;
             box-shadow: 0 8px 25px rgba(58, 74, 92, 0.3);
             overflow: hidden;
         }
@@ -353,7 +353,7 @@
     <div class="login-container">
         <div class="logo-section">
             <div class="logo">
-                <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije.png') }}" alt="Logo Politeknik Negeri Malang" width="150" />
+                <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije.png') }}" alt="Logo Politeknik Negeri Jember" width="150" />
             </div>
             <div class="institution-name">POLITEKNIK NEGERI JEMBER</div>
             <div class="institution-subtitle">Portal Akademik</div>

@@ -44,6 +44,7 @@
                         <th>Program Studi</th>
                         <th>No HP</th>
                         <th>Email</th>
+                        <th>Angkatan</th>
                         <th>Tahun Lulus</th>
                         <th>Status Pekerjaan</th>
                         <th>Nama Instansi</th>
@@ -121,6 +122,7 @@
                 { data: "prodi", name: "prodi" },
                 { data: "no_hp", name: "no_hp" },
                 { data: "email", name: "email" },
+                { data: "angkatan", name: "angkatan" },
                 { data: "tahun_lulus", name: "tahun_lulus" },
                 { data: "status_pekerjaan", name: "status_pekerjaan" },
                 { data: "nama_instansi", name: "nama_instansi" },
