@@ -48,7 +48,8 @@ class UserSeeder extends Seeder
                 'name' => 'Admin',
                 'email' => 'admin@example.com',
                 'password' => Hash::make('password123'),
-                'status' => 'pending',
+                // 'status' => 'pending',
+                'status' => 'active',
                 'updated_at' => $now,
                 'created_at' => $now,
             ]
