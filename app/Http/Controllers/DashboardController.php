@@ -10,9 +10,9 @@ class DashboardController extends Controller
     public function getInstansiChartData()
     {
         $data = DB::table('alumni as a')
-            ->join('jenis_instansi as j', 'j.jenis_instansi_id', '=', 'a.jenis_instansi_id')
-            ->select('j.jenis_instansi', DB::raw('COUNT(j.jenis_instansi) as total'))
-            ->groupBy('j.jenis_instansi')
+            ->selectRaw('COALESCE(NULLIF(TRIM(a.nama_instansi), ""), "Belum Diisi") as jenis_instansi, COUNT(*) as total')
+            ->groupBy(DB::raw('COALESCE(NULLIF(TRIM(a.nama_instansi), ""), "Belum Diisi")'))
+            ->orderByDesc('total')
             ->get();
 
         return response()->json($data);
@@ -20,9 +20,8 @@ class DashboardController extends Controller
     public function getProfesiChart()
     {
         $data = DB::table('alumni as a')
-            ->join('profesi as p', 'p.profesi_id', '=', 'a.profesi_id')
-            ->select('p.profesi', DB::raw('count(*) as total'))
-            ->groupBy('p.profesi')
+            ->selectRaw('COALESCE(NULLIF(TRIM(a.posisi), ""), NULLIF(TRIM(a.status_pekerjaan), ""), "Belum Diisi") as profesi, COUNT(*) as total')
+            ->groupBy(DB::raw('COALESCE(NULLIF(TRIM(a.posisi), ""), NULLIF(TRIM(a.status_pekerjaan), ""), "Belum Diisi")'))
             ->orderByDesc('total')
             ->get();
 
@@ -44,20 +43,32 @@ class DashboardController extends Controller
     {
         $results = DB::select("
             SELECT
-                YEAR(a.tanggal_lulus) AS tahunlulus,
-                COUNT(a.nama_alumni) AS jumlahlulusan,
-                SUM(CASE WHEN a.isOtp = 1 THEN 1 ELSE 0 END) AS terlacaklulusan,
-                SUM(CASE WHEN kp.kategori_profesi = 'Infokom' THEN 1 ELSE 0 END) AS infokom,
-                SUM(CASE WHEN kp.kategori_profesi != 'Infokom' THEN 1 ELSE 0 END) AS noninfokom,
-                SUM(CASE WHEN LOWER(a.skala_instansi) = 'international' THEN 1 ELSE 0 END) AS multinasional,
-                SUM(CASE WHEN LOWER(a.skala_instansi) = 'nasional' THEN 1 ELSE 0 END) AS nasional,
-                SUM(CASE WHEN LOWER(a.skala_instansi) = 'wirausaha' THEN 1 ELSE 0 END) AS wirausaha
+                COALESCE(a.tahun_lulus, 0) AS tahunlulus,
+                COUNT(a.id) AS jumlahlulusan,
+                SUM(CASE WHEN a.status_pekerjaan IS NOT NULL OR a.nama_instansi IS NOT NULL OR a.posisi IS NOT NULL THEN 1 ELSE 0 END) AS terlacaklulusan,
+                SUM(CASE WHEN LOWER(COALESCE(a.posisi, '')) LIKE '%it%'
+                          OR LOWER(COALESCE(a.posisi, '')) LIKE '%program%'
+                          OR LOWER(COALESCE(a.status_pekerjaan, '')) LIKE '%it%'
+                     THEN 1 ELSE 0 END) AS infokom,
+                SUM(CASE WHEN (a.status_pekerjaan IS NOT NULL OR a.nama_instansi IS NOT NULL OR a.posisi IS NOT NULL)
+                          AND NOT (LOWER(COALESCE(a.posisi, '')) LIKE '%it%'
+                                   OR LOWER(COALESCE(a.posisi, '')) LIKE '%program%'
+                                   OR LOWER(COALESCE(a.status_pekerjaan, '')) LIKE '%it%')
+                     THEN 1 ELSE 0 END) AS noninfokom,
+                SUM(CASE WHEN LOWER(COALESCE(a.status_pekerjaan, '')) LIKE '%multi%'
+                          OR LOWER(COALESCE(a.nama_instansi, '')) LIKE '%multi%'
+                          OR LOWER(COALESCE(a.nama_instansi, '')) LIKE '%international%'
+                     THEN 1 ELSE 0 END) AS multinasional,
+                SUM(CASE WHEN LOWER(COALESCE(a.status_pekerjaan, '')) LIKE '%nasional%'
+                          OR LOWER(COALESCE(a.nama_instansi, '')) LIKE '%nasional%'
+                     THEN 1 ELSE 0 END) AS nasional,
+                SUM(CASE WHEN LOWER(COALESCE(a.status_pekerjaan, '')) LIKE '%wirausaha%'
+                          OR LOWER(COALESCE(a.posisi, '')) LIKE '%wirausaha%'
+                     THEN 1 ELSE 0 END) AS wirausaha
             FROM
                 alumni AS a
-            LEFT JOIN
-                kategori_profesi AS kp ON kp.kategori_profesi_id = a.kategori_profesi_id
             GROUP BY
-                tahunlulus
+                a.tahun_lulus
             ORDER BY
                 tahunlulus;
         ");
@@ -69,37 +80,17 @@ class DashboardController extends Controller
     {
         $results = DB::select("
             SELECT
-                YEAR(a.tanggal_lulus) AS tahunlulus,
-                COUNT(a.nama_alumni) AS jumlahlulusan,
-                SUM(CASE WHEN a.isOtp = 1 THEN 1 ELSE 0 END) AS terlacaklulusan,
-                -- Calculate average waiting time in months
-                AVG(
-                    CASE
-                        WHEN a.tanggal_kerja_pertama IS NOT NULL AND a.tanggal_lulus IS NOT NULL THEN
-                            -- Calculate difference in days, then convert to months (approx. 30.44 days per month)
-                            DATEDIFF(a.tanggal_kerja_pertama, a.tanggal_lulus) / 30.44
-                        ELSE NULL
-                    END
-                ) AS rata_rata_waktu_tunggu_bulan
+                COALESCE(a.tahun_lulus, 0) AS tahunlulus,
+                COUNT(a.id) AS jumlahlulusan,
+                SUM(CASE WHEN a.status_pekerjaan IS NOT NULL OR a.nama_instansi IS NOT NULL OR a.posisi IS NOT NULL THEN 1 ELSE 0 END) AS terlacaklulusan,
+                'N/A' AS rata_rata_waktu_tunggu_bulan
             FROM
                 alumni AS a
-            WHERE
-                -- Only consider alumni with a start date for average calculation
-                a.tanggal_kerja_pertama IS NOT NULL AND a.tanggal_lulus IS NOT NULL
             GROUP BY
-                tahunlulus
+                a.tahun_lulus
             ORDER BY
                 tahunlulus;
         ");
-
-        // Format the average waiting time to two decimal places
-        foreach ($results as $result) {
-            if ($result->rata_rata_waktu_tunggu_bulan !== null) {
-                $result->rata_rata_waktu_tunggu_bulan = number_format((float)$result->rata_rata_waktu_tunggu_bulan, 2, '.', '');
-            } else {
-                $result->rata_rata_waktu_tunggu_bulan = 'N/A'; // Or 0, or leave as null based on preference
-            }
-        }
 
         return response()->json($results);
     }

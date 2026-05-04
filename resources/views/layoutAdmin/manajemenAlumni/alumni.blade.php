@@ -14,7 +14,7 @@
                 <button type="button" onclick="modalAction('{{ url('admin/alumni/import_ajax') }}')" class="btn btn-primary btn-sm">
                     <i class="fas fa-file-import me-1"></i> Import Data Alumni
                 </button>
-                <a href="{{ url('/profesi/export_excel') }}" class="btn btn-warning btn-sm">
+                <a href="{{ url('/admin/rekap/export/alumni-sudah') }}" class="btn btn-warning btn-sm">
                     <i class="fa fa-file-excel me-1"></i> Export Data Alumni
                 </a>
                 <button onclick="modalAction('{{ url('admin/alumni/create_ajax') }}')" 
@@ -42,7 +42,12 @@
                         <th>Nama</th>
                         <th>NIM</th>
                         <th>Program Studi</th>
-                        <th>Tanggal Lulus</th>
+                        <th>No HP</th>
+                        <th>Email</th>
+                        <th>Tahun Lulus</th>
+                        <th>Status Pekerjaan</th>
+                        <th>Nama Instansi</th>
+                        <th>Posisi</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -111,10 +116,15 @@
             },
             columns: [
                 { data: "DT_RowIndex", className: "text-center", orderable: false, searchable: false },
-                { data: "nama_alumni", name: "nama_alumni" },
+                { data: "nama", name: "nama" },
                 { data: "nim", name: "nim" },
                 { data: "prodi", name: "prodi" },
-                { data: "tanggal_lulus", name: "tanggal_lulus" },
+                { data: "no_hp", name: "no_hp" },
+                { data: "email", name: "email" },
+                { data: "tahun_lulus", name: "tahun_lulus" },
+                { data: "status_pekerjaan", name: "status_pekerjaan" },
+                { data: "nama_instansi", name: "nama_instansi" },
+                { data: "posisi", name: "posisi" },
                 { data: "aksi", className: "text-center", orderable: false, searchable: false }
             ]
         });

@@ -10,37 +10,57 @@
 
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Program Studi</label>
-                    <select name="prodi" id="prodi" class="form-control" required>
-                        <option value="">- Pilih Program Studi -</option>
-                        <option value="TIF Nganjuk">TIF Nganjuk</option>
-                        <option value="MNA Nganjuk">MNA Nganjuk</option>
-                    </select>
-                    <small id="error-prodi" class="error-text form-text text-danger"></small>
-                </div>
-
-                <div class="form-group">
                     <label>NIM</label>
                     <input type="text" name="nim" id="nim" class="form-control" required>
                     <small id="error-nim" class="error-text form-text text-danger"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Nama Alumni</label>
+                    <label>Nama</label>
                     <input type="text" name="nama_alumni" id="nama_alumni" class="form-control" required>
                     <small id="error-nama_alumni" class="error-text form-text text-danger"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Tanggal Lulus</label>
-                    <input type="date" name="tanggal_lulus" id="tanggal_lulus" class="form-control" required>
-                    <small id="error-tanggal_lulus" class="error-text form-text text-danger"></small>
+                    <label>Program Studi</label>
+                    <input type="text" name="prodi" id="prodi" class="form-control">
+                    <small id="error-prodi" class="error-text form-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>No HP</label>
+                    <input type="text" name="no_hp" id="no_hp" class="form-control">
+                    <small id="error-no_hp" class="error-text form-text text-danger"></small>
                 </div>
 
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" id="email" class="form-control" required>
+                    <input type="email" name="email" id="email" class="form-control">
                     <small id="error-email" class="error-text form-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Tahun Lulus</label>
+                    <input type="number" name="tanggal_lulus" id="tanggal_lulus" class="form-control" min="1900" max="2100">
+                    <small id="error-tanggal_lulus" class="error-text form-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Status Pekerjaan</label>
+                    <input type="text" name="status_pekerjaan" id="status_pekerjaan" class="form-control">
+                    <small id="error-status_pekerjaan" class="error-text form-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Nama Instansi</label>
+                    <input type="text" name="nama_instansi" id="nama_instansi" class="form-control">
+                    <small id="error-nama_instansi" class="error-text form-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Posisi</label>
+                    <input type="text" name="posisi" id="posisi" class="form-control">
+                    <small id="error-posisi" class="error-text form-text text-danger"></small>
                 </div>
             </div>
 
@@ -62,24 +82,12 @@
         // Validasi dan submit via AJAX
         $("#form-tambah-alumni").validate({
             rules: {
-                prodi: { required: true },
-                nim: {
-                    required: true,
-                    minlength: 5
+                    prodi: { required: true },
+                    nim: { required: true, minlength: 5 },
+                    nama_alumni: { required: true, minlength: 3 },
+                    // email: { email: true },
+                    tanggal_lulus: { required: true, digits: true, min: 1900, max: 2100 }
                 },
-                nama_alumni: {
-                    required: true,
-                    minlength: 3
-                },
-                email: {
-                    required: true,
-                    email: true
-                },
-                tanggal_lulus: {
-                    required: true,
-                    date: true
-                }
-            },
             submitHandler: function (form) {
                 $.ajax({
                     url: form.action,

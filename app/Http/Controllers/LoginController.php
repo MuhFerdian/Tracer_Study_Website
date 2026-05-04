@@ -7,7 +7,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
 use App\Models\alumniModel;
-use App\Models\userModel;
+use App\Models\User;
 
 class LoginController extends Controller
 {
@@ -66,7 +66,7 @@ class LoginController extends Controller
     {
         if ($role === 'admin' || $role === 'dosen') {
             // Login admin & dosen dari user table dengan role Admin atau Dosen
-            $user = userModel::where('username', $username)
+            $user = User::where('username', $username)
                 ->whereHas('role', function ($query) use ($role) {
                     $roleName = ($role === 'admin') ? 'Admin' : 'Dosen';
                     $query->where('role_nama', $roleName);

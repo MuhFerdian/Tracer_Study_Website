@@ -1,4 +1,4 @@
-<form id="form-edit-alumni" method="POST" action="{{ url('/admin/alumni/update/' . $alumni->alumni_id) }}">
+<form id="form-edit-alumni" method="POST" action="{{ url('/admin/alumni/update/' . $alumni->id) }}">
     @csrf
     @method('PUT')
     <div class="modal-dialog modal-lg" role="document">
@@ -11,35 +11,57 @@
 
             <div class="modal-body">
                 <div class="form-group">
-                    <label>Program Studi</label>
-                    <select name="prodi" class="form-control" required>
-                        <option value="TIF Nganjuk" {{ $alumni->prodi == 'TIF Nganjuk' ? 'selected' : '' }}>TIF Nganjuk</option>
-                        <option value="MNA Nganjuk" {{ $alumni->prodi == 'MNA Nganjuk' ? 'selected' : '' }}>MNA Nganjuk</option>
-                    </select>
-                    <small id="error-prodi" class="error-text text-danger"></small>
-                </div>
-
-                <div class="form-group">
                     <label>NIM</label>
                     <input type="text" name="nim" value="{{ $alumni->nim }}" class="form-control" required>
                     <small id="error-nim" class="error-text text-danger"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Nama Alumni</label>
-                    <input type="text" name="nama_alumni" value="{{ $alumni->nama_alumni }}" class="form-control" required>
+                    <label>Nama</label>
+                    <input type="text" name="nama_alumni" value="{{ $alumni->nama }}" class="form-control" required>
                     <small id="error-nama_alumni" class="error-text text-danger"></small>
                 </div>
 
                 <div class="form-group">
-                    <label>Tanggal Lulus</label>
-                    <input type="date" name="tanggal_lulus" value="{{ $alumni->tanggal_lulus->format('Y-m-d') }}" class="form-control" required>
-                    <small id="error-tanggal_lulus" class="error-text text-danger"></small>
+                    <label>Program Studi</label>
+                    <input type="text" name="prodi" value="{{ $alumni->prodi }}" class="form-control">
+                    <small id="error-prodi" class="error-text text-danger"></small>
                 </div>
+
+                <div class="form-group">
+                    <label>No HP</label>
+                    <input type="text" name="no_hp" value="{{ $alumni->no_hp }}" class="form-control">
+                    <small id="error-no_hp" class="error-text text-danger"></small>
+                </div>
+
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" value="{{ $alumni->email }}" id="email" class="form-control" required>
+                    <input type="email" name="email" value="{{ $alumni->email }}" id="email" class="form-control">
                     <small id="error-email" class="error-text form-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Tahun Lulus</label>
+                    <input type="number" name="tanggal_lulus" value="{{ $alumni->tahun_lulus }}" class="form-control" min="1900" max="2100">
+                    <small id="error-tanggal_lulus" class="error-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Status Pekerjaan</label>
+                    <input type="text" name="status_pekerjaan" value="{{ $alumni->status_pekerjaan }}" class="form-control">
+                    <small id="error-status_pekerjaan" class="error-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Nama Instansi</label>
+                    <input type="text" name="nama_instansi" value="{{ $alumni->nama_instansi }}" class="form-control">
+                    <small id="error-nama_instansi" class="error-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
+                    <label>Posisi</label>
+                    <input type="text" name="posisi" value="{{ $alumni->posisi }}" class="form-control">
+                    <small id="error-posisi" class="error-text text-danger"></small>
                 </div>
             </div>
 
@@ -63,7 +85,7 @@ $(function() {
             prodi: { required: true },
             nim: { required: true, minlength: 5 },
             nama_alumni: { required: true, minlength: 3 },
-            tanggal_lulus: { required: true, date: true }
+            tanggal_lulus: { required: true, digits: true, min: 1900, max: 2100 }
         },
         submitHandler: function(form) {
             $.ajax({

@@ -16,20 +16,28 @@ class ExportController extends Controller
 
     public function showAlumniBelumMengisi()
     {
-        $alumni = alumniModel::where('isOtp', 0)->get();
+        $alumni = alumniModel::where(function ($query) {
+            $query->whereNull('status_pekerjaan')
+                ->whereNull('nama_instansi')
+                ->whereNull('posisi');
+        })->get();
         return view('layoutAdmin.rekap.export_rekap_alumni_belum_mengisi', compact('alumni'));
     }
     public function showAlumni()
     {
-        $alumni = alumniModel::where('isOtp', 1)->get();
+        $alumni = alumniModel::where(function ($query) {
+            $query->whereNotNull('status_pekerjaan')
+                ->orWhereNotNull('nama_instansi')
+                ->orWhereNotNull('posisi');
+        })->get();
         return view('layoutAdmin.rekap.export_rekap_alumni', compact('alumni'));
     }
 
     // Tambahkan ini
     public function collection()
     {
-        return alumniModel::where('isOtp', 0)
-            ->select('prodi as program_studi', 'nim', 'nama_alumni as nama', 'tanggal_lulus')
+        return alumniModel::query()
+            ->select('prodi as program_studi', 'nim', 'nama', 'tahun_lulus')
             ->get();
     }
 
@@ -72,7 +80,7 @@ class ExportController extends Controller
             $sheet->setCellValue("A$row", $item->program_studi);
             $sheet->setCellValue("B$row", $item->nim);
             $sheet->setCellValue("C$row", $item->nama);
-            $sheet->setCellValue("D$row", \Carbon\Carbon::parse($item->tanggal_lulus)->format('d-m-Y'));
+            $sheet->setCellValue("D$row", $item->tahun_lulus);
             $row++;
         }
 
@@ -83,7 +91,7 @@ class ExportController extends Controller
 
         // Siapkan file untuk download
         $writer = new Xlsx($spreadsheet);
-        $filename = 'alumni_belum_mengisi.xlsx';
+        $filename = 'alumni.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
@@ -136,34 +144,17 @@ class ExportController extends Controller
 
         // Query data
         $data = DB::table('alumni as al')
-            ->join('jenis_instansi as ji', 'ji.jenis_instansi_id', '=', 'al.jenis_instansi_id')
-            ->leftJoin('kategori_profesi as kp', 'kp.kategori_profesi_id', '=', 'al.kategori_profesi_id')
-            ->leftJoin('profesi as p', 'p.profesi_id', '=', 'al.profesi_id')
-            ->leftJoin('atasan as at', 'at.atasan_id', '=', 'al.atasan_id')
-            ->where('al.isOtp', 1)
-            ->orderBy('al.alumni_id')
+            ->orderBy('al.id')
             ->selectRaw('
             al.prodi,
             al.nim,
-            al.nama_alumni,
+            al.nama,
             al.no_hp,
             al.email,
-            al.tanggal_lulus,
-            YEAR(al.tanggal_lulus) as tahunLulus,
-            al.tanggal_kerja_pertama,
-            ROUND(DATEDIFF(al.tanggal_kerja_pertama, al.tanggal_lulus) / 30.0) as masa_tunggu_bulan_hitung,
-            al.masa_tunggu as masa_tunggu_tersimpan,
-            al.tanggal_mulai_instansi,
-            ji.jenis_instansi,
+            al.tahun_lulus,
+            al.status_pekerjaan,
             al.nama_instansi,
-            al.skala_instansi,
-            al.lokasi_instansi,
-            kp.kategori_profesi,
-            p.profesi,
-            at.nama_atasan,
-            at.jabatan,
-            at.no_hp_atasan,
-            at.email_atasan
+            al.posisi
         ')
             ->get();
 
@@ -172,36 +163,24 @@ class ExportController extends Controller
         foreach ($data as $item) {
             $sheet->setCellValue("A$row", $item->prodi);
             $sheet->setCellValue("B$row", $item->nim);
-            $sheet->setCellValue("C$row", $item->nama_alumni);
+            $sheet->setCellValue("C$row", $item->nama);
             $sheet->setCellValue("D$row", $item->no_hp);
             $sheet->setCellValue("E$row", $item->email);
-            $sheet->setCellValue("F$row", \Carbon\Carbon::parse($item->tanggal_lulus)->format('d-m-Y'));
-            $sheet->setCellValue("G$row", $item->tahunLulus);
-            $sheet->setCellValue("H$row", $item->tanggal_kerja_pertama ? \Carbon\Carbon::parse($item->tanggal_kerja_pertama)->format('d-m-Y') : '');
-            $sheet->setCellValue("I$row", $item->masa_tunggu_bulan_hitung);
-            $sheet->setCellValue("J$row", $item->masa_tunggu_tersimpan);
-            $sheet->setCellValue("K$row", $item->tanggal_mulai_instansi ? \Carbon\Carbon::parse($item->tanggal_mulai_instansi)->format('d-m-Y') : '');
-            $sheet->setCellValue("L$row", $item->jenis_instansi);
-            $sheet->setCellValue("M$row", $item->nama_instansi);
-            $sheet->setCellValue("N$row", $item->skala_instansi);
-            $sheet->setCellValue("O$row", $item->lokasi_instansi);
-            $sheet->setCellValue("P$row", $item->kategori_profesi);
-            $sheet->setCellValue("Q$row", $item->profesi);
-            $sheet->setCellValue("R$row", $item->nama_atasan);
-            $sheet->setCellValue("S$row", $item->jabatan);
-            $sheet->setCellValue("T$row", $item->no_hp_atasan);
-            $sheet->setCellValue("U$row", $item->email_atasan);
+            $sheet->setCellValue("F$row", $item->tahun_lulus);
+            $sheet->setCellValue("G$row", $item->status_pekerjaan);
+            $sheet->setCellValue("H$row", $item->nama_instansi);
+            $sheet->setCellValue("I$row", $item->posisi);
             $row++;
         }
 
         // Rata kiri semua isi data
-        $sheet->getStyle("A2:U" . ($row - 1))
+        $sheet->getStyle("A2:I" . ($row - 1))
             ->getAlignment()
             ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
 
         // Download
         $writer = new Xlsx($spreadsheet);
-        $filename = 'rekap_alumni_sudah_mengisi.xlsx';
+        $filename = 'rekap_alumni.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');

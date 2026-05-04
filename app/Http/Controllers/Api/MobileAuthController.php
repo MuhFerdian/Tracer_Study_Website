@@ -4,12 +4,16 @@ namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
 use App\Models\alumniModel;
+use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
 class MobileAuthController extends Controller
 {
+    // =========================
+    // CEK ALUMNI
+    // =========================
     public function checkAlumni(Request $request)
     {
         $request->validate([
@@ -32,6 +36,9 @@ class MobileAuthController extends Controller
         ]);
     }
 
+    // =========================
+    // REGISTER
+    // =========================
     public function register(Request $request)
     {
         $request->validate([
@@ -41,6 +48,7 @@ class MobileAuthController extends Controller
         ]);
 
         $alumni = alumniModel::where('nim', $request->nim)->first();
+
         if (!$alumni) {
             return response()->json([
                 'status' => false,
@@ -48,69 +56,83 @@ class MobileAuthController extends Controller
             ], 404);
         }
 
-        if (!empty($alumni->user_id)) {
+        if ($alumni->user_id) {
             return response()->json([
                 'status' => false,
-                'message' => 'Akun untuk NIM ini sudah terdaftar',
+                'message' => 'Akun sudah terdaftar untuk alumni ini',
             ], 400);
         }
 
-        $existingEmail = alumniModel::where('email', $request->email)->where('alumni_id', '!=', $alumni->alumni_id)->exists();
-        if ($existingEmail) {
+        // cek email di users
+        if (User::where('email', $request->email)->exists()) {
             return response()->json([
                 'status' => false,
-                'message' => 'Email sudah terdaftar untuk alumni lain',
+                'message' => 'Email sudah digunakan',
             ], 400);
         }
 
-        $existingUsername = DB::table('users')->where('username', $request->email)->exists();
-        if ($existingUsername) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Email sudah digunakan sebagai akun login',
-            ], 400);
-        }
-
+        // ambil role alumni
         $roleId = DB::table('role')->where('role_kode', 'ALM')->value('role_id');
+
         if (!$roleId) {
             return response()->json([
                 'status' => false,
-                'message' => 'Role Alumni belum tersedia di database',
+                'message' => 'Role alumni tidak ditemukan',
             ], 500);
         }
 
-        $userId = null;
-        DB::transaction(function () use ($request, $alumni, $roleId, &$userId) {
-            $userId = DB::table('users')->insertGetId([
+        // transaction
+        DB::beginTransaction();
+
+        try {
+
+            $user = User::create([
                 'role_id' => $roleId,
                 'username' => $request->email,
                 'name' => $alumni->nama_alumni,
                 'email' => $request->email,
                 'password' => Hash::make($request->password),
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
+                'status' => 'active',
             ]);
 
             $alumni->update([
-                'user_id' => $userId,
+                'user_id' => $user->id,
                 'email' => $request->email,
             ]);
-        });
 
-        return response()->json([
-            'status' => true,
-            'message' => 'Registrasi berhasil',
-            'user' => [
-                'user_id' => $userId,
-                'alumni_id' => $alumni->alumni_id,
-                'nim' => $alumni->nim,
-                'name' => $alumni->nama_alumni,
-                'email' => $request->email,
-            ],
-        ]);
+            // 🔥 TOKEN
+            $token = $user->createToken('mobile')->plainTextToken;
+
+            DB::commit();
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Registrasi berhasil',
+                'token' => $token,
+                'user' => [
+                    'user_id' => $user->id,
+                    'alumni_id' => $alumni->alumni_id,
+                    'nim' => $alumni->nim,
+                    'name' => $alumni->nama_alumni,
+                    'email' => $request->email,
+                ],
+            ]);
+
+        } catch (\Exception $e) {
+
+            DB::rollBack();
+
+            return response()->json([
+                'status' => false,
+                'message' => 'Registrasi gagal',
+                'error' => $e->getMessage(),
+            ], 500);
+        }
     }
 
+    // =========================
+    // LOGIN
+    // =========================
     public function login(Request $request)
     {
         $request->validate([
@@ -129,11 +151,20 @@ class MobileAuthController extends Controller
             ], 401);
         }
 
+        $user = $alumni->user;
+
+        // 🔥 HAPUS TOKEN LAMA (optional tapi bagus)
+        $user->tokens()->delete();
+
+        // 🔥 BUAT TOKEN BARU
+        $token = $user->createToken('mobile')->plainTextToken;
+
         return response()->json([
             'status' => true,
             'message' => 'Login berhasil',
+            'token' => $token,
             'user' => [
-                'user_id' => $alumni->user->id,
+                'user_id' => $user->id,
                 'alumni_id' => $alumni->alumni_id,
                 'nim' => $alumni->nim,
                 'name' => $alumni->nama_alumni,
@@ -142,4 +173,3 @@ class MobileAuthController extends Controller
         ]);
     }
 }
-

@@ -1,7 +1,7 @@
 <!-- Manfaat Tracer Study -->
 <section class="py-7 bg-light" id="manfaat">
     <div class="container">
-        <div class="row justify-content-center mb-5">
+        <div class="row justify-content-center mb-5">  
             <div class="col-lg-8 text-center">
                 <h2 class="display-5 fw-bold mb-3">Manfaat <span class="text-primary">Tracer Study</span></h2>
                 <p class="lead">Tracer study memantau keberadaan dan pencapaian lulusan di dunia kerja.</p>

@@ -4,41 +4,79 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
+use Illuminate\Support\Carbon;
 
 class alumniModel extends Authenticatable
 {
     use HasFactory;
+
     protected $table = 'alumni';
-    protected $primaryKey = 'alumni_id';
+    protected $primaryKey = 'id';
+    public $incrementing = true;
+    protected $keyType = 'int';
+
     protected $fillable = [
         'user_id',
-        'atasan_id',
-        'jenis_instansi_id',
-        'kategori_profesi_id',
-        'profesi_id',
         'nim',
-        'nama_alumni',
+        'nama',
         'prodi',
         'no_hp',
         'email',
-        'tanggal_lulus',
-        'tanggal_kerja_pertama',
-        'masa_tunggu',
-        'tanggal_mulai_instansi',
+        'alamat',
+        'tahun_lulus',
+        'status_pekerjaan',
         'nama_instansi',
-        'skala_instansi',
-        'lokasi_instansi',
-        'otp_code',
-        'isOtp',
+        'posisi',
     ];
 
     protected $casts = [
-        'tanggal_lulus' => 'date',
-        // kalau mau, bisa tambahkan tanggal lain juga:
-        //'tanggal_kerja_pertama' => 'date',
+        'user_id' => 'integer',
+        'tahun_lulus' => 'integer',
     ];
+
+    public function getAlumniIdAttribute(): int
+    {
+        return (int) $this->id;
+    }
+
+    public function getNamaAlumniAttribute(): ?string
+    {
+        return $this->nama ?? null;
+    }
+
+    public function setNamaAlumniAttribute($value): void
+    {
+        $this->attributes['nama'] = $value;
+    }
+
+    public function getTanggalLulusAttribute()
+    {
+        $year = $this->tahun_lulus;
+
+        if (empty($year)) {
+            return null;
+        }
+
+        return Carbon::createFromDate((int) $year, 12, 31);
+    }
+
+    public function setTanggalLulusAttribute($value): void
+    {
+        if (empty($value)) {
+            $this->attributes['tahun_lulus'] = null;
+            return;
+        }
+
+        if (is_numeric($value) && strlen((string) $value) === 4) {
+            $this->attributes['tahun_lulus'] = (int) $value;
+            return;
+        }
+
+        $this->attributes['tahun_lulus'] = (int) Carbon::parse($value)->format('Y');
+    }
+
     public function user()
     {
-        return $this->belongsTo(userModel::class, 'user_id', 'id');
+        return $this->belongsTo(User::class, 'user_id', 'id');
     }
 }

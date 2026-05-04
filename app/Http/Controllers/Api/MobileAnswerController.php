@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Api;
 
 use App\Http\Controllers\Controller;
-use App\Models\JawabanSurveiModel;
-use App\Models\alumniModel;
+use App\Models\Answer;
+use App\Models\AnswerDetail;
 use Illuminate\Http\Request;
 
 class MobileAnswerController extends Controller
@@ -12,48 +12,72 @@ class MobileAnswerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'user_id' => 'required|exists:users,id',
             'answers' => 'required|array|min:1',
-            'answers.*.question_id' => 'required|exists:pertanyaan,pertanyaan_id',
-            'answers.*.answer' => 'required',
-            'atasan_id' => 'nullable|exists:atasan,atasan_id',
+            'answers.*.question_id' => 'required|exists:questions,id',
+            'answers.*.option_ids' => 'nullable|array',
+            'answers.*.value' => 'nullable'
         ]);
 
-        $alumni = alumniModel::where('user_id', $request->user_id)->first();
+        // ambil user login
+        $user = auth()->user();
+
+        // ambil alumni berdasarkan user
+        $alumni = $user->alumni;
+
         if (!$alumni) {
             return response()->json([
                 'status' => false,
-                'message' => 'Data alumni untuk user ini tidak ditemukan',
+                'message' => 'Data alumni tidak ditemukan'
             ], 404);
         }
-
-        $atasanId = $request->atasan_id ?: $alumni->atasan_id;
-        if (!$atasanId) {
+        // DEBUG
+        if (!$alumni->id) {
             return response()->json([
                 'status' => false,
-                'message' => 'Atasan belum tersedia. Lengkapi data atasan terlebih dahulu.',
-            ], 422);
+                'message' => 'Alumni ID kosong'
+            ], 500);
         }
 
         foreach ($request->answers as $item) {
-            $answerValue = is_array($item['answer']) ? json_encode($item['answer']) : $item['answer'];
 
-            JawabanSurveiModel::updateOrCreate(
+            // simpan ke table answers
+            $answer = Answer::updateOrCreate(
                 [
-                    'alumni_id' => $alumni->alumni_id,
-                    'atasan_id' => $atasanId,
-                    'pertanyaan_id' => $item['question_id'],
+                    'alumni_id' => $alumni->id,
+                    'question_id' => $item['question_id'],
                 ],
-                [
-                    'jawaban' => $answerValue,
-                ]
+                []
             );
+
+            // hapus detail lama
+            AnswerDetail::where('answer_id', $answer->id)->delete();
+
+            // =========================
+            // MULTIPLE / SINGLE OPTION
+            // =========================
+            if (!empty($item['option_ids'])) {
+                foreach ($item['option_ids'] as $optId) {
+                    AnswerDetail::create([
+                        'answer_id' => $answer->id,
+                        'option_id' => $optId,
+                    ]);
+                }
+            }
+
+            // =========================
+            // TEXT / SCALE
+            // =========================
+            if (!empty($item['value'])) {
+                AnswerDetail::create([
+                    'answer_id' => $answer->id,
+                    'value' => $item['value'],
+                ]);
+            }
         }
 
         return response()->json([
             'status' => true,
-            'message' => 'Jawaban berhasil disimpan',
+            'message' => 'Jawaban berhasil disimpan'
         ]);
     }
 }
-

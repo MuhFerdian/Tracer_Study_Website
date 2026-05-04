@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use App\Models\userModel;
+use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
 
@@ -15,7 +15,7 @@ class ManajemenDosenController extends Controller
         if (!$dosenRoleId) {
             return back()->with('error', 'Role Dosen tidak ditemukan.');
         }
-        $dosens = userModel::where('role_id', $dosenRoleId)->get();
+        $dosens = User::where('role_id', $dosenRoleId)->get();
         return view('layoutAdmin.manajemenDosen.index', compact('dosens'));
     }
 
@@ -39,7 +39,7 @@ class ManajemenDosenController extends Controller
             return back()->with('error', 'Role Dosen tidak ditemukan.');
         }
 
-        userModel::create([
+        User::create([
             'role_id' => $dosenRoleId,
             'username' => $request->username,
             'name' => $request->name,
@@ -53,13 +53,13 @@ class ManajemenDosenController extends Controller
 
     public function edit($id)
     {
-        $user = userModel::findOrFail($id);
+        $user = User::findOrFail($id);
         return view('layoutAdmin.manajemenDosen.edit', compact('user'));
     }
 
     public function update(Request $request, $id)
     {
-        $user = userModel::findOrFail($id);
+        $user = User::findOrFail($id);
         $request->validate([
             'username' => 'required|unique:users,username,' . $user->id,
             'name' => 'required|min:3',
@@ -85,7 +85,7 @@ class ManajemenDosenController extends Controller
 
     public function destroy($id)
     {
-        $user = userModel::findOrFail($id);
+        $user = User::findOrFail($id);
         $user->delete();
         return redirect(url('/admin/manajemen-dosen'))->with('success', 'Dosen dihapus.');
     }

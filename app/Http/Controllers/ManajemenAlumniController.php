@@ -3,7 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Models\alumniModel;
-use App\Models\userModel;
+use App\Models\User;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -15,19 +15,32 @@ class ManajemenAlumniController extends Controller
 {
     public function list()
     {
-        $alumni = alumniModel::select('prodi', 'nim', 'nama_alumni', 'alumni_id', 'tanggal_lulus');
+        $alumni = alumniModel::query()->select([
+            'id',
+            'user_id',
+            'nim',
+            'nama',
+            'prodi',
+            'no_hp',
+            'email',
+            'alamat',
+            'tahun_lulus',
+            'status_pekerjaan',
+            'nama_instansi',
+            'posisi',
+        ]);
 
         return DataTables::of($alumni)
             ->addIndexColumn()
-            ->editColumn('tanggal_lulus', function ($alumni) {
-                return $alumni->tanggal_lulus ? $alumni->tanggal_lulus->format('d-m-Y') : '';
+            ->editColumn('tahun_lulus', function ($alumni) {
+                return $alumni->tahun_lulus ?: '-';
             })
             ->addColumn('aksi', function ($alumni) {
-                $btn = '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->alumni_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->alumni_id . '/delete_ajax') . '\')"  class="btn btn-danger btn-sm">Hapus</button> ';
+                $btn = '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/delete_ajax') . '\')"  class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
-            ->rawColumns(['aksi']) //memberitahu bahwa kolomaksi adalah html
+            ->rawColumns(['aksi'])
             ->make(true);
     }
     public function import()
@@ -109,6 +122,7 @@ class ManajemenAlumniController extends Controller
                         $namaCol = $headerMap['nama'] ?? null;
                         $prodiCol = $headerMap['prodi'] ?? null;
                         $emailCol = $headerMap['email'] ?? null;
+                        $alamatCol = $headerMap['alamat'] ?? null;
                         $tglLulusCol = $headerMap['tanggal lulus'] ?? ($headerMap['tahun lulus'] ?? null);
 
                         $programStudi = $prodiCol ? trim((string) ($row[$prodiCol] ?? '')) : null;
@@ -116,6 +130,7 @@ class ManajemenAlumniController extends Controller
                         $nama = $namaCol ? trim((string) ($row[$namaCol] ?? '')) : '';
                         $tanggalLulusExcel = $tglLulusCol ? ($row[$tglLulusCol] ?? null) : null;
                         $email = $emailCol ? trim((string) ($row[$emailCol] ?? '')) : '';
+                        $alamat = $alamatCol ? trim((string) ($row[$alamatCol] ?? '')) : null;
 
                         // Validasi dasar
                         if (empty($nim) && empty($nama)) {
@@ -139,55 +154,34 @@ class ManajemenAlumniController extends Controller
                             continue;
                         }
 
-                        // Konversi tanggal lulus: dukung serial excel, tanggal string, atau tahun saja (YYYY)
-                        $tanggalLulus = null;
+                        // Konversi tahun lulus: ekstrak tahun dari berbagai format
+                        $tahunLulus = null;
                         if (!empty($tanggalLulusExcel)) {
                             if (is_numeric($tanggalLulusExcel)) {
-                                $tanggalLulus = date('Y-m-d', \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($tanggalLulusExcel));
+                                // Jika serial excel, convert ke date lalu ambil tahun
+                                $tahunLulus = (int) date('Y', \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($tanggalLulusExcel));
                             } elseif (preg_match('/^\d{4}$/', trim((string) $tanggalLulusExcel))) {
-                                $tanggalLulus = trim((string) $tanggalLulusExcel) . '-12-31';
+                                // Jika sudah format tahun YYYY
+                                $tahunLulus = (int) trim((string) $tanggalLulusExcel);
                             } else {
-                                $tanggalLulus = date('Y-m-d', strtotime($tanggalLulusExcel));
+                                // Jika tanggal format lain, extract tahun
+                                $tahunLulus = (int) date('Y', strtotime($tanggalLulusExcel));
                             }
                         }
 
-                        $emailFinal = $email !== '' ? $email : strtolower($nim) . '@alumni.local';
-                        $generatedUsername = strtolower(str_replace(' ', '_', $nama));
+                        // $emailFinal = $email !== '' ? $email : strtolower($nim) . '@alumni.local';
+                        // $generatedUsername = strtolower(str_replace(' ', '_', $nama));
 
-                        // Insert/update user alumni
-                        $user = userModel::where('username', $generatedUsername)->first();
-                        if (!$user) {
-                            $user = userModel::create([
-                                'role_id' => $alumniRoleId,
-                                'username' => $generatedUsername,
-                                'nim' => $nim,
-                                'name' => $nama,
-                                'email' => $emailFinal,
-                                'password' => Hash::make($nim),
-                                'status' => 'pending',
-                                'created_at' => now(),
-                                'updated_at' => now(),
-                            ]);
-                        } else {
-                            $updateUser = [
-                                'role_id' => $alumniRoleId,
-                                'name' => $nama,
-                                'nim' => $nim,
-                                'updated_at' => now(),
-                            ];
-                            if (!empty($emailFinal)) {
-                                $updateUser['email'] = $emailFinal;
-                            }
-                            $user->update($updateUser);
-                        }
-
+                        // Do NOT create or update user records during import.
+                        // Insert alumni with null user_id and empty email/alamat if not provided.
                         $insert_alumni[] = [
-                            'user_id' => $user->id,
+                            'user_id' => null,
                             'prodi' => $programStudi,
                             'nim' => $nim,
-                            'nama_alumni' => $nama,
-                            'tanggal_lulus' => $tanggalLulus,
-                            'email' => $emailFinal,
+                            'nama' => $nama,
+                            'tahun_lulus' => $tahunLulus,
+                            'email' => !empty($email) ? $email : null,
+                            'alamat' => !empty($alamat) ? $alamat : null,
                             'created_at' => now(),
                             'updated_at' => now(),
                         ];
@@ -228,11 +222,11 @@ class ManajemenAlumniController extends Controller
     {
         // Validasi data
         $validator = Validator::make($request->all(), [
-            'prodi'          => 'required|in:TIF Nganjuk,MNA Nganjuk',
+            'prodi'          => 'required|regex:/^[a-zA-Z0-9\s\-\.]+$/',
             'nim'            => 'required|min:5|unique:alumni,nim',
             'nama_alumni'    => 'required|min:3',
-            'tanggal_lulus'  => 'required|date',
-            'email'          => 'required|email|unique:alumni,email'
+            'tanggal_lulus'  => 'required|integer|min:1900|max:2100',
+            'email'          => 'nullable|email|unique:alumni,email'
         ]);
 
         if ($validator->fails()) {
@@ -256,30 +250,18 @@ class ManajemenAlumniController extends Controller
                 ]);
             }
 
-            $emailFinal = !empty($request->email)
-                ? $request->email
-                : strtolower($request->nim) . '@alumni.local';
-            $generatedUsername = strtolower(str_replace(' ', '_', $request->nama_alumni));
-
-            $user = userModel::create([
-                'role_id'  => $alumniRoleId,
-                'username' => $generatedUsername,
-                'nim' => $request->nim,
-                'name' => $request->nama_alumni,
-                'email' => $emailFinal,
-                'password' => Hash::make($request->nim),
-                'status' => 'pending',
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
-
+            // $emailFinal = !empty($request->email)
+            //     ? $request->email
+            //     : strtolower($request->nim) . '@alumni.local';
+            // Do NOT create a users record for each alumni. Insert alumni with null user_id
             alumniModel::create([
-                'user_id'       => $user->id,
+                'user_id'       => null,
                 'prodi'         => $request->prodi,
                 'nim'           => $request->nim,
-                'nama_alumni'   => $request->nama_alumni,
-                'tanggal_lulus' => $request->tanggal_lulus,
-                'email'         => $emailFinal
+                'nama'          => $request->nama_alumni,
+                'tahun_lulus'   => $request->tanggal_lulus,
+                'email'         => null,
+                'alamat'        => null,
             ]);
             return response()->json([
                 'status'  => true,
@@ -302,10 +284,10 @@ class ManajemenAlumniController extends Controller
     public function update(Request $request, $id)
     {
         $validator = Validator::make($request->all(), [
-            'prodi'          => 'required|in:TIF Nganjuk,MNA Nganjuk',
-            'nim'            => 'required|min:5|unique:alumni,nim,' . $id . ',alumni_id',
+            'prodi'          => 'required|regex:/^[a-zA-Z0-9\s\-\.]+$/',
+            'nim'            => 'required|min:5|unique:alumni,nim,' . $id . ',id',
             'nama_alumni'    => 'required|min:3',
-            'tanggal_lulus'  => 'required|date',
+            'tanggal_lulus'  => 'required|integer|min:1900|max:2100',
         ]);
 
         if ($validator->fails()) {
@@ -319,8 +301,8 @@ class ManajemenAlumniController extends Controller
         try {
             $alumni = alumniModel::findOrFail($id);
             $generatedUsername = strtolower(str_replace(' ', '_', $request->nama_alumni));
-            if ($alumni->nim !== $request->nim || $alumni->nama_alumni !== $request->nama_alumni) {
-                $user = userModel::find($alumni->user_id);
+            if ($alumni->nim !== $request->nim || $alumni->nama !== $request->nama_alumni) {
+                $user = User::find($alumni->user_id);
                 if (!$user) {
                     return response()->json([
                         'status' => false,
@@ -337,8 +319,8 @@ class ManajemenAlumniController extends Controller
             $alumni->update([
                 'prodi'         => $request->prodi,
                 'nim'           => $request->nim,
-                'nama_alumni'   => $request->nama_alumni,
-                'tanggal_lulus' => $request->tanggal_lulus,
+                'nama'          => $request->nama_alumni,
+                'tahun_lulus'   => $request->tanggal_lulus,
                 'email'         => $request->email
             ]);
 
@@ -364,7 +346,7 @@ class ManajemenAlumniController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $alumni = alumniModel::find($id);
-            $user = userModel::find($alumni->user_id);
+            $user = User::find($alumni->user_id);
             if (!$alumni && !$user) {
                 return response()->json([
                     'status'  => false,
