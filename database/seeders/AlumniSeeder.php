@@ -60,6 +60,7 @@ class AlumniSeeder extends Seeder
                     'prodi' => 'Teknik Informatika',
                     'no_hp' => $item['no_hp'],
                     'email' => $item['email'],
+                    'angkatan' => 2021,
                     'tahun_lulus' => 2023,
                     'status_pekerjaan' => 'Bekerja',
                     'nama_instansi' => 'PT Contoh',

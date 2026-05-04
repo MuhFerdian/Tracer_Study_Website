@@ -24,6 +24,7 @@ class ManajemenAlumniController extends Controller
             'no_hp',
             'email',
             'alamat',
+            'angkatan',
             'tahun_lulus',
             'status_pekerjaan',
             'nama_instansi',
@@ -123,12 +124,14 @@ class ManajemenAlumniController extends Controller
                         $prodiCol = $headerMap['prodi'] ?? null;
                         $emailCol = $headerMap['email'] ?? null;
                         $alamatCol = $headerMap['alamat'] ?? null;
+                        $thnAngkatanCol = $headerMap['angkatan'] ?? null;
                         $tglLulusCol = $headerMap['tanggal lulus'] ?? ($headerMap['tahun lulus'] ?? null);
 
                         $programStudi = $prodiCol ? trim((string) ($row[$prodiCol] ?? '')) : null;
                         $nim = $nimCol ? trim((string) ($row[$nimCol] ?? '')) : '';
                         $nama = $namaCol ? trim((string) ($row[$namaCol] ?? '')) : '';
                         $tanggalLulusExcel = $tglLulusCol ? ($row[$tglLulusCol] ?? null) : null;
+                        $angkatan = $thnAngkatanCol ? trim((string) ($row[$thnAngkatanCol] ?? '')) : null;
                         $email = $emailCol ? trim((string) ($row[$emailCol] ?? '')) : '';
                         $alamat = $alamatCol ? trim((string) ($row[$alamatCol] ?? '')) : null;
 
@@ -154,18 +157,33 @@ class ManajemenAlumniController extends Controller
                             continue;
                         }
 
-                        // Konversi tahun lulus: ekstrak tahun dari berbagai format
+                        // Konversi tahun lulus: dukung format tahun (2025), tanggal string, atau Excel serial
                         $tahunLulus = null;
                         if (!empty($tanggalLulusExcel)) {
-                            if (is_numeric($tanggalLulusExcel)) {
-                                // Jika serial excel, convert ke date lalu ambil tahun
-                                $tahunLulus = (int) date('Y', \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp($tanggalLulusExcel));
-                            } elseif (preg_match('/^\d{4}$/', trim((string) $tanggalLulusExcel))) {
-                                // Jika sudah format tahun YYYY
-                                $tahunLulus = (int) trim((string) $tanggalLulusExcel);
+                            $raw = trim((string) $tanggalLulusExcel);
+
+                            // If it's already a 4-digit year (e.g. 2025), use it.
+                            if (preg_match('/^\d{4}$/', $raw) && (int)$raw >= 1900 && (int)$raw <= 2100) {
+                                $tahunLulus = (int)$raw;
+                            } elseif (is_numeric($raw)) {
+                                // Numeric but not a 4-digit year: could be an Excel serial number.
+                                // Treat values >=1900 as year; otherwise treat as Excel serial.
+                                $intval = (int)$raw;
+                                if ($intval >= 1900 && $intval <= 2100) {
+                                    $tahunLulus = $intval;
+                                } else {
+                                    // Excel serial -> timestamp -> year
+                                    $ts = \PhpOffice\PhpSpreadsheet\Shared\Date::excelToTimestamp((float)$raw);
+                                    $tahunLulus = (int) date('Y', $ts);
+                                }
                             } else {
-                                // Jika tanggal format lain, extract tahun
-                                $tahunLulus = (int) date('Y', strtotime($tanggalLulusExcel));
+                                // Try parsing common date strings
+                                $ts = strtotime($raw);
+                                if ($ts !== false && $ts !== -1) {
+                                    $tahunLulus = (int) date('Y', $ts);
+                                } else {
+                                    $tahunLulus = null;
+                                }
                             }
                         }
 
@@ -179,6 +197,7 @@ class ManajemenAlumniController extends Controller
                             'prodi' => $programStudi,
                             'nim' => $nim,
                             'nama' => $nama,
+                            'angkatan' => is_numeric($angkatan) && strlen((string)$angkatan) === 4 ? (int)$angkatan : null,
                             'tahun_lulus' => $tahunLulus,
                             'email' => !empty($email) ? $email : null,
                             'alamat' => !empty($alamat) ? $alamat : null,
@@ -225,6 +244,7 @@ class ManajemenAlumniController extends Controller
             'prodi'          => 'required|regex:/^[a-zA-Z0-9\s\-\.]+$/',
             'nim'            => 'required|min:5|unique:alumni,nim',
             'nama_alumni'    => 'required|min:3',
+            'angkatan'       => 'required|integer|min:1900|max:2100',
             'tanggal_lulus'  => 'required|integer|min:1900|max:2100',
             'email'          => 'nullable|email|unique:alumni,email'
         ]);
@@ -259,6 +279,7 @@ class ManajemenAlumniController extends Controller
                 'prodi'         => $request->prodi,
                 'nim'           => $request->nim,
                 'nama'          => $request->nama_alumni,
+                'angkatan'       => $request->angkatan,
                 'tahun_lulus'   => $request->tanggal_lulus,
                 'email'         => null,
                 'alamat'        => null,
@@ -287,6 +308,7 @@ class ManajemenAlumniController extends Controller
             'prodi'          => 'required|regex:/^[a-zA-Z0-9\s\-\.]+$/',
             'nim'            => 'required|min:5|unique:alumni,nim,' . $id . ',id',
             'nama_alumni'    => 'required|min:3',
+            'angkatan'       => 'required|integer|min:1900|max:2100',
             'tanggal_lulus'  => 'required|integer|min:1900|max:2100',
         ]);
 
@@ -320,6 +342,7 @@ class ManajemenAlumniController extends Controller
                 'prodi'         => $request->prodi,
                 'nim'           => $request->nim,
                 'nama'          => $request->nama_alumni,
+                'angkatan'      => $request->angkatan,
                 'tahun_lulus'   => $request->tanggal_lulus,
                 'email'         => $request->email
             ]);

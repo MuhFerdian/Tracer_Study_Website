@@ -21,8 +21,11 @@ return new class extends Migration
             $table->string('no_hp')->nullable();
             $table->string('email')->nullable();
             $table->string('alamat')->nullable();
+            // $table->string('tempat_lahir')->nullable();
+            // $table->date('tanggal_lahir')->nullable();
 
             // Akademik
+            $table->year('angkatan')->nullable();
             $table->year('tahun_lulus')->nullable();
 
             // Opsional (kalau mau dipakai nanti)

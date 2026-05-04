@@ -37,7 +37,7 @@ class ExportController extends Controller
     public function collection()
     {
         return alumniModel::query()
-            ->select('prodi as program_studi', 'nim', 'nama', 'tahun_lulus')
+            ->select('nama', 'nim', 'prodi', 'tahun_lulus')
             ->get();
     }
 
@@ -45,10 +45,10 @@ class ExportController extends Controller
     public function headings(): array
     {
         return [
-            'Program Studi',
-            'NIM',
             'Nama',
-            'Tanggal Lulus',
+            'NIM',
+            'Program Studi',
+            'Tahun Lulus',
         ];
     }
 
@@ -77,9 +77,10 @@ class ExportController extends Controller
         $data = $this->collection();
         $row = 2;
         foreach ($data as $item) {
-            $sheet->setCellValue("A$row", $item->program_studi);
+            // Order: Nama, NIM, Program Studi, Tahun Lulus
+            $sheet->setCellValue("A$row", $item->nama);
             $sheet->setCellValue("B$row", $item->nim);
-            $sheet->setCellValue("C$row", $item->nama);
+            $sheet->setCellValue("C$row", $item->prodi);
             $sheet->setCellValue("D$row", $item->tahun_lulus);
             $row++;
         }
@@ -91,7 +92,7 @@ class ExportController extends Controller
 
         // Siapkan file untuk download
         $writer = new Xlsx($spreadsheet);
-        $filename = 'alumni.xlsx';
+        $filename = 'alumni_.xlsx';
 
         return response()->streamDownload(function () use ($writer) {
             $writer->save('php://output');
@@ -106,12 +107,13 @@ class ExportController extends Controller
 
         // Header kolom
         $headings = [
-            'Program Studi',
-            'NIM',
             'Nama Alumni',
+            'NIM',
+            'Program Studi',
             'No HP',
             'Email',
-            'Tanggal Lulus',
+            // 'Tanggal Lulus',
+            'Angkatan',
             'Tahun Lulus',
             'Tanggal Kerja Pertama',
             'Masa Tunggu (hitung)',
@@ -143,33 +145,59 @@ class ExportController extends Controller
         }
 
         // Query data
+        // Select columns in the same order as $headings above.
+        // Fill non-existing or not-yet-modeled fields with NULL so columns align.
         $data = DB::table('alumni as al')
             ->orderBy('al.id')
-            ->selectRaw('
-            al.prodi,
-            al.nim,
-            al.nama,
-            al.no_hp,
-            al.email,
-            al.tahun_lulus,
-            al.status_pekerjaan,
-            al.nama_instansi,
-            al.posisi
-        ')
+            ->selectRaw(
+                'al.nama as nama_alumni,
+                 al.nim,
+                 al.prodi,
+                 al.no_hp,
+                 al.email,
+                 al.angkatan,
+                 al.tahun_lulus,
+                 NULL as tanggal_kerja_pertama,
+                 NULL as masa_tunggu_hitung,
+                 NULL as masa_tunggu_tersimpan,
+                 NULL as tanggal_mulai_instansi,
+                 NULL as jenis_instansi,
+                 al.nama_instansi,
+                 NULL as skala_instansi,
+                 NULL as lokasi_instansi,
+                 NULL as kategori_profesi,
+                 NULL as profesi,
+                 NULL as nama_atasan,
+                 NULL as jabatan_atasan,
+                 NULL as no_hp_atasan,
+                 NULL as email_atasan'
+            )
             ->get();
 
         // Isi data ke Excel
         $row = 2;
         foreach ($data as $item) {
-            $sheet->setCellValue("A$row", $item->prodi);
+            $sheet->setCellValue("A$row", $item->nama_alumni);
             $sheet->setCellValue("B$row", $item->nim);
-            $sheet->setCellValue("C$row", $item->nama);
+            $sheet->setCellValue("C$row", $item->prodi);
             $sheet->setCellValue("D$row", $item->no_hp);
             $sheet->setCellValue("E$row", $item->email);
-            $sheet->setCellValue("F$row", $item->tahun_lulus);
-            $sheet->setCellValue("G$row", $item->status_pekerjaan);
-            $sheet->setCellValue("H$row", $item->nama_instansi);
-            $sheet->setCellValue("I$row", $item->posisi);
+            $sheet->setCellValue("F$row", $item->angkatan);
+            $sheet->setCellValue("G$row", $item->tahun_lulus);
+            $sheet->setCellValue("H$row", $item->tanggal_kerja_pertama);
+            $sheet->setCellValue("I$row", $item->masa_tunggu_hitung);
+            $sheet->setCellValue("J$row", $item->masa_tunggu_tersimpan);
+            $sheet->setCellValue("K$row", $item->tanggal_mulai_instansi);
+            $sheet->setCellValue("L$row", $item->jenis_instansi);
+            $sheet->setCellValue("M$row", $item->nama_instansi);
+            $sheet->setCellValue("N$row", $item->skala_instansi);
+            $sheet->setCellValue("O$row", $item->lokasi_instansi);
+            $sheet->setCellValue("P$row", $item->kategori_profesi);
+            $sheet->setCellValue("Q$row", $item->profesi);
+            $sheet->setCellValue("R$row", $item->nama_atasan);
+            $sheet->setCellValue("S$row", $item->jabatan_atasan);
+            $sheet->setCellValue("T$row", $item->no_hp_atasan);
+            $sheet->setCellValue("U$row", $item->email_atasan);
             $row++;
         }
 

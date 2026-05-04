@@ -41,6 +41,12 @@
                 </div>
 
                 <div class="form-group">
+                    <label>Angkatan</label>
+                    <input type="number" name="angkatan" value="{{ $alumni->angkatan }}" class="form-control" min="1900" max="2100">
+                    <small id="error-angkatan" class="error-text text-danger"></small>
+                </div>
+
+                <div class="form-group">
                     <label>Tahun Lulus</label>
                     <input type="number" name="tanggal_lulus" value="{{ $alumni->tahun_lulus }}" class="form-control" min="1900" max="2100">
                     <small id="error-tanggal_lulus" class="error-text text-danger"></small>
@@ -85,6 +91,7 @@ $(function() {
             prodi: { required: true },
             nim: { required: true, minlength: 5 },
             nama_alumni: { required: true, minlength: 3 },
+            angkatan: { required: true, digits: true, min: 1900, max: 2100 },
             tanggal_lulus: { required: true, digits: true, min: 1900, max: 2100 }
         },
         submitHandler: function(form) {
