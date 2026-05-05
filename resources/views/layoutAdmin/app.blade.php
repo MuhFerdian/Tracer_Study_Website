@@ -5,6 +5,11 @@
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
+    
     <meta name="description" content="" />
     <meta name="author" content="" />
     <title>Dashboard - SB Admin</title>
@@ -78,23 +83,39 @@
 
     {{-- Fungsi untuk Memuat Modal Secara Dinamis --}}
     <script>
+        // function modalAction(url) {
+        //     // Hapus modal sebelumnya yang mungkin ada di DOM
+        //     $('.modal').remove();
+
+        //     // Buat div modal placeholder yang baru. Ini penting karena
+        //     // konten modal akan di-load ke dalamnya.
+        //     $('body').append('<div id="myModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-hidden="true"></div>');
+
+        //     // Load konten HTML modal dari URL yang diberikan
+        //     $('#myModal').load(url, function() {
+        //         // Setelah konten modal berhasil dimuat ke dalam #myModal, tampilkan modalnya
+        //         $('#myModal').modal('show');
+
+        //         // Trigger event kustom. Ini berguna agar script di dalam form modal
+        //         // (misalnya inisialisasi jQuery Validate) dapat dieksekusi setelah modal dimuat.
+        //         // Anda perlu menambahkan listener untuk event ini di file modal form Anda.
+        //         $(document).trigger('modalLoaded');
+        //     });
+        // }
         function modalAction(url) {
-            // Hapus modal sebelumnya yang mungkin ada di DOM
             $('.modal').remove();
 
-            // Buat div modal placeholder yang baru. Ini penting karena
-            // konten modal akan di-load ke dalamnya.
-            $('body').append('<div id="myModal" class="modal fade" tabindex="-1" role="dialog" data-backdrop="static" data-keyboard="false" aria-hidden="true"></div>');
+            $('body').append(`
+                <div id="myModal" class="modal fade" tabindex="-1">
+                    <div class="modal-dialog">
+                        <div class="modal-content"></div>
+                    </div>
+                </div>
+            `);
 
-            // Load konten HTML modal dari URL yang diberikan
-            $('#myModal').load(url, function() {
-                // Setelah konten modal berhasil dimuat ke dalam #myModal, tampilkan modalnya
-                $('#myModal').modal('show');
-
-                // Trigger event kustom. Ini berguna agar script di dalam form modal
-                // (misalnya inisialisasi jQuery Validate) dapat dieksekusi setelah modal dimuat.
-                // Anda perlu menambahkan listener untuk event ini di file modal form Anda.
-                $(document).trigger('modalLoaded');
+            $('#myModal .modal-content').load(url, function () {
+                var modal = new bootstrap.Modal(document.getElementById('myModal'));
+                modal.show();
             });
         }
     </script>

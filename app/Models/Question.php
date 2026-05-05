@@ -8,8 +8,24 @@ use Illuminate\Database\Eloquent\Model;
 class Question extends Model
 {
     use HasFactory;
+    
+    protected $fillable = [
+        'kode_soal',
+        'pertanyaan',
+        'type',
+        'is_required',
+        'urutan',
+        'deskripsi',
+        'tipe_data',
+    ];
+
     public function options()
     {
         return $this->hasMany(QuestionOption::class);
+    }
+
+    public function answers()
+    {
+        return $this->hasMany(Answer::class);
     }
 }

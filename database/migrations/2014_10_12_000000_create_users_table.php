@@ -20,7 +20,7 @@ return new class extends Migration
             $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('status')->default('pending');
-            $table->date('tanggal_lahir')->nullable();
+            // $table->date('tanggal_lahir')->nullable();
             $table->string('password');
             $table->rememberToken();
             $table->timestamps();

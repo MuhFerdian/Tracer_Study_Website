@@ -1,7 +1,7 @@
 @extends('layoutAdmin.app')
 @section('content')
 
-<form action="{{ url('/admin/pertanyaan/' . $pertanyaan->getKey() . '/delete_ajax') }}" method="POST" id="form-delete">
+<form action="{{ url('/admin/pertanyaan/' . $pertanyaan->id . '/delete_ajax') }}" method="POST" id="form-delete">
     @csrf
     @method('DELETE')
     <div id="modalDelete" class="modal fade" tabindex="-1" role="dialog">
@@ -20,7 +20,7 @@
                     <table class="table table-sm table-bordered table-striped">
                         <tr>
                             <th class="text-right col-3">Pertanyaan :</th>
-                            <td class="col-9">{{ $pertanyaan->question_text }}</td>
+                            <td class="col-9">{{ $pertanyaan->pertanyaan }}</td>
                         </tr>
                     </table>
                 </div>

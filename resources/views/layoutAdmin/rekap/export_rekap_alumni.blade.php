@@ -25,6 +25,7 @@
                                 <th>Program Studi</th>
                                 <th>Angkatan</th>
                                 <th>Tahun Lulus</th>
+                                <th style="width: 120px; text-align: center;">Aksi</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -32,7 +33,7 @@
                                 @foreach ($alumni as $index => $item)
                                     <tr>
                                         <td class="text-center">{{ $index + 1 }}</td>
-                                        <td>{{ $item->nama_alumni }}</td>
+                                        <td>{{ $item->nama }}</td>
                                         <td>{{ $item->nim }}</td>
                                         <td>{{ $item->prodi }}</td>
                                         <td>
@@ -59,6 +60,13 @@
                                                         {{ \Carbon\Carbon::parse($th)->format('Y') }}
                                                     @endif
                                                 </td>
+                                        <td class="text-center">
+                                            <a href="{{ url('/admin/alumni/' . $item->id . '/answers') }}" 
+                                               class="btn btn-sm btn-info" 
+                                               title="Lihat Detail Jawaban">
+                                                <i class="fas fa-eye me-1"></i>Detail Jawaban
+                                            </a>
+                                        </td>
                                     </tr>
                                 @endforeach
                             @endif
