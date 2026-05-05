@@ -10,7 +10,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class User extends Authenticatable
 {
-    use HasFactory, HasApiTokens; // 🔥 WAJIB
+    use HasFactory, HasApiTokens; // WAJIB
 
     protected $table = 'users';
     protected $primaryKey = 'id';

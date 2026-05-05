@@ -7,11 +7,14 @@ use App\Models\alumniModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Facades\Mail;
-use App\Mail\OtpMail;
+use Illuminate\Support\Facades\Cache;
+use App\Services\BrevoMailService;
 
 class MobileAuthController extends Controller
 {
+    // =========================
+    // CEK ALUMNI
+    // =========================
     public function checkAlumni(Request $request)
     {
         $request->validate([
@@ -34,182 +37,202 @@ class MobileAuthController extends Controller
         ]);
     }
 
+    // =========================
+    // REGISTER + KIRIM OTP
+    // =========================
     public function register(Request $request)
-{
-    // VALIDASI INPUT
-    $request->validate([
-        'nim' => 'required|string',
-        'email' => 'required|email',
-        'password' => 'required|min:6',
-    ]);
+    {
+        $request->validate([
+            'nim' => 'required|string',
+            'email' => 'required|email',
+            'password' => 'required|min:6',
+        ]);
 
-    // CEK NIM ADA DI ALUMNI
-    $alumni = alumniModel::where('nim', $request->nim)->first();
-    if (!$alumni) {
-        return response()->json([
-            'status' => false,
-            'message' => 'NIM tidak terdaftar sebagai alumni',
-        ], 404);
-    }
+        $alumni = alumniModel::where('nim', $request->nim)->first();
 
-    // CEK SUDAH PUNYA AKUN
-    if (!empty($alumni->user_id)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Akun untuk NIM ini sudah terdaftar',
-        ], 400);
-    }
+        if (!$alumni) {
+            return response()->json([
+                'status' => false,
+                'message' => 'NIM tidak terdaftar',
+            ], 404);
+        }
 
-    // CEK EMAIL DI ALUMNI (JANGAN DOUBLE)
-    $existingEmail = alumniModel::where('email', $request->email)
-        ->where('alumni_id', '!=', $alumni->alumni_id)
-        ->exists();
+        if (!empty($alumni->user_id)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Akun sudah terdaftar',
+            ], 400);
+        }
 
-    if ($existingEmail) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Email sudah terdaftar untuk alumni lain',
-        ], 400);
-    }
+        // CEK EMAIL DUPLIKAT
+        $existingEmail = alumniModel::where('email', $request->email)
+            ->where('id', '!=', $alumni->id)
+            ->exists();
 
-    // CEK EMAIL DI USERS
-    $existingUsername = DB::table('users')
-        ->where('username', $request->email)
-        ->exists();
+        if ($existingEmail) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Email sudah digunakan',
+            ], 400);
+        }
 
-    if ($existingUsername) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Email sudah digunakan sebagai akun login',
-        ], 400);
-    }
+        // =========================
+        // RATE LIMIT OTP
+        // =========================
+        $limitKey = 'otp_limit_'.$request->email;
 
-    // AMBIL ROLE ALUMNI
-    $roleId = DB::table('role')
-        ->where('role_kode', 'ALM')
-        ->value('role_id');
+        if (Cache::has($limitKey)) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Tunggu 1 menit sebelum request OTP lagi'
+            ], 429);
+        }
 
-    if (!$roleId) {
-        return response()->json([
-            'status' => false,
-            'message' => 'Role Alumni belum tersedia di database',
-        ], 500);
-    }
+        Cache::put($limitKey, true, now()->addMinute());
 
-    // GENERATE OTP
-    $otp = rand(100000, 999999);
+        // =========================
+        // GENERATE OTP
+        // =========================
+        $otp = random_int(100000, 999999);
 
-    $userId = null;
-
-    // SIMPAN DATA DALAM TRANSACTION
-    DB::transaction(function () use ($request, $alumni, $roleId, &$userId, $otp) {
-
-        // INSERT KE USERS
-        $userId = DB::table('users')->insertGetId([
-            'role_id' => $roleId,
-            'username' => $request->email,
-            'name' => $alumni->nama_alumni,
+        // =========================
+        // SIMPAN CACHE (5 MENIT)
+        // =========================
+        Cache::put('register_'.$request->email, [
+            'nim' => $request->nim,
             'email' => $request->email,
             'password' => Hash::make($request->password),
+            'otp' => Hash::make($otp),
+        ], now()->addMinutes(5));
 
-            // STATUS AWAL
-            'status' => 'pending',
+        // =========================
+        // KIRIM EMAIL VIA BREVO
+        // =========================
+        try {
+            BrevoMailService::send(
+                $request->email,
+                'Kode OTP Registrasi',
+                "
+                <div style='font-family:sans-serif'>
+                    <h2>Kode OTP Kamu</h2>
+                    <h1 style='letter-spacing:5px;'>$otp</h1>
+                    <p>Berlaku 5 menit</p>
+                </div>
+                "
+            );
+        } catch (\Exception $e) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Gagal kirim email'
+            ], 500);
+        }
 
-            // OTP
-            'otp_code' => $otp,
-            'otp_expired_at' => now()->addMinutes(5),
-            'is_verified' => false,
-
-            'created_at' => now(),
-            'updated_at' => now(),
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP dikirim'
         ]);
+    }
 
-        // UPDATE DATA ALUMNI
-        $alumni->update([
-            'user_id' => $userId,
-            'email' => $request->email,
-        ]);
-    });
-    try {
-    Mail::to($request->email)->send(new OtpMail($otp));
-} catch (\Exception $e) {
-    return response()->json([
-        'status' => false,
-        'message' => 'Gagal kirim email: ' . $e->getMessage()
-    ]);
-}
-
-    Mail::to($request->email)->send(new OtpMail($otp));
-
-    // RESPONSE (UNTUK TESTING DULU)
-    return response()->json([
-        'status' => true,
-        'message' => 'Registrasi berhasil, OTP dikirim ke email',
-        'data' => [
-            'user_id' => $userId,
-            'alumni_id' => $alumni->alumni_id,
-            'nim' => $alumni->nim,
-            'name' => $alumni->nama_alumni,
-            'email' => $request->email,
-        ],
-    ]);
-}
-
-
-
+    // =========================
     // VERIFIKASI OTP
+    // =========================
     public function verifyOtp(Request $request)
-{
-    $request->validate([
-        'email' => 'required|email',
-        'otp' => 'required'
-    ]);
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'otp' => 'required'
+        ]);
 
-    $user = DB::table('users')->where('email', $request->email)->first();
+        $data = Cache::get('register_'.$request->email);
 
-    if (!$user) {
+        if (!$data) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP expired'
+            ], 400);
+        }
+
+        if (!Hash::check($request->otp, $data['otp'])) {
+            return response()->json([
+                'status' => false,
+                'message' => 'OTP salah'
+            ], 400);
+        }
+
+        $alumni = alumniModel::where('nim', $data['nim'])->first();
+
+        $roleId = DB::table('role')
+            ->where('role_kode', 'ALM')
+            ->value('role_id');
+
+        DB::transaction(function () use ($data, $alumni, $roleId) {
+
+            $userId = DB::table('users')->insertGetId([
+                'role_id' => $roleId,
+                'username' => $data['email'],
+                'name' => $alumni->nama,
+                'email' => $data['email'],
+                'password' => $data['password'],
+                'status' => 'active',
+                'is_verified' => true,
+                'email_verified_at' => now(), // 🔥 tambahan penting
+                'created_at' => now(),
+                'updated_at' => now(),
+            ]);
+
+            $alumni->update([
+                'user_id' => $userId,
+                'email' => $data['email'],
+            ]);
+        });
+
+        Cache::forget('register_'.$request->email);
+
         return response()->json([
-            'status' => false,
-            'message' => 'User tidak ditemukan'
+            'status' => true,
+            'message' => 'Registrasi berhasil'
         ]);
     }
 
-    if ($user->otp_code != $request->otp) {
+    // =========================
+    // RESEND OTP (🔥 TAMBAHAN)
+    // =========================
+    public function resendOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $data = Cache::get('register_'.$request->email);
+
+        if (!$data) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Session habis, ulangi register'
+            ], 400);
+        }
+
+        $otp = random_int(100000, 999999);
+
+        $data['otp'] = Hash::make($otp);
+
+        Cache::put('register_'.$request->email, $data, now()->addMinutes(5));
+
+        BrevoMailService::send(
+            $request->email,
+            'OTP Baru',
+            "<h1>$otp</h1><p>Berlaku 5 menit</p>"
+        );
+
         return response()->json([
-            'status' => false,
-            'message' => 'OTP salah'
+            'status' => true,
+            'message' => 'OTP dikirim ulang'
         ]);
     }
 
-    if (now()->greaterThan($user->otp_expired_at)) {
-        return response()->json([
-            'status' => false,
-            'message' => 'OTP sudah expired'
-        ]);
-    }
-
-    if ($user->is_verified) {
-    return response()->json([
-        'status' => false,
-        'message' => 'Akun sudah diverifikasi'
-    ]);
-}
-
-    DB::table('users')->where('id', $user->id)->update([
-        'is_verified' => true,
-        'status' => 'active',
-        'otp_code' => null,
-        'updated_at' => now()
-    ]);
-
-    return response()->json([
-        'status' => true,
-        'message' => 'Verifikasi berhasil'
-    ]);
-}
-
-
+    // =========================
     // LOGIN
+    // =========================
     public function login(Request $request)
     {
         $request->validate([
@@ -227,20 +250,20 @@ class MobileAuthController extends Controller
                 'message' => 'Email atau password salah',
             ], 401);
         }
-// CEK VERIFIKASI OTP
+
         if (!$alumni->user->is_verified) {
-    return response()->json([
-        'status' => false,
-        'message' => 'Akun belum verifikasi OTP'
-    ], 403);
-}
+            return response()->json([
+                'status' => false,
+                'message' => 'Akun belum verifikasi OTP'
+            ], 403);
+        }
 
         return response()->json([
             'status' => true,
             'message' => 'Login berhasil',
             'user' => [
                 'user_id' => $alumni->user->id,
-                'alumni_id' => $alumni->alumni_id,
+                'alumni_id' => $alumni->id,
                 'nim' => $alumni->nim,
                 'name' => $alumni->nama_alumni,
                 'email' => $alumni->email,
