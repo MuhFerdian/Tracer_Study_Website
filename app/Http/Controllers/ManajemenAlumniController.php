@@ -4,6 +4,8 @@ namespace App\Http\Controllers;
 
 use App\Models\alumniModel;
 use App\Models\User;
+use App\Models\Question;
+use App\Models\Answer;
 use Yajra\DataTables\Facades\DataTables;
 use Illuminate\Http\Request;
 use PhpOffice\PhpSpreadsheet\IOFactory;
@@ -37,8 +39,10 @@ class ManajemenAlumniController extends Controller
                 return $alumni->tahun_lulus ?: '-';
             })
             ->addColumn('aksi', function ($alumni) {
-                $btn = '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                $btn .= '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/delete_ajax') . '\')"  class="btn btn-danger btn-sm">Hapus</button> ';
+                $btn = ''; // WAJIB
+                $btn .= '<a href="' . url('/admin/alumni/' . $alumni->id . '/answers') . '" class="btn btn-info btn-sm"><i class="fas fa-eye me-1"></i>Jawaban</a> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                $btn .= '<button onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button> ';
                 return $btn;
             })
             ->rawColumns(['aksi'])
@@ -385,5 +389,24 @@ class ManajemenAlumniController extends Controller
             }
         }
         return redirect('/');
+    }
+
+    /**
+     * Tampilkan detail jawaban alumni untuk semua pertanyaan
+     */
+    public function showAnswers($id)
+    {
+        $alumni = alumniModel::findOrFail($id);
+        
+        // Get all questions ordered by urutan
+        $questions = Question::orderBy('urutan')->get();
+        
+        // Get answers for this alumni
+        $answers = Answer::where('alumni_id', $id)
+            ->with('answerDetails.option')
+            ->get()
+            ->keyBy('question_id');
+        
+        return view('layoutAdmin.manajemenAlumni.detail_answers', compact('alumni', 'questions', 'answers'));
     }
 }

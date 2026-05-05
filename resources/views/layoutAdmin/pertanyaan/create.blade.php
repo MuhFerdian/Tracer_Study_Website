@@ -30,17 +30,18 @@
       <div class="mb-3">
         <label for="type" class="form-label">Tipe</label>
         <select name="type" id="type" class="form-control" required>
-          <option value="text">Text</option>
-          <option value="radio">Radio</option>
-          <option value="checkbox">Checkbox</option>
-          <option value="number">Number</option>
+          <option value="">-- Pilih Tipe --</option>
+          <option value="text">Text (Input Teks)</option>
+          <option value="single">Single (Pilihan Tunggal)</option>
+          <option value="multiple">Multiple (Pilihan Ganda)</option>
+          <option value="scale">Scale (Skala 1-5)</option>
         </select>
         <small id="error-type" class="text-danger"></small>
       </div>
 
       <div class="mb-3">
-        <label for="options" class="form-label">Format penulisan (untuk radio/checkbox)</label>
-        <textarea name="options" id="options" class="form-control" placeholder='["Bekerja","Belum bekerja","Wirausaha"]'></textarea>
+        <label for="options" class="form-label">Options (untuk single/multiple)</label>
+        <textarea name="options" id="options" class="form-control" placeholder='["Opsi 1","Opsi 2","Opsi 3"]'></textarea>
         <small id="error-options" class="text-danger"></small>
       </div>
 

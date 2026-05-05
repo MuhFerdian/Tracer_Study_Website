@@ -1,6 +1,6 @@
 <div class="modal fade" id="modalEdit" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
-    <form action="{{ url('/admin/pertanyaan/' . $data->pertanyaan_id . '/update_ajax') }}" method="POST" id="form-edit">
+    <form action="{{ url('/admin/pertanyaan/' . $data->id . '/update_ajax') }}" method="POST" id="form-edit">
       @csrf
       @method('PUT')
       <div class="modal-content">
@@ -10,37 +10,41 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
+            {{-- <label for="kode_soal" class="form-label">Kode Soal</label>
+            <input type="text" name="kode_soal" id="kode_soal" class="form-control" value="{{ $data->kode ?? '' }}">
+            <small id="error-kode_soal" class="error-text form-text text-danger"></small> --}}
             <label for="kode_soal" class="form-label">Kode Soal</label>
-            <select name="kode_soal" id="kode_soal" class="form-control" required>
-              <option value="">-- Pilih Kode Soal --</option>
-              <option value="f8" {{ $data->kode_soal == 'f8' ? 'selected' : '' }}>f8 - Status Alumni</option>
-              <option value="f502" {{ $data->kode_soal == 'f502' ? 'selected' : '' }}>f502 - Nama Perusahaan</option>
-              <option value="f505" {{ $data->kode_soal == 'f505' ? 'selected' : '' }}>f505 - Gaji</option>
-              <option value="f510" {{ $data->kode_soal == 'f510' ? 'selected' : '' }}>f510 - Skill</option>
-            </select>
-            <small id="error-kode_soal" class="error-text form-text text-danger"></small>
+              <select name="kode_soal" id="kode_soal" class="form-control" required>
+                <option value="">-- Pilih Kode Soal --</option>
+                <option value="f8">f8 - Status Alumni</option>
+                <option value="f502">f502 - Nama Perusahaan</option>
+                <option value="f505">f505 - Gaji</option>
+                <option value="f510">f510 - Skill</option>
+              </select>
+          <small id="error-kode_soal" class="text-danger"></small>
           </div>
 
           <div class="mb-3">
             <label for="question_text" class="form-label">Pertanyaan</label>
-            <textarea name="question_text" id="question_text" class="form-control" rows="3" required>{{ $data->question_text }}</textarea>
+            <textarea name="question_text" id="question_text" class="form-control" rows="3" required>{{ $data->pertanyaan }}</textarea>
             <small id="error-question_text" class="error-text form-text text-danger"></small>
           </div>
 
           <div class="mb-3">
             <label for="type" class="form-label">Tipe</label>
             <select name="type" id="type" class="form-control" required>
-              <option value="text" {{ $data->type == 'text' ? 'selected' : '' }}>Text</option>
-              <option value="radio" {{ $data->type == 'radio' ? 'selected' : '' }}>Radio</option>
-              <option value="checkbox" {{ $data->type == 'checkbox' ? 'selected' : '' }}>Checkbox</option>
-              <option value="number" {{ $data->type == 'number' ? 'selected' : '' }}>Number</option>
+              <option value="">-- Pilih Tipe --</option>
+              <option value="text" {{ $data->type == 'text' ? 'selected' : '' }}>Text (Input Teks)</option>
+              <option value="single" {{ $data->type == 'single' ? 'selected' : '' }}>Single (Pilihan Tunggal)</option>
+              <option value="multiple" {{ $data->type == 'multiple' ? 'selected' : '' }}>Multiple (Pilihan Ganda)</option>
+              <option value="scale" {{ $data->type == 'scale' ? 'selected' : '' }}>Scale (Skala 1-5)</option>
             </select>
             <small id="error-type" class="error-text form-text text-danger"></small>
           </div>
 
           <div class="mb-3">
-            <label for="options" class="form-label">Format penulisan (untuk radio/checkbox)</label>
-            <textarea name="options" id="options" class="form-control" placeholder='["Bekerja","Belum bekerja","Wirausaha"]'>{{ !empty($data->options) ? json_encode($data->options) : '' }}</textarea>
+            <label for="options" class="form-label">Options (untuk single/multiple)</label>
+            <textarea name="options" id="options" class="form-control" placeholder='["Opsi 1","Opsi 2","Opsi 3"]'>{{ !empty($data->options) && $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
             <small id="error-options" class="error-text form-text text-danger"></small>
           </div>
 

@@ -64,5 +64,6 @@ class Kernel extends HttpKernel
         'verified' => \Illuminate\Auth\Middleware\EnsureEmailIsVerified::class,
         'role' => \App\Http\Middleware\CheckRole::class,
         'cek.alumni.login' => \App\Http\Middleware\CekAlumniLogin::class,
+        'prevent-back' => \App\Http\Middleware\PreventBackHistory::class,
     ];
 }

@@ -40,12 +40,12 @@
                     </div>
                     <div class="d-flex mb-3">
                         <i class="fas fa-map-marker-alt mt-1 me-2"></i>
-                        <p class="mb-0">Jl. Soekarno Hatta No.9, Jember, Jawa Timur</p>
+                        <p class="mb-0">Jl. Gatot Subroto No 02, Nganjuk - Jawa Timur</p>
                     </div>
                     <div class="d-flex">
                         <i class="fas fa-envelope mt-1 me-2"></i>
                         <p class="mb-0">Email: <a href="mailto:tracer@polije.ac.id"
-                                class="text-white text-decoration-none">tracer@polije.ac.id</a></p>
+                                class="text-white text-decoration-none">tracer.study@polije.ac.id</a></p>
                     </div>
                 </div>
 
@@ -75,7 +75,7 @@
                                     <i class="fas fa-newspaper"></i>
                                 </div>
                                 <div>
-                                    <p class="mb-1 small">Hasil Tracer Study Tahun 2024</p>
+                                    <p class="mb-1 small">Hasil Tracer Study Tahun 2026</p>
                                 </div>
                             </div>
                         </a>
@@ -85,7 +85,7 @@
         </div>
         <hr class="border-light mt-4">
         <div class="text-center py-3">
-            © 2025 Tracer Study Politeknik Negeri Jember. All Rights Reserved.
+            © 2026 Tracer Study Politeknik Negeri Jember. All Rights Reserved.
         </div>
     </div>
 

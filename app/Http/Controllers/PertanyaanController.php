@@ -2,7 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\PertanyaanModel;
+use App\Models\Question;
+use App\Models\QuestionOption;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
@@ -11,56 +12,48 @@ class PertanyaanController extends Controller
 {
     public function index()
     {
-
-        return view('layoutAdmin.pertanyaan.index'); // Buat file Blade ini
+        return view('layoutAdmin.pertanyaan.index');
     }
 
     public function list(Request $request)
     {
         if ($request->ajax()) {
-            $data = PertanyaanModel::orderBy('urutan')->orderBy('pertanyaan_id')->get();
+            $data = Question::with('options')->orderBy('urutan')->orderBy('id')->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
                 ->addColumn('question_display', function ($row) {
-                    return $row->question_text;
+                    return $row->pertanyaan;
                 })
                 ->addColumn('options_display', function ($row) {
-                    if (empty($row->options)) {
+                    if ($row->options->isEmpty()) {
                         return '-';
                     }
-
-                    if (is_array($row->options)) {
-                        return implode(', ', $row->options);
-                    }
-
-                    return $row->options;
+                    return $row->options->pluck('label')->implode(', ');
                 })
                 ->addColumn('aksi', function ($row) {
-                    $btn = '<button onclick="modalEdit(\'' . url('/admin/pertanyaan/' . $row->pertanyaan_id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
-                    $btn .= '<button onclick="modalDelete(\'' . url('/admin/pertanyaan/' . $row->pertanyaan_id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
+                    $btn = '<button onclick="modalEdit(\'' . url('/admin/pertanyaan/' . $row->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                    $btn .= '<button onclick="modalDelete(\'' . url('/admin/pertanyaan/' . $row->id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
                     return $btn;
                 })
-
-                ->rawColumns(['aksi']) // Kolom aksi berisi HTML
+                ->rawColumns(['aksi'])
                 ->make(true);
         }
 
-        // Jika bukan AJAX, jangan return view atau HTML di sini
         return response()->json(['message' => 'Bukan permintaan AJAX'], 400);
     }
     public function create_ajax()
     {
-        return view('layoutAdmin.pertanyaan.create'); // Buat file Blade ini
+        return view('layoutAdmin.pertanyaan.create');
     }
 
     public function store(Request $request)
     {
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
-                'kode_soal' => 'required|string|max:50',
+                'kode_soal' => 'nullable|string|max:50',
                 'question_text' => 'required|string',
-                'type' => 'required|in:text,radio,checkbox,number',
+                'type' => 'required|in:text,single,multiple,scale',
                 'urutan' => 'nullable|integer|min:0',
                 'options' => 'nullable|string',
             ]);
@@ -73,13 +66,26 @@ class PertanyaanController extends Controller
                 ]);
             }
 
-            PertanyaanModel::create([
+            $question = Question::create([
                 'kode_soal' => $request->kode_soal,
-                'question_text' => $request->question_text,
+                'pertanyaan' => $request->question_text,
                 'type' => $request->type,
-                'options' => $this->handleOptions($request),
                 'urutan' => $request->filled('urutan') ? (int) $request->urutan : 0,
+                'is_required' => true,
             ]);
+
+            // Jika ada options, simpan ke question_options
+            if ($request->filled('options') && in_array($request->type, ['single', 'multiple'])) {
+                $options = $this->parseOptions($request->options);
+                foreach ($options as $idx => $label) {
+                    QuestionOption::create([
+                        'question_id' => $question->id,
+                        'label' => $label,
+                        'value' => $label,
+                        'urutan' => $idx + 1,
+                    ]);
+                }
+            }
 
             return response()->json([
                 'status' => true,
@@ -92,17 +98,17 @@ class PertanyaanController extends Controller
 
     public function edit_ajax(string $id)
     {
-        $data = PertanyaanModel::findOrFail($id);
-        return view('layoutAdmin.pertanyaan.edit', compact('data')); // Buat file Blade ini
+        $data = Question::with('options')->findOrFail($id);
+        return view('layoutAdmin.pertanyaan.edit', compact('data'));
     }
 
     public function update_ajax(Request $request, string $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
-                'kode_soal' => 'required|string|max:50',
+                'kode_soal' => 'nullable|string|max:50',
                 'question_text' => 'required|string',
-                'type' => 'required|in:text,radio,checkbox,number',
+                'type' => 'required|in:text,single,multiple,scale',
                 'urutan' => 'nullable|integer|min:0',
                 'options' => 'nullable|string',
             ]);
@@ -115,14 +121,27 @@ class PertanyaanController extends Controller
                 ]);
             }
 
-            $data = PertanyaanModel::findOrFail($id);
-            $data->update([
+            $question = Question::findOrFail($id);
+            $question->update([
                 'kode_soal' => $request->kode_soal,
-                'question_text' => $request->question_text,
+                'pertanyaan' => $request->question_text,
                 'type' => $request->type,
-                'options' => $this->handleOptions($request),
                 'urutan' => $request->filled('urutan') ? (int) $request->urutan : 0,
             ]);
+
+            // Hapus options lama dan buat yang baru
+            if ($request->filled('options') && in_array($request->type, ['single', 'multiple'])) {
+                $question->options()->delete();
+                $options = $this->parseOptions($request->options);
+                foreach ($options as $idx => $label) {
+                    QuestionOption::create([
+                        'question_id' => $question->id,
+                        'label' => $label,
+                        'value' => $label,
+                        'urutan' => $idx + 1,
+                    ]);
+                }
+            }
 
             return response()->json([
                 'status' => true,
@@ -134,14 +153,14 @@ class PertanyaanController extends Controller
     }
     public function confirm_ajax(string $id)
     {
-        $pertanyaan = PertanyaanModel::find($id);
-        return view('layoutAdmin.pertanyaan.confirm', compact('pertanyaan')); // Buat file Blade ini
+        $pertanyaan = Question::findOrFail($id);
+        return view('layoutAdmin.pertanyaan.confirm', compact('pertanyaan'));
     }
 
     public function delete_ajax(Request $request, string $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
-            $data = PertanyaanModel::find($id);
+            $data = Question::find($id);
             if (!$data) {
                 return response()->json([
                     'status' => false,
@@ -160,35 +179,23 @@ class PertanyaanController extends Controller
         return redirect('/');
     }
 
-    // Tambahkan di PertanyaanController
     public function getPertanyaan()
     {
-        // Ambil semua data dari model Pertanyaan
-        $data = PertanyaanModel::all();
-
-        // Kembalikan data dalam format JSON
+        $data = Question::with('options')->orderBy('urutan')->get();
         return response()->json($data);
     }
 
-    private function handleOptions(Request $request): ?array
+    private function parseOptions(string $optionsInput): array
     {
-        if (!in_array($request->type, ['radio', 'checkbox'])) {
-            return null;
-        }
-
-        if (!$request->filled('options')) {
-            return [];
-        }
-
-        $decoded = json_decode($request->options, true);
+        $decoded = json_decode($optionsInput, true);
         if (json_last_error() === JSON_ERROR_NONE && is_array($decoded)) {
             return array_values(array_filter(array_map('trim', $decoded), function ($item) {
                 return $item !== '';
             }));
         }
 
-        return array_values(array_filter(array_map('trim', explode(',', $request->options)), function ($item) {
+        return array_values(array_filter(array_map('trim', explode(',', $optionsInput)), function ($item) {
             return $item !== '';
         }));
     }
-}
+}  

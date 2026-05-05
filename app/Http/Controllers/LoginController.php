@@ -152,13 +152,24 @@ class LoginController extends Controller
         return '/';
     }
 
-    // Proses logout
     public function logout(Request $request)
     {
-        Auth::logout();
+        if (Auth::guard('alumni')->check()) {
+            Auth::guard('alumni')->logout();
+        }
+
+        if (Auth::guard('web')->check()) {
+            Auth::guard('web')->logout();
+        }
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('landingpage')->with('status', 'Berhasil logout.');
+        // return redirect('/landingpage');
+        $response = redirect('/landingpage');
+
+        return $response->header('Cache-Control','no-cache, no-store, max-age=0, must-revalidate')
+            ->header('Pragma','no-cache')
+            ->header('Expires','0');
     }
 }
