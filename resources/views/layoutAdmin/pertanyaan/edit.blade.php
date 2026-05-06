@@ -26,7 +26,7 @@
 
           <div class="mb-3">
             <label for="question_text" class="form-label">Pertanyaan</label>
-            <textarea name="question_text" id="question_text" class="form-control" rows="3" required>{{ $data->pertanyaan }}</textarea>
+            <textarea name="question_text" id="question_text" class="form-control" placeholder='Jelaskan status Anda saat ini?' rows="3" required>{{ $data->pertanyaan }}</textarea>
             <small id="error-question_text" class="error-text form-text text-danger"></small>
           </div>
 
@@ -42,16 +42,25 @@
             <small id="error-type" class="error-text form-text text-danger"></small>
           </div>
 
-          <div class="mb-3">
-            <label for="options" class="form-label">Options (untuk single/multiple)</label>
-            <textarea name="options" id="options" class="form-control" placeholder='["Opsi 1","Opsi 2","Opsi 3"]'>{{ !empty($data->options) && $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
+          <div class="mb-3" id="optionsGroup">
+            <label for="options" class="form-label">Options <span class="text-danger" id="optionsRequired">*</span></label>
+            <textarea name="options" id="options" class="form-control" placeholder='["Bekerja","Wiraswasta","Melanjutkan Pendidikan"]' data-required="false">{{ !empty($data->options) && $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
+            <small class="form-text text-muted">Format: ["Opsi 1","Opsi 2","Opsi 3"]</small>
             <small id="error-options" class="error-text form-text text-danger"></small>
           </div>
-
+          <div class="mb-3" id="scaleInfo" style="display: none;">
+            <div class="alert alert-info" role="alert">
+              <strong>ℹ️ Informasi Skala:</strong> Tipe Scale akan secara otomatis menggunakan skala <strong>1 hingga 5</strong>. Anda tidak perlu menambahkan options.
+              <br>
+              <small class="text-muted">Skala: 1 (Sangat Rendah) → 5 (Sangat Tinggi)</small>
+            </div>
+          </div>
           <div class="mb-3">
             <label for="urutan" class="form-label">Urutan pertanyaan</label>
             <input type="number" name="urutan" id="urutan" class="form-control" min="0" value="{{ $data->urutan ?? 0 }}">
+            <small class="form-text text-muted">Isi dengan angka unik. Kosongkan atau 0 untuk otomatis.</small>
             <small id="error-urutan" class="error-text form-text text-danger"></small>
+            <small id="warning-urutan" class="text-warning" style="display: none;"></small>
           </div>
         </div>
         <div class="modal-footer">
@@ -64,6 +73,125 @@
 </div>
 
 <script>
+  // Function untuk cek ketersediaan urutan via AJAX
+  function checkUrutanAvailability(urutan, excludeId = null) {
+    return new Promise((resolve) => {
+      if (!urutan || urutan == 0) {
+        resolve({ available: true });
+        return;
+      }
+
+      $.ajax({
+        url: "{{ url('/admin/pertanyaan/check-urutan') }}",
+        method: "GET",
+        data: {
+          urutan: urutan,
+          excludeId: excludeId
+        },
+        dataType: "json",
+        success: function (response) {
+          resolve(response);
+        },
+        error: function () {
+          resolve({ available: true });
+        }
+      });
+    });
+  }
+
+  // Function untuk toggle visibility dan required status field options
+  // Function untuk toggle visibility dan required status field options
+  function toggleOptionsField() {
+    const typeSelect = $('#type');
+    const optionsGroup = $('#optionsGroup');
+    const scaleInfo = $('#scaleInfo');
+    const optionsField = $('#options');
+    const optionsRequired = $('#optionsRequired');
+    const selectedType = typeSelect.val();
+
+    // Tipe yang memerlukan options
+    const typesWithOptions = ['single', 'multiple'];
+
+    if (typesWithOptions.includes(selectedType)) {
+      // Tampilkan field options dan set sebagai required
+      optionsGroup.slideDown(300);
+      scaleInfo.slideUp(300);
+      optionsField.attr('required', 'required');
+      optionsField.data('required', 'true');
+      optionsRequired.show();
+      optionsField.addClass('is-options-required');
+    } else if (selectedType === 'scale') {
+      // Untuk scale, tampilkan info dan hide options
+      optionsGroup.slideUp(300);
+      scaleInfo.slideDown(300);
+      optionsField.removeAttr('required');
+      optionsField.data('required', 'false');
+      optionsRequired.hide();
+      optionsField.removeClass('is-options-required');
+      optionsField.val('');
+    } else {
+      // Untuk text, sembunyikan keduanya
+      optionsGroup.slideUp(300);
+      scaleInfo.slideUp(300);
+      optionsField.removeAttr('required');
+      optionsField.data('required', 'false');
+      optionsRequired.hide();
+      optionsField.removeClass('is-options-required');
+      optionsField.val('');
+    }
+  }
+
+  // Event listener untuk perubahan type
+  function setupTypeChangeListener() {
+    $('#type').on('change', function () {
+      toggleOptionsField();
+      // Bersihkan error message jika ada
+      $('#error-type').text('');
+      $('#type').removeClass('is-invalid');
+    });
+  }
+
+  // Validasi options sebelum submit
+  function validateOptions() {
+    const type = $('#type').val();
+    const options = $('#options').val().trim();
+    const typesWithOptions = ['single', 'multiple'];
+
+    if (typesWithOptions.includes(type)) {
+      if (!options) {
+        $('#error-options').text('Options wajib diisi untuk tipe ' + type);
+        $('#options').addClass('is-invalid');
+        return false;
+      }
+
+      // Validasi format options
+      const parsed = parseOptionsFormat(options);
+      if (parsed.length < 2) {
+        $('#error-options').text('Minimal harus ada 2 opsi untuk tipe ' + type);
+        $('#options').addClass('is-invalid');
+        return false;
+      }
+    }
+
+    return true;
+  }
+
+  // Function untuk parse options dari berbagai format
+  function parseOptionsFormat(optionsInput) {
+    try {
+      const decoded = JSON.parse(optionsInput);
+      if (Array.isArray(decoded)) {
+        return decoded.filter(item => item.trim() !== '');
+      }
+    } catch (e) {
+      // Bukan JSON, coba split dengan koma
+      return optionsInput
+        .split(',')
+        .map(item => item.trim())
+        .filter(item => item !== '');
+    }
+  }
+
   function closeModalEdit() {
     $('#modalEdit').modal('hide');
     setTimeout(function () {
@@ -73,70 +201,89 @@
   }
 
   $(function () {
-    $('#form-edit').validate({
-      rules: {
-        question_text: {
-          required: true,
-          minlength: 5,
-          maxlength: 255
-        },
-        kode_soal: { required: true },
-        type: { required: true }
-      },
-      submitHandler: function (form, event) {
-        event.preventDefault();
+    // Setup change listener saat modal dibuka
+    setupTypeChangeListener();
+    // Trigger untuk set state awal sesuai type yang sudah dipilih
+    toggleOptionsField();
 
-        $.ajax({
-          url: form.action,
-          method: $(form).attr('method'),
-          data: $(form).serialize(),
-          dataType: 'json',
-          success: function (response) {
-            if (response.status) {
-              closeModalEdit();
-              Swal.fire({
-                icon: 'success',
-                title: 'Berhasil',
-                text: response.message
-              });
-              $('#tablePertanyaan').DataTable().ajax.reload(null, false);
-            } else {
-              $('.error-text').text('');
-              $('.form-control').removeClass('is-invalid');
+    // Validasi urutan saat blur
+    $('#urutan').on('blur', async function () {
+      const urutan = $(this).val();
+      const questionId = "{{ $data->id }}";
+      const warningEl = $('#warning-urutan');
+      const errorEl = $('#error-urutan');
+      
+      warningEl.hide().text('');
+      errorEl.text('');
+      $(this).removeClass('is-invalid');
+
+      if (urutan && urutan != 0) {
+        const response = await checkUrutanAvailability(urutan, questionId);
+        if (!response.available) {
+          warningEl.text('⚠️ Urutan ' + urutan + ' sudah digunakan. Silakan gunakan urutan yang berbeda.').show();
+          $(this).addClass('is-invalid');
+        }
+      }
+    });
+
+    $('#form-edit').on('submit', function (e) {
+      e.preventDefault();
+
+      // Clear previous errors
+      $('.error-text').text('');
+      $('.form-control').removeClass('is-invalid');
+
+      // Validasi options terlebih dahulu
+      if (!validateOptions()) {
+        return;
+      }
+
+      // Validasi urutan
+      const urutan = $('#urutan').val();
+      if (urutan && urutan != 0 && $('#urutan').hasClass('is-invalid')) {
+        return;
+      }
+
+      $.ajax({
+        url: $(this).attr('action'),
+        method: $(this).attr('method'),
+        data: $(this).serialize(),
+        dataType: 'json',
+        success: function (response) {
+          if (response.status) {
+            closeModalEdit();
+            Swal.fire({
+              icon: 'success',
+              title: 'Berhasil',
+              text: response.message
+            });
+            $('#tablePertanyaan').DataTable().ajax.reload(null, false);
+          } else {
+            $('.error-text').text('');
+            $('.form-control').removeClass('is-invalid');
+            if (response.msgField) {
               $.each(response.msgField, function (field, msg) {
                 $('#error-' + field).text(msg[0]);
                 $('#' + field).addClass('is-invalid');
               });
-              Swal.fire({
-                icon: 'error',
-                title: 'Gagal',
-                text: response.message
-              });
             }
-          },
-          error: function () {
             Swal.fire({
               icon: 'error',
-              title: 'Kesalahan Server',
-              text: 'Gagal memperbarui data. Silakan coba lagi.'
+              title: 'Gagal',
+              text: response.message
             });
           }
-        });
+        },
+        error: function () {
+          Swal.fire({
+            icon: 'error',
+            title: 'Kesalahan Server',
+            text: 'Gagal memperbarui data. Silakan coba lagi.'
+          });
+        }
+      });
 
-        return false;
-      },
-      errorElement: 'span',
-      errorPlacement: function (error, element) {
-        error.addClass('invalid-feedback');
-        element.closest('.form-group').append(error);
-      },
-      highlight: function (element) {
-        $(element).addClass('is-invalid');
-      },
-      unhighlight: function (element) {
-        $(element).removeClass('is-invalid');
-      }
+      return false;
     });
   });
-  
 </script>

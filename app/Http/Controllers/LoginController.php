@@ -152,6 +152,23 @@ class LoginController extends Controller
         return '/';
     }
 
+    // protected function redirectPath($user, $role): string
+    // {
+    //     if ($role === 'admin') {
+    //         return '/admin';
+    //     }
+
+    //     if ($role === 'dosen') {
+    //         return '/dosen';
+    //     }
+
+    //     if ($role === 'alumni') {
+    //         return '/alumni/' . $user->alumni_id;
+    //     }
+
+    //     return '/';
+    // }
+
     public function logout(Request $request)
     {
         if (Auth::guard('alumni')->check()) {

@@ -342,7 +342,7 @@ $(document).ready(function () {
 
             res.forEach(item => {
                 if(map.hasOwnProperty(item.tingkat_kepuasan)){
-                    map[item.tingkat_kepuasan] = item.jumlah; // 🔥 FIX
+                    map[item.tingkat_kepuasan] = item.jumlah_responden_per_tingkat;
                 }
             });
 
@@ -361,6 +361,23 @@ $(document).ready(function () {
             `);
         });
     }
+
+    // ==============================
+    // 🔥 Total Alumni & Presentasi
+    // ===============================
+    $.get("{{ url('/admin/dashboard/summary') }}", function(res){
+
+        $('#totalAlumni').text(res.total_alumni);
+        $('#sudahIsi').text(res.sudah_isi);
+        $('#belumIsi').text(res.belum_isi);
+
+        let persen = 0;
+        if(res.total_alumni > 0){
+            persen = (res.sudah_isi / res.total_alumni * 100).toFixed(1);
+        }
+
+        $('#persentase').text(persen + "%");
+    });
 
     // =========================
     // 🔥 INSTANSI CHART
@@ -382,13 +399,13 @@ $(document).ready(function () {
         const labels = res.map(x => x.profesi);
         const values = res.map(x => x.total);
 
-        document.getElementById('profesiChart'), {
-            type: 'bar',
+        new Chart(document.getElementById('profesiChart'), {
+            type: 'pie',
             data: {
                 labels: labels,
                 datasets: [{
-                    label: 'Jumlah',
-                    data: values
+                    data: values,
+                    backgroundColor: ['#007bff','#ffc107','#28a745','#dc3545']
                 }]
             }
         });
@@ -527,22 +544,6 @@ $(document).ready(function () {
 
         $('#tabelAlumniSatisfaction tbody').html(tbody);
     });
-
-    $.get("{{ url('/admin/dashboard/summary') }}", function(res){
-
-        $('#totalAlumni').text(res.total_alumni);
-        $('#sudahIsi').text(res.sudah_isi);
-        $('#belumIsi').text(res.belum_isi);
-
-        let persen = 0;
-        if(res.total_alumni > 0){
-            persen = (res.sudah_isi / res.total_alumni * 100).toFixed(1);
-        }
-
-        $('#persentase').text(persen + "%");
-
-    });
-}
 
 });
 </script>

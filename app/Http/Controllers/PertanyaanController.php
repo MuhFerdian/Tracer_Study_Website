@@ -52,7 +52,7 @@ class PertanyaanController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
                 'kode_soal' => 'nullable|string|max:50',
-                'question_text' => 'required|string',
+                'question_text' => 'required|string|min:5|max:255',
                 'type' => 'required|in:text,single,multiple,scale',
                 'urutan' => 'nullable|integer|min:0',
                 'options' => 'nullable|string',
@@ -64,6 +64,42 @@ class PertanyaanController extends Controller
                     'message' => 'Validasi gagal',
                     'msgField' => $validator->errors()
                 ]);
+            }
+
+            // Validasi urutan - cek duplicate
+            $urutan = $request->filled('urutan') ? (int) $request->urutan : 0;
+            if ($urutan > 0) {
+                $urutanExists = Question::where('urutan', $urutan)->exists();
+                if ($urutanExists) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Validasi gagal',
+                        'msgField' => ['urutan' => ['Urutan ' . $urutan . ' sudah digunakan. Silakan gunakan urutan yang berbeda.']]
+                    ]);
+                }
+            }
+
+            // Validasi options berdasarkan type
+            $type = $request->type;
+            $options = $request->filled('options') ? $request->options : '';
+
+            if (in_array($type, ['single', 'multiple'])) {
+                if (empty($options)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Validasi gagal',
+                        'msgField' => ['options' => ['Options wajib diisi untuk tipe ' . $type]]
+                    ]);
+                }
+
+                $parsedOptions = $this->parseOptions($options);
+                if (count($parsedOptions) < 2) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Validasi gagal',
+                        'msgField' => ['options' => ['Minimal harus ada 2 opsi untuk tipe ' . $type]]
+                    ]);
+                }
             }
 
             $question = Question::create([
@@ -107,7 +143,7 @@ class PertanyaanController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
                 'kode_soal' => 'nullable|string|max:50',
-                'question_text' => 'required|string',
+                'question_text' => 'required|string|min:5|max:255',
                 'type' => 'required|in:text,single,multiple,scale',
                 'urutan' => 'nullable|integer|min:0',
                 'options' => 'nullable|string',
@@ -119,6 +155,44 @@ class PertanyaanController extends Controller
                     'message' => 'Validasi gagal',
                     'msgField' => $validator->errors()
                 ]);
+            }
+
+            // Validasi urutan - cek duplicate (kecuali untuk record yang sedang di-edit)
+            $urutan = $request->filled('urutan') ? (int) $request->urutan : 0;
+            if ($urutan > 0) {
+                $urutanExists = Question::where('urutan', $urutan)
+                    ->where('id', '!=', $id)
+                    ->exists();
+                if ($urutanExists) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Validasi gagal',
+                        'msgField' => ['urutan' => ['Urutan ' . $urutan . ' sudah digunakan. Silakan gunakan urutan yang berbeda.']]
+                    ]);
+                }
+            }
+
+            // Validasi options berdasarkan type
+            $type = $request->type;
+            $options = $request->filled('options') ? $request->options : '';
+
+            if (in_array($type, ['single', 'multiple'])) {
+                if (empty($options)) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Validasi gagal',
+                        'msgField' => ['options' => ['Options wajib diisi untuk tipe ' . $type]]
+                    ]);
+                }
+
+                $parsedOptions = $this->parseOptions($options);
+                if (count($parsedOptions) < 2) {
+                    return response()->json([
+                        'status' => false,
+                        'message' => 'Validasi gagal',
+                        'msgField' => ['options' => ['Minimal harus ada 2 opsi untuk tipe ' . $type]]
+                    ]);
+                }
             }
 
             $question = Question::findOrFail($id);
@@ -141,6 +215,9 @@ class PertanyaanController extends Controller
                         'urutan' => $idx + 1,
                     ]);
                 }
+            } else if (in_array($request->type, ['text', 'scale'])) {
+                // Hapus options jika type diubah ke text atau scale
+                $question->options()->delete();
             }
 
             return response()->json([
@@ -183,6 +260,25 @@ class PertanyaanController extends Controller
     {
         $data = Question::with('options')->orderBy('urutan')->get();
         return response()->json($data);
+    }
+
+    public function checkUrutan(Request $request)
+    {
+        $urutan = $request->input('urutan');
+        $excludeId = $request->input('excludeId');
+
+        $query = Question::where('urutan', $urutan);
+        
+        if ($excludeId) {
+            $query->where('id', '!=', $excludeId);
+        }
+
+        $exists = $query->exists();
+
+        return response()->json([
+            'available' => !$exists,
+            'urutan' => $urutan
+        ]);
     }
 
     private function parseOptions(string $optionsInput): array

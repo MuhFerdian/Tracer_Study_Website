@@ -4,7 +4,15 @@
             style="padding-top: 0.3rem; padding-bottom: 0.3rem;">
             <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logoTC.png') }}"
                 alt="Logo" style="height: 80px; margin-right: 5px;">
-            <div class="text-white fw-semibold" style="font-size: 1.1rem;">Admin Panel</div>
+            {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">Admin Panel</div> --}}
+            @php
+                $role = auth()->user()->role->role_nama ?? '';
+            @endphp
+
+            <div class="text-white fw-semibold" style="font-size: 1.1rem;">
+                {{ $role == 'Admin' ? 'Admin Panel' : 'Dosen Panel' }}
+            </div>
+
             <div class="text-muted" style="font-size: 0.85rem;">Teknologi Informasi</div>
         </div>
         <div class="sb-sidenav-menu">
@@ -59,10 +67,15 @@
 
                 <div class="sb-sidenav-menu-heading">Manajemen Data</div>
 
+                {{-- 🔥 HANYA ADMIN --}}
+                @if($role == 'Admin')
                 <a class="nav-link" href="{{ url('admin/manajemen-dosen') }}">
                     <div class="sb-nav-link-icon"><i class="fas fa-chalkboard-user"></i></div>
                     Manajemen Dosen
                 </a>
+                @endif
+
+                {{-- SEMUA ROLE --}}
                 <a class="nav-link" href="{{ url('admin/alumni') }}">
                     <div class="sb-nav-link-icon"><i class="fas fa-users-cog"></i></div>
                     Manajemen Alumni
@@ -75,7 +88,7 @@
         </div>
         <div class="sb-sidenav-footer">
             <div class="small">Logged in as:</div>
-            Tracer Study Admin
+            Tracer Study {{ $role }}
         </div>
     </nav>
 </div>

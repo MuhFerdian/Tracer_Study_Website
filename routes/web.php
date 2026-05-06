@@ -39,25 +39,42 @@ Route::group([
 ], function () {
 
     // =======================
-    // DASHBOARD
+    // DASHBOARD PAGE
     // =======================
     // Route::get('/', [DashboardController::class, 'layoutAdmin.index']);
-    Route::get('/', function () { // Corresponds to /admin
-        return view('layoutAdmin.index');
-    });
+    // Route::get('/', function () { 
+    //     return view('layoutAdmin.index');
+    // });
 
-    Route::get('/dashboard/instansi-chart', [DashboardController::class, 'getInstansiChartData']);
-    Route::get('/dashboard/profesi-chart', [DashboardController::class, 'getProfesiChart']);
-    Route::get('/dashboard/rekap-alumni', [DashboardController::class, 'getRekapAlumni']);
-    Route::get('/dashboard/average-waiting-time', [DashboardController::class, 'getAverageWaitingTime']);
-    Route::get('/dashboard/alumni-satisfaction', [DashboardController::class, 'getAlumniSatisfaction']);
-    Route::get('/dashboard/kerjasama-chart', [DashboardController::class, 'getKerjaSama']);
-    Route::get('/dashboard/keahlian-chart', [DashboardController::class, 'keahlianChart']);
-    Route::get('/dashboard/kemampuan-bahasa-chart', [DashboardController::class, 'kemampuanBahasaChart']);
-    Route::get('/dashboard/kemampuan-komunikasi-chart', [DashboardController::class, 'kemampuanKomunikasiChart']);
-    Route::get('/dashboard/pengembangan-diri-chart', [DashboardController::class, 'pengembanganDiriChart']);
-    Route::get('/dashboard/kepemimpinan-chart', [DashboardController::class, 'kepemimpinanChart']);
-    Route::get('/dashboard/etos-kerja-chart', [DashboardController::class, 'etosKerjaChart']);
+    Route::get('/', [DashboardController::class, 'index']);
+    // Route::get('/dashboard/instansi-chart', [DashboardController::class, 'getInstansiChartData']);
+    // Route::get('/dashboard/profesi-chart', [DashboardController::class, 'getProfesiChart']);
+    // Route::get('/dashboard/rekap-alumni', [DashboardController::class, 'getRekapAlumni']);
+    // Route::get('/dashboard/average-waiting-time', [DashboardController::class, 'getAverageWaitingTime']);
+    // Route::get('/dashboard/alumni-satisfaction', [DashboardController::class, 'getAlumniSatisfaction']);
+    // Route::get('/dashboard/kerjasama-chart', [DashboardController::class, 'getKerjaSama']);
+    // Route::get('/dashboard/keahlian-chart', [DashboardController::class, 'keahlianChart']);
+    // Route::get('/dashboard/kemampuan-bahasa-chart', [DashboardController::class, 'kemampuanBahasaChart']);
+    // Route::get('/dashboard/kemampuan-komunikasi-chart', [DashboardController::class, 'kemampuanKomunikasiChart']);
+    // Route::get('/dashboard/pengembangan-diri-chart', [DashboardController::class, 'pengembanganDiriChart']);
+    // Route::get('/dashboard/kepemimpinan-chart', [DashboardController::class, 'kepemimpinanChart']);
+    // Route::get('/dashboard/etos-kerja-chart', [DashboardController::class, 'etosKerjaChart']);
+    Route::prefix('dashboard')->group(function () {
+        Route::get('/summary', [DashboardController::class, 'getSummary']);
+        Route::get('/instansi-chart', [DashboardController::class, 'getInstansiChartData']);
+        Route::get('/profesi-chart', [DashboardController::class, 'getProfesiChart']);
+        Route::get('/rekap-alumni', [DashboardController::class, 'getRekapAlumni']);
+        Route::get('/average-waiting-time', [DashboardController::class, 'getAverageWaitingTime']);
+        Route::get('/alumni-satisfaction', [DashboardController::class, 'getAlumniSatisfaction']);
+
+        Route::get('/kerjasama-chart', [DashboardController::class, 'getKerjaSama']);
+        Route::get('/keahlian-chart', [DashboardController::class, 'keahlianChart']);
+        Route::get('/kemampuan-bahasa-chart', [DashboardController::class, 'kemampuanBahasaChart']);
+        Route::get('/kemampuan-komunikasi-chart', [DashboardController::class, 'kemampuanKomunikasiChart']);
+        Route::get('/pengembangan-diri-chart', [DashboardController::class, 'pengembanganDiriChart']);
+        Route::get('/kepemimpinan-chart', [DashboardController::class, 'kepemimpinanChart']);
+        Route::get('/etos-kerja-chart', [DashboardController::class, 'etosKerjaChart']);
+    });
 
     // =======================
     // ALUMNI (PAKAI CONTROLLER LAMA)
@@ -85,6 +102,7 @@ Route::group([
     Route::prefix('pertanyaan')->group(function () {
         Route::get('/', [PertanyaanController::class, 'index']);
         Route::get('/list', [PertanyaanController::class, 'list']);
+        Route::get('/check-urutan', [PertanyaanController::class, 'checkUrutan']);
         Route::get('/create_ajax', [PertanyaanController::class, 'create_ajax']);
         Route::post('/store', [PertanyaanController::class, 'store']);
         Route::get('/{id}/edit_ajax', [PertanyaanController::class, 'edit_ajax']);
@@ -96,7 +114,10 @@ Route::group([
     // =======================
     // DOSEN
     // =======================
-    Route::prefix('manajemen-dosen')->group(function () {
+    Route::prefix('manajemen-dosen')
+    ->middleware('role:Admin') // Hanya admin yang bisa akses manajemen dosen
+    ->group(function () {
+
         Route::get('/', [ManajemenDosenController::class, 'index']);
         Route::get('/list', [ManajemenDosenController::class, 'list']);
         Route::get('/create_ajax', [ManajemenDosenController::class, 'create_ajax']);

@@ -7,6 +7,29 @@ use Illuminate\Support\Facades\DB;
 
 class DashboardController extends Controller
 {
+    public function index()
+    {
+        return view('layoutAdmin.index');
+    }
+    // public function indexDosen()
+    // {
+    //     return view('layoutAdmin.index'); // atau beda view
+    // }
+
+    public function getSummary()
+    {
+        $total = DB::table('alumni')->count();
+
+        $sudah = DB::table('answers')
+            ->distinct('alumni_id')
+            ->count('alumni_id');
+
+        return response()->json([
+            'total_alumni' => $total,
+            'sudah_isi' => $sudah,
+            'belum_isi' => $total - $sudah,
+        ]);
+    }
     public function getInstansiChartData()
     {
         $data = DB::table('alumni')
@@ -281,19 +304,5 @@ class DashboardController extends Controller
             ->get();
 
         return response()->json($data);
-    }
-    public function getSummary()
-    {
-        $total = DB::table('alumni')->count();
-
-        $sudah = DB::table('answers')
-            ->distinct('alumni_id')
-            ->count('alumni_id');
-
-        return response()->json([
-            'total_alumni' => $total,
-            'sudah_isi' => $sudah,
-            'belum_isi' => $total - $sudah,
-        ]);
     }
 }
