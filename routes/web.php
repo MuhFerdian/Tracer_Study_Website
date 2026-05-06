@@ -15,17 +15,20 @@ use Illuminate\Support\Facades\Route;
 | PUBLIC ROUTES
 |--------------------------------------------------------------------------
 */
+// LANDING PAGE
+Route::get('/', function () {
+    return view('layoutLandingPage.hero');
+});
 
-// LOGIN
-Route::get('/', [LoginController::class, 'showLoginForm'])->name('login');
-Route::get('/login', [LoginController::class, 'showLoginForm']);
+// LOGIN & LOGOUT
+Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
 Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // LANDING PAGE
-Route::get('/landingpage', function () {
-    return view('layoutLandingPage.hero');
-});
+// Route::get('/landingpage', function () {
+//     return view('layoutLandingPage.hero');
+// });
 
 /*
 |--------------------------------------------------------------------------
@@ -47,18 +50,6 @@ Route::group([
     // });
 
     Route::get('/', [DashboardController::class, 'index']);
-    // Route::get('/dashboard/instansi-chart', [DashboardController::class, 'getInstansiChartData']);
-    // Route::get('/dashboard/profesi-chart', [DashboardController::class, 'getProfesiChart']);
-    // Route::get('/dashboard/rekap-alumni', [DashboardController::class, 'getRekapAlumni']);
-    // Route::get('/dashboard/average-waiting-time', [DashboardController::class, 'getAverageWaitingTime']);
-    // Route::get('/dashboard/alumni-satisfaction', [DashboardController::class, 'getAlumniSatisfaction']);
-    // Route::get('/dashboard/kerjasama-chart', [DashboardController::class, 'getKerjaSama']);
-    // Route::get('/dashboard/keahlian-chart', [DashboardController::class, 'keahlianChart']);
-    // Route::get('/dashboard/kemampuan-bahasa-chart', [DashboardController::class, 'kemampuanBahasaChart']);
-    // Route::get('/dashboard/kemampuan-komunikasi-chart', [DashboardController::class, 'kemampuanKomunikasiChart']);
-    // Route::get('/dashboard/pengembangan-diri-chart', [DashboardController::class, 'pengembanganDiriChart']);
-    // Route::get('/dashboard/kepemimpinan-chart', [DashboardController::class, 'kepemimpinanChart']);
-    // Route::get('/dashboard/etos-kerja-chart', [DashboardController::class, 'etosKerjaChart']);
     Route::prefix('dashboard')->group(function () {
         Route::get('/summary', [DashboardController::class, 'getSummary']);
         Route::get('/instansi-chart', [DashboardController::class, 'getInstansiChartData']);

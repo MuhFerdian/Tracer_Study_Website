@@ -35,6 +35,7 @@
           <option value="single">Single (Pilihan Tunggal)</option>
           <option value="multiple">Multiple (Pilihan Ganda)</option>
           <option value="scale">Scale (Skala 1-5)</option>
+          <option value="matrix">Matrix (Tabel dengan Sub-Items)</option>
         </select>
         <small id="error-type" class="text-danger"></small>
       </div>
@@ -54,10 +55,20 @@
         </div>
       </div>
 
+      <div class="mb-3" id="matrixItemsGroup" style="display: none;">
+        <label class="form-label">Matrix Items <span class="text-danger">*</span></label>
+        <div id="matrixItemsList" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
+          <!-- Matrix items akan ditambahkan di sini via JavaScript -->
+        </div>
+        <button type="button" class="btn btn-sm btn-success mt-2" id="addMatrixItemBtn" onclick="addMatrixItemRow()">+ Tambah Item</button>
+        <small class="form-text text-muted d-block mt-2">Masukkan setiap sub-pertanyaan (item) untuk matrix. Contoh: "Etika", "Bahasa Inggris", dll</small>
+        <small id="error-matrix_items" class="text-danger"></small>
+      </div>
+
       <div class="mb-3">
         <label for="urutan" class="form-label">Urutan pertanyaan</label>
-        <input type="number" name="urutan" id="urutan" class="form-control" value="0" min="0">
-        <small class="form-text text-muted">Isi dengan angka unik. Kosongkan atau 0 untuk otomatis.</small>
+        <input type="number" name="urutan" id="urutan" class="form-control" value="1" min="1">
+        <small class="form-text text-muted">Isi dengan angka unik. Kosongkan atau 1 untuk otomatis.</small>
         <small id="error-urutan" class="text-danger"></small>
         <small id="warning-urutan" class="text-warning" style="display: none;"></small>
       </div>
@@ -104,6 +115,7 @@
     const typeSelect = $('#type');
     const optionsGroup = $('#optionsGroup');
     const scaleInfo = $('#scaleInfo');
+    const matrixItemsGroup = $('#matrixItemsGroup');
     const optionsField = $('#options');
     const optionsRequired = $('#optionsRequired');
     const selectedType = typeSelect.val();
@@ -115,6 +127,7 @@
       // Tampilkan field options dan set sebagai required
       optionsGroup.slideDown(300);
       scaleInfo.slideUp(300);
+      matrixItemsGroup.slideUp(300);
       optionsField.attr('required', 'required');
       optionsField.data('required', 'true');
       optionsRequired.show();
@@ -123,21 +136,73 @@
       // Untuk scale, tampilkan info dan hide options
       optionsGroup.slideUp(300);
       scaleInfo.slideDown(300);
+      matrixItemsGroup.slideUp(300);
       optionsField.removeAttr('required');
       optionsField.data('required', 'false');
       optionsRequired.hide();
       optionsField.removeClass('is-options-required');
       optionsField.val('');
+    } else if (selectedType === 'matrix') {
+      // Untuk matrix, tampilkan matrix items dan hide options
+      optionsGroup.slideUp(300);
+      scaleInfo.slideUp(300);
+      matrixItemsGroup.slideDown(300);
+      optionsField.removeAttr('required');
+      optionsField.data('required', 'false');
+      optionsRequired.hide();
+      optionsField.removeClass('is-options-required');
+      optionsField.val('');
+      // Initialize matrix items jika belum ada
+      if ($('#matrixItemsList').children().length === 0) {
+        addMatrixItemRow();
+      }
     } else {
       // Untuk text, sembunyikan keduanya
       optionsGroup.slideUp(300);
       scaleInfo.slideUp(300);
+      matrixItemsGroup.slideUp(300);
       optionsField.removeAttr('required');
       optionsField.data('required', 'false');
       optionsRequired.hide();
       optionsField.removeClass('is-options-required');
       optionsField.val('');
     }
+  }
+
+  // Function untuk tambah matrix item row
+  function addMatrixItemRow(label = '') {
+    const itemsList = $('#matrixItemsList');
+    const itemCount = itemsList.children().length;
+    const itemId = 'matrixItem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
+    
+    const html = `
+      <div class="input-group mb-2" id="${itemId}">
+        <input type="text" class="form-control matrix-item-input" placeholder="Contoh: Etika, Bahasa Inggris" value="${label}">
+        <button type="button" class="btn btn-danger btn-sm" onclick="removeMatrixItemRow('${itemId}')">Hapus</button>
+      </div>
+    `;
+    
+    itemsList.append(html);
+  }
+
+  // Function untuk hapus matrix item row
+  function removeMatrixItemRow(itemId) {
+    $(`#${itemId}`).remove();
+  }
+
+  // Function untuk get matrix items
+  function getMatrixItems() {
+    const items = [];
+    $('#matrixItemsList .matrix-item-input').each(function(idx) {
+      const label = $(this).val().trim();
+      if (label) {
+        items.push({
+          label: label,
+          urutan: idx + 1
+        });
+      }
+    });
+    return items;
   }
 
   // Event listener untuk perubahan type
@@ -153,10 +218,10 @@
   // Validasi options sebelum submit
   function validateOptions() {
     const type = $('#type').val();
-    const options = $('#options').val().trim();
     const typesWithOptions = ['single', 'multiple'];
 
     if (typesWithOptions.includes(type)) {
+      const options = $('#options').val().trim();
       if (!options) {
         $('#error-options').text('Options wajib diisi untuk tipe ' + type);
         $('#options').addClass('is-invalid');
@@ -170,6 +235,21 @@
         $('#options').addClass('is-invalid');
         return false;
       }
+    }
+
+    // Validasi matrix items
+    if (type === 'matrix') {
+      const matrixItems = getMatrixItems();
+      if (matrixItems.length === 0) {
+        $('#error-matrix_items').text('Minimal harus ada 1 item untuk tipe matrix');
+        return false;
+      }
+      
+      // Store matrix items ke hidden field untuk dikirim
+      $('input[name="matrix_items"]').remove();
+      $('form#formCreatePertanyaan').append(
+        '<input type="hidden" name="matrix_items" value=\'' + JSON.stringify(matrixItems) + '\'>'
+      );
     }
 
     return true;

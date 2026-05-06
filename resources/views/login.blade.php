@@ -395,10 +395,6 @@
                 <input type="radio" name="role" value="dosen" {{ old('role') === 'dosen' ? 'checked' : '' }} required style="width: 18px; height: 18px; cursor: pointer; accent-color: #3A4A5C;">
                 <span style="color: #555;">Dosen</span>
             </label>
-            <label style="display: flex; align-items: center; gap: 8px; cursor: pointer;">
-                <input type="radio" name="role" value="alumni" {{ old('role') === 'alumni' ? 'checked' : '' }} required style="width: 18px; height: 18px; cursor: pointer; accent-color: #3A4A5C;">
-                <span style="color: #555;">Alumni</span>
-            </label>
         </div>
         <div class="error-message" id="roleError">Mohon pilih tipe user terlebih dahulu</div>
     </div>

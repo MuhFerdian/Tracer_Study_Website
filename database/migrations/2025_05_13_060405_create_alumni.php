@@ -24,6 +24,8 @@ return new class extends Migration
             // $table->string('tempat_lahir')->nullable();
             // $table->date('tanggal_lahir')->nullable();
 
+            $table->string('image')->nullable();
+
             // Akademik
             $table->year('angkatan')->nullable();
             $table->year('tahun_lulus')->nullable();

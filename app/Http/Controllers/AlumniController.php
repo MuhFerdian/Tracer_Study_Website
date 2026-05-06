@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\alumniModel;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Storage;
 
 class AlumniController extends Controller
 {
@@ -41,9 +42,25 @@ class AlumniController extends Controller
             'status_pekerjaan' => 'nullable|string|max:255',
             'nama_instansi' => 'nullable|string|max:255',
             'posisi' => 'nullable|string|max:255',
+            'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
         ]);
 
         $alumni = alumniModel::findOrFail($id);
+
+        // UPLOAD FOTO
+        if ($request->hasFile('image')) {
+
+            // hapus foto lama jika ada
+            if ($alumni->image && Storage::disk('public')->exists($alumni->image)) {
+                Storage::disk('public')->delete($alumni->image);
+            }
+
+            // simpan foto baru
+            $path = $request->file('image')->store('alumni', 'public');
+
+            $validated['image'] = $path;
+        }
+
         $alumni->fill($validated);
         $alumni->save();
 

@@ -24,6 +24,11 @@ class Question extends Model
         return $this->hasMany(QuestionOption::class);
     }
 
+    public function details()
+    {
+        return $this->hasMany(QuestionDetail::class)->orderBy('urutan');
+    }
+
     public function answers()
     {
         return $this->hasMany(Answer::class);

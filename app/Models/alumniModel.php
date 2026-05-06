@@ -28,6 +28,7 @@ class alumniModel extends Authenticatable
         'status_pekerjaan',
         'nama_instansi',
         'posisi',
+        'image',
         'nik',
         'npwp',
         'kode_pt',

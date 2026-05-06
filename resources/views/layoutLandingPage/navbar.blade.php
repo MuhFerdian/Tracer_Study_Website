@@ -13,13 +13,13 @@
 
         <div class="collapse navbar-collapse" id="navbarNav">
             <ul class="navbar-nav ms-auto">
-                <li class="nav-item"><a class="nav-link active" href="#">Beranda</a></li>
+                <li class="nav-item"><a class="nav-link active" href="/">Beranda</a></li>
                 <li class="nav-item"><a class="nav-link" href="#about-tracer">About</a></li>
                 <li class="nav-item"><a class="nav-link" href="#manfaat">Manfaat</a></li>
                 <li class="nav-item"><a class="nav-link" href="#tentangkami">Tentang Kami</a></li>
                 <li class="nav-item"><a class="nav-link" href="#">FAQ</a></li>
-                <li class="nav-item"><a class="btn btn-outline-light rounded-pill ms-2" href="#">Form Alumni</a></li>
-                <li class="nav-item"><a class="btn btn-light rounded-pill ms-2" href="{{ url('/') }}">Login</a></li>
+                <li class="nav-item"><a class="btn btn-outline-light rounded-pill ms-2" href="{{ url('/login') }}">Form Alumni</a></li>
+                <li class="nav-item"><a class="btn btn-light rounded-pill ms-2" href="{{ url('/login') }}">Login</a></li>
             </ul>
         </div>
     </div>

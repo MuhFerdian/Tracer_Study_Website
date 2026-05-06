@@ -29,7 +29,7 @@ class LoginController extends Controller
         $credentials = $request->validate([
             'username' => ['required', 'string'],
             'password' => ['required', 'string'],
-            'role' => ['required', 'in:admin,dosen,alumni'],
+            'role' => ['required', 'in:admin,dosen'],
         ], [
             'username.required' => 'Username wajib diisi.',
             'password.required' => 'Password wajib diisi.',
@@ -102,33 +102,6 @@ class LoginController extends Controller
                 'user' => $user,
                 'message' => null,
             ];
-        } elseif ($role === 'alumni') {
-            // Login alumni dari alumni table yang relate ke user
-            $alumni = alumniModel::whereHas('user', function ($query) use ($username) {
-                $query->where('username', $username);
-            })->first();
-
-            if (!$alumni || !$alumni->user) {
-                return [
-                    'user' => null,
-                    'message' => 'Akun alumni tidak ditemukan atau belum terhubung dengan user login.',
-                ];
-            }
-
-            if (!Hash::check($password, $alumni->user->password)) {
-                return [
-                    'user' => null,
-                    'message' => 'Password yang Anda masukkan salah.',
-                ];
-            }
-
-            // Set guard 'alumni' untuk alumni
-            Auth::guard('alumni')->login($alumni);
-
-            return [
-                'user' => $alumni,
-                'message' => null,
-            ];
         }
 
         return [
@@ -145,8 +118,6 @@ class LoginController extends Controller
         if ($role === 'admin' || $role === 'dosen') {
             // Both admin dan dosen go to dashboard
             return '/admin';
-        } elseif ($role === 'alumni') {
-            return '/alumni/' . $user->alumni_id;
         }
 
         return '/';

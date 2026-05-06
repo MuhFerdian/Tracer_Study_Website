@@ -13,7 +13,7 @@ return new class extends Migration {
             $table->string('kode_soal')->nullable(); // contoh: f8, f502
             $table->text('pertanyaan');
 
-            $table->enum('type', ['single', 'multiple', 'text', 'scale']);
+            $table->enum('type', ['single', 'multiple', 'text', 'scale', 'matrix']);
 
             $table->boolean('is_required')->default(true);
 
