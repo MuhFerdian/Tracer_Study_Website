@@ -13,7 +13,7 @@ use App\Services\BrevoMailService;
 class MobileAuthController extends Controller
 {
     // =========================
-    // CEK ALUMNI
+    // CEK ALUMNI 
     // =========================
     public function checkAlumni(Request $request)
     {
@@ -38,7 +38,7 @@ class MobileAuthController extends Controller
     }
 
     // =========================
-    // REGISTER + KIRIM OTP
+    // REGISTER 
     // =========================
     public function register(Request $request)
     {
@@ -51,53 +51,15 @@ class MobileAuthController extends Controller
         $alumni = alumniModel::where('nim', $request->nim)->first();
 
         if (!$alumni) {
-            return response()->json([
-                'status' => false,
-                'message' => 'NIM tidak terdaftar',
-            ], 404);
+            return response()->json(['status' => false, 'message' => 'NIM tidak terdaftar'], 404);
         }
 
         if (!empty($alumni->user_id)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Akun sudah terdaftar',
-            ], 400);
+            return response()->json(['status' => false, 'message' => 'Akun sudah terdaftar'], 400);
         }
 
-        // CEK EMAIL DUPLIKAT
-        $existingEmail = alumniModel::where('email', $request->email)
-            ->where('id', '!=', $alumni->id)
-            ->exists();
-
-        if ($existingEmail) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Email sudah digunakan',
-            ], 400);
-        }
-
-        // =========================
-        // RATE LIMIT OTP
-        // =========================
-        $limitKey = 'otp_limit_'.$request->email;
-
-        if (Cache::has($limitKey)) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Tunggu 1 menit sebelum request OTP lagi'
-            ], 429);
-        }
-
-        Cache::put($limitKey, true, now()->addMinute());
-
-        // =========================
-        // GENERATE OTP
-        // =========================
         $otp = random_int(100000, 999999);
 
-        // =========================
-        // SIMPAN CACHE (5 MENIT)
-        // =========================
         Cache::put('register_'.$request->email, [
             'nim' => $request->nim,
             'email' => $request->email,
@@ -105,27 +67,11 @@ class MobileAuthController extends Controller
             'otp' => Hash::make($otp),
         ], now()->addMinutes(5));
 
-        // =========================
-        // KIRIM EMAIL VIA BREVO
-        // =========================
-        try {
-            BrevoMailService::send(
-                $request->email,
-                'Kode OTP Registrasi',
-                "
-                <div style='font-family:sans-serif'>
-                    <h2>Kode OTP Kamu</h2>
-                    <h1 style='letter-spacing:5px;'>$otp</h1>
-                    <p>Berlaku 5 menit</p>
-                </div>
-                "
-            );
-        } catch (\Exception $e) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Gagal kirim email'
-            ], 500);
-        }
+        BrevoMailService::send(
+            $request->email,
+            'Kode OTP Registrasi',
+            "<h1>$otp</h1><p>Berlaku 5 menit</p>"
+        );
 
         return response()->json([
             'status' => true,
@@ -134,16 +80,58 @@ class MobileAuthController extends Controller
     }
 
     // =========================
-    // VERIFIKASI OTP
+    // FORGOT PASSWORD 
+    // =========================
+    public function forgotPassword(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email'
+        ]);
+
+        $user = DB::table('users')->where('email', $request->email)->first();
+
+        if (!$user) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Email tidak ditemukan'
+            ], 404);
+        }
+
+        $otp = random_int(100000, 999999);
+
+        Cache::put('forgot_'.$request->email, [
+            'email' => $request->email,
+            'otp' => Hash::make($otp),
+        ], now()->addMinutes(5));
+
+        BrevoMailService::send(
+            $request->email,
+            'OTP Reset Password',
+            "<h1>$otp</h1><p>Berlaku 5 menit</p>"
+        );
+
+        return response()->json([
+            'status' => true,
+            'message' => 'OTP dikirim'
+        ]);
+    }
+
+    // =========================
+    // VERIFY OTP 
     // =========================
     public function verifyOtp(Request $request)
     {
         $request->validate([
             'email' => 'required|email',
-            'otp' => 'required'
+            'otp' => 'required',
+            'type' => 'required|in:register,forgot'
         ]);
 
-        $data = Cache::get('register_'.$request->email);
+        $key = $request->type == 'register'
+            ? 'register_'.$request->email
+            : 'forgot_'.$request->email;
+
+        $data = Cache::get($key);
 
         if (!$data) {
             return response()->json([
@@ -159,64 +147,94 @@ class MobileAuthController extends Controller
             ], 400);
         }
 
-        $alumni = alumniModel::where('nim', $data['nim'])->first();
+        // ===== REGISTER FLOW =====
+        if ($request->type == 'register') {
 
-        $roleId = DB::table('role')
-            ->where('role_kode', 'ALM')
-            ->value('role_id');
+            $alumni = alumniModel::where('nim', $data['nim'])->first();
 
-        DB::transaction(function () use ($data, $alumni, $roleId) {
+            $roleId = DB::table('role')
+                ->where('role_kode', 'ALM')
+                ->value('role_id');
 
-            $userId = DB::table('users')->insertGetId([
-                'role_id' => $roleId,
-                'username' => $data['email'],
-                'name' => $alumni->nama,
-                'email' => $data['email'],
-                'password' => $data['password'],
-                'status' => 'active',
-                'is_verified' => true,
-                'email_verified_at' => now(), // 🔥 tambahan penting
-                'created_at' => now(),
-                'updated_at' => now(),
-            ]);
+            DB::transaction(function () use ($data, $alumni, $roleId) {
 
-            $alumni->update([
-                'user_id' => $userId,
-                'email' => $data['email'],
-            ]);
-        });
+                $userId = DB::table('users')->insertGetId([
+                    'role_id' => $roleId,
+                    'username' => $data['email'],
+                    'name' => $alumni->nama,
+                    'email' => $data['email'],
+                    'password' => $data['password'],
+                    'status' => 'active',
+                    'is_verified' => true,
+                    'email_verified_at' => now(),
+                    'created_at' => now(),
+                    'updated_at' => now(),
+                ]);
 
-        Cache::forget('register_'.$request->email);
+                $alumni->update([
+                    'user_id' => $userId,
+                    'email' => $data['email'],
+                ]);
+            });
+        }
+
+        Cache::forget($key);
 
         return response()->json([
             'status' => true,
-            'message' => 'Registrasi berhasil'
+            'message' => 'OTP valid'
         ]);
     }
 
     // =========================
-    // RESEND OTP (🔥 TAMBAHAN)
+    // RESET PASSWORD 
+    // =========================
+    public function resetPasswordOtp(Request $request)
+    {
+        $request->validate([
+            'email' => 'required|email',
+            'password' => 'required|min:6'
+        ]);
+
+        DB::table('users')
+            ->where('email', $request->email)
+            ->update([
+                'password' => Hash::make($request->password)
+            ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Password berhasil diubah'
+        ]);
+    }
+
+    // =========================
+    // RESEND OTP
     // =========================
     public function resendOtp(Request $request)
     {
         $request->validate([
-            'email' => 'required|email'
+            'email' => 'required|email',
+            'type' => 'required|in:register,forgot'
         ]);
 
-        $data = Cache::get('register_'.$request->email);
+        $key = $request->type == 'register'
+            ? 'register_'.$request->email
+            : 'forgot_'.$request->email;
+
+        $data = Cache::get($key);
 
         if (!$data) {
             return response()->json([
                 'status' => false,
-                'message' => 'Session habis, ulangi register'
+                'message' => 'Session habis'
             ], 400);
         }
 
         $otp = random_int(100000, 999999);
-
         $data['otp'] = Hash::make($otp);
 
-        Cache::put('register_'.$request->email, $data, now()->addMinutes(5));
+        Cache::put($key, $data, now()->addMinutes(5));
 
         BrevoMailService::send(
             $request->email,
@@ -231,7 +249,7 @@ class MobileAuthController extends Controller
     }
 
     // =========================
-    // LOGIN
+    // LOGIN 
     // =========================
     public function login(Request $request)
     {
