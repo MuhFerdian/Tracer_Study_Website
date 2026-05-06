@@ -28,3 +28,5 @@ Route::get('/questions', [MobileQuestionController::class, 'index']);
 Route::post('/answers', [MobileAnswerController::class, 'store']);
 Route::post('/verify-otp', [MobileAuthController::class, 'verifyOtp']);
 Route::post('/resend-otp', [MobileAuthController::class, 'resendOtp']);
+Route::post('/forgot-password', [MobileAuthController::class, 'forgotPassword']);
+Route::post('/reset-password-otp', [MobileAuthController::class, 'resetPasswordOtp']);
