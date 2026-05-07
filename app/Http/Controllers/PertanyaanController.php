@@ -8,6 +8,8 @@ use App\Models\QuestionDetail;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
+use App\Services\FcmService;
+use App\Models\User;
 
 class PertanyaanController extends Controller
 {
@@ -260,6 +262,24 @@ class PertanyaanController extends Controller
                 'urutan' => $request->filled('urutan') ? (int) $request->urutan : 0,
             ]);
 
+            // =======================
+// 🔔 KIRIM NOTIF KE USER
+// =======================
+$fcm = app(FcmService::class);
+
+// ambil user yang BELUM isi survey
+$users = User::whereNotNull('fcm_token')
+    ->whereDoesntHave('alumni.answers')
+    ->get();
+
+foreach ($users as $user) {
+    $fcm->sendToUser(
+        $user->id,
+        "Survey Belum Diisi ⚠️",
+        "Ada perubahan pertanyaan, segera isi survey ya!"
+    );
+}
+
             // Hapus options lama dan buat yang baru
             if ($request->filled('options') && in_array($request->type, ['single', 'multiple'])) {
                 $question->options()->delete();
@@ -381,4 +401,5 @@ class PertanyaanController extends Controller
 
         return [];
     }
+
 }

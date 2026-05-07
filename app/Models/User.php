@@ -24,6 +24,7 @@ class User extends Authenticatable
         'status',
         'tanggal_lahir',
         'password',
+        'fcm_token',
     ];
 
     protected $hidden = ['password', 'remember_token'];

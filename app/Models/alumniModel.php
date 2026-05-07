@@ -5,6 +5,8 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Support\Carbon;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Models\Answer;
 
 class alumniModel extends Authenticatable
 {
@@ -104,4 +106,9 @@ class alumniModel extends Authenticatable
     {
         return $this->belongsTo(KotaKabupaten::class, 'kota_kerja', 'id');
     }
+
+    public function answers(): HasMany
+{
+    return $this->hasMany(Answer::class, 'alumni_id', 'id');
+}
 }

@@ -36,4 +36,10 @@ return [
     'brevo' => [
     'key' => env('BREVO_API_KEY'),
 ],
+
+//service firebase untuk fcm
+'firebase' => [
+    'project_id' => env('FIREBASE_PROJECT_ID'),
+],
+
 ];
