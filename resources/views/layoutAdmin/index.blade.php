@@ -4,45 +4,77 @@
 
 @section('content')
 <div class="container-fluid px-4">
-    <h1 class="mt-4">Dashboard</h1>
-    <ol class="breadcrumb mb-4">
-        <li class="breadcrumb-item active">Dashboard</li>
-    </ol>
+    <div class="dashboard-hero">
+        <div class="row align-items-center g-3">
+            <div class="col-lg-8">
+                <p class="text-uppercase fw-bold small mb-2 text-white-50">Dashboard Tracer Study</p>
+                <h1 class="mb-2">Ringkasan Data Alumni</h1>
+                <p class="mb-0">
+                    Pantau progres pengisian survey, sebaran pekerjaan, dan indikator kepuasan pengguna lulusan.
+                </p>
+            </div>
+            <div class="col-lg-4 text-lg-end">
+                <span class="badge rounded-pill bg-light text-primary px-3 py-2">
+                    <i class="fas fa-chart-line me-2"></i>Data monitoring
+                </span>
+            </div>
+        </div>
+    </div>
 
     {{-- Cards dan Tabel --}}
-    <div class="row mb-4">
+    <div class="row g-4 mb-4">
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-primary text-white">
-                <div class="card-body">
-                    <h5>Total Alumni</h5>
-                    <h3 id="totalAlumni">0</h3>
+            <div class="metric-card">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="metric-label mb-2">Total Alumni</div>
+                        <div class="metric-value" id="totalAlumni">0</div>
+                    </div>
+                    <div class="metric-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-success text-white">
-                <div class="card-body">
-                    <h5>Sudah Isi</h5>
-                    <h3 id="sudahIsi">0</h3>
+            <div class="metric-card">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="metric-label mb-2">Sudah Isi</div>
+                        <div class="metric-value" id="sudahIsi">0</div>
+                    </div>
+                    <div class="metric-icon">
+                        <i class="fas fa-user-check"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-warning text-white">
-                <div class="card-body">
-                    <h5>Belum Isi</h5>
-                    <h3 id="belumIsi">0</h3>
+            <div class="metric-card">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="metric-label mb-2">Belum Isi</div>
+                        <div class="metric-value" id="belumIsi">0</div>
+                    </div>
+                    <div class="metric-icon">
+                        <i class="fas fa-user-clock"></i>
+                    </div>
                 </div>
             </div>
         </div>
 
         <div class="col-xl-3 col-md-6">
-            <div class="card bg-danger text-white">
-                <div class="card-body">
-                    <h5>Persentase</h5>
-                    <h3 id="persentase">0%</h3>
+            <div class="metric-card">
+                <div class="d-flex justify-content-between gap-3">
+                    <div>
+                        <div class="metric-label mb-2">Persentase</div>
+                        <div class="metric-value" id="persentase">0%</div>
+                    </div>
+                    <div class="metric-icon">
+                        <i class="fas fa-percent"></i>
+                    </div>
                 </div>
             </div>
         </div>

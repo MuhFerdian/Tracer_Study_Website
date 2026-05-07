@@ -26,9 +26,9 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // LANDING PAGE
-// Route::get('/landingpage', function () {
-//     return view('layoutLandingPage.hero');
-// });
+Route::get('/landingpage', function () {
+    return view('layoutLandingPage.hero');
+});
 
 /*
 |--------------------------------------------------------------------------

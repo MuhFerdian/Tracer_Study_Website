@@ -19,6 +19,7 @@
     <link href="{{ asset('/startbootstrap-sb-admin-gh-pages/css/styles.css') }}" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@latest/font/bootstrap-icons.css">
+    <link rel="stylesheet" href="{{ asset('css/tracer-ui.css') }}">
 
     {{-- Font Awesome --}}
     <script src="https://use.fontawesome.com/releases/v6.3.0/js/all.js" crossorigin="anonymous"></script>
@@ -43,10 +44,9 @@
             <main>
                 @yield('content')
             </main>
+            @include('layoutAdmin.footer')
         </div>
     </div>
-
-    @include('layoutAdmin.footer')
 
     {{-- Core JavaScript Libraries (Urutan PENTING!) --}}
 

@@ -17,71 +17,105 @@
         </div>
         <div class="sb-sidenav-menu">
             <div class="nav">
-                <div class="sb-sidenav-menu-heading">Core</div>
-                <a class="nav-link" href="{{ url('/admin') }}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-tachometer-alt"></i></div>
+
+                {{-- HEADING --}}
+                <div class="sb-sidenav-menu-heading">Utama</div>
+
+                {{-- DASHBOARD --}}
+                <a class="nav-link {{ request()->is('admin') ? 'active' : '' }}" href="{{ url('/admin') }}">
+
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-house"></i>
+                    </div>
+
                     Dashboard
                 </a>
-                <a class="nav-link collapsed" href="#" data-bs-toggle="collapse" data-bs-target="#collapseRekapData"
-                    aria-expanded="false" aria-controls="collapseRekapData">
-                    <div class="sb-nav-link-icon"><i class="fas fa-file-alt"></i></div>
-                    Rekap Data
-                    <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+
+                {{-- SURVEI ALUMNI --}}
+                <a class="nav-link collapsed
+        {{ request()->is('admin/alumni-belum-mengisi') || request()->is('admin/alumni-sudah-mengisi') ? '' : 'collapsed' }}"
+                    href="#" data-bs-toggle="collapse" data-bs-target="#collapseSurvey"
+                    aria-expanded="{{ request()->is('admin/alumni-belum-mengisi') || request()->is('admin/alumni-sudah-mengisi') ? 'true' : 'false' }}"
+                    aria-controls="collapseSurvey">
+
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-square-poll-vertical"></i>
+                    </div>
+
+                    Survei Alumni
+
+                    <div class="sb-sidenav-collapse-arrow">
+                        <i class="fas fa-angle-down"></i>
+                    </div>
                 </a>
 
-                <div class="collapse" id="collapseRekapData" data-bs-parent="#sidenavAccordion">
-                    <nav class="sb-sidenav-menu-nested nav accordion" id="accordionRekap">
+                {{-- ISI MENU SURVEI --}}
+                <div class="collapse
+        {{ request()->is('admin/alumni-belum-mengisi') || request()->is('admin/alumni-sudah-mengisi') ? 'show' : '' }}"
+                    id="collapseSurvey" data-bs-parent="#sidenavAccordion">
 
-                        {{-- Belum Mengisi --}}
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                            data-bs-target="#collapseBelumMengisi" aria-expanded="false"
-                            aria-controls="collapseBelumMengisi">
-                            <i class="fas fa-clock me-2"></i> Belum Mengisi
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
-                        </a>
-                        <div class="collapse" id="collapseBelumMengisi" data-bs-parent="#accordionRekap">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="{{ url('/admin/alumni-belum-mengisi') }}">
-                                    <i class="fas fa-user-graduate me-2"></i> Rekap Alumni
-                                </a>
-                            </nav>
-                        </div>
+                    <nav class="sb-sidenav-menu-nested nav">
 
-                        {{-- Sudah Mengisi --}}
-                        <a class="nav-link collapsed" href="#" data-bs-toggle="collapse"
-                            data-bs-target="#collapseSudahMengisi" aria-expanded="false"
-                            aria-controls="collapseSudahMengisi">
-                            <i class="fas fa-check-circle me-2"></i> Sudah Mengisi
-                            <div class="sb-sidenav-collapse-arrow"><i class="fas fa-angle-down"></i></div>
+                        {{-- BELUM MENGISI --}}
+                        <a class="nav-link
+                {{ request()->is('admin/alumni-belum-mengisi') ? 'active' : '' }}"
+                            href="{{ url('/admin/alumni-belum-mengisi') }}">
+
+                            <i class="fas fa-user-clock me-2"></i>
+                            Alumni Belum Mengisi
                         </a>
-                        <div class="collapse" id="collapseSudahMengisi" data-bs-parent="#accordionRekap">
-                            <nav class="sb-sidenav-menu-nested nav">
-                                <a class="nav-link" href="{{ url('/admin/alumni-sudah-mengisi') }}">
-                                    <i class="fas fa-user-check me-2"></i> Survei Alumni
-                                </a>
-                            </nav>
-                        </div>
+
+                        {{-- SUDAH MENGISI --}}
+                        <a class="nav-link
+                {{ request()->is('admin/alumni-sudah-mengisi') ? 'active' : '' }}"
+                            href="{{ url('/admin/alumni-sudah-mengisi') }}">
+
+                            <i class="fas fa-user-check me-2"></i>
+                            Alumni Sudah Mengisi
+                        </a>
 
                     </nav>
                 </div>
 
-                <div class="sb-sidenav-menu-heading">Manajemen Data</div>
+                {{-- HEADING --}}
+                <div class="sb-sidenav-menu-heading">
+                    Manajemen Data
+                </div>
 
-                {{-- 🔥 HANYA ADMIN --}}
+                {{-- KHUSUS ADMIN --}}
                 @if($role == 'Admin')
-                <a class="nav-link" href="{{ url('admin/manajemen-dosen') }}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-chalkboard-user"></i></div>
-                    Manajemen Dosen
-                </a>
+
+                            <a class="nav-link
+                    {{ request()->is('admin/manajemen-dosen') ? 'active' : '' }}" href="{{ url('admin/manajemen-dosen') }}">
+
+                                <div class="sb-nav-link-icon">
+                                    <i class="fas fa-chalkboard-user"></i>
+                                </div>
+
+                                Manajemen Dosen
+                            </a>
+
                 @endif
 
-                {{-- SEMUA ROLE --}}
-                <a class="nav-link" href="{{ url('admin/alumni') }}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-users-cog"></i></div>
+                {{-- MANAJEMEN ALUMNI --}}
+                <a class="nav-link
+        {{ request()->is('admin/alumni') ? 'active' : '' }}" href="{{ url('admin/alumni') }}">
+
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+
                     Manajemen Alumni
                 </a>
-                <a class="nav-link" href="{{ url('admin/pertanyaan') }}">
-                    <div class="sb-nav-link-icon"><i class="fas fa-question-circle"></i></div>
+
+                {{-- PERTANYAAN --}}
+                <a class="nav-link
+        {{ request()->is('admin/pertanyaan') ? 'active' : '' }}" href="{{ url('admin/pertanyaan') }}">
+
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-circle-question"></i>
+                    </div>
+
                     Pertanyaan
                 </a>
             </div>
@@ -94,99 +128,93 @@
 </div>
 
 <style>
-    /* Tambahan CSS untuk UI yang lebih bagus */
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
-    .sb-nav-fixed .sb-topnav {
-        z-index: 1000;
-        position: fixed;
-        top: 0;
-        width: 100%;
-    }
-
-    #layoutSidenav #layoutSidenav_nav {
-        z-index: 1050;
-        position: fixed;
-        top: 0;
-        left: 0;
-        height: 100vh;
-    }
-
-    /* Terapkan font ke seluruh sidebar */
     .sb-sidenav {
         font-family: 'Poppins', sans-serif;
-        background: linear-gradient(180deg, #0f172a 0%, #1e293b 100%);
-        box-shadow: 4px 0 20px rgba(0, 0, 0, 0.2);
+        overflow-y: auto;
     }
 
     .sb-sidenav-dark {
-        background-color: #0f172a !important;
+        background-color: #0f2b66 !important;
     }
 
-    .sb-sidenav-menu-heading {
-        font-size: 0.7rem;
-        font-weight: 600;
-        letter-spacing: 1px;
-        color: #94a3b8;
-        text-transform: uppercase;
-        padding: 1rem 1.5rem 0.5rem;
+    .sb-sidenav-header {
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+        margin-bottom: 0.5rem;
+        padding-top: 0.5rem;
+        padding-bottom: 0.8rem;
     }
 
-    .nav-link {
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.9rem;
-        font-weight: 500;
-        color: #cbd5e0;
-        border-left: 4px solid transparent;
+    .logo-animated {
         transition: all 0.3s ease;
-        border-radius: 0.5rem;
-        margin: 0.25rem 0.75rem;
-        padding: 0.7rem 1rem;
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
     }
 
-    .nav-link:hover {
-        background: linear-gradient(90deg, #2d3748, #1e293b);
-        color: #ffffff;
-        border-left: 4px solid #3b82f6;
-        transform: translateX(4px);
-    }
-
-    .nav-link.active {
-        background: linear-gradient(90deg, #1e293b, #0f172a);
-        color: #ffffff;
-        font-weight: 600;
-        border-left: 4px solid #3b82f6;
-        box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-    }
-
-    /* Icon styling */
-    .nav-link i {
-        width: 1.75rem;
-        font-size: 1.1rem;
-        transition: transform 0.2s ease;
-    }
-
-    .nav-link:hover i {
+    .logo-animated:hover {
         transform: scale(1.05);
     }
 
-    /* Nested menu styling */
+    .sb-sidenav-menu-heading {
+        font-size: 0.72rem;
+        font-weight: 700;
+        letter-spacing: 1px;
+        color: rgba(255,255,255,0.46);
+        text-transform: uppercase;
+        padding: 1rem 1rem 0.5rem;
+    }
+
+    .sb-sidenav .nav-link {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.92rem;
+        font-weight: 600;
+        color: rgba(255,255,255,0.76) !important;
+        border-left: 4px solid transparent;
+        transition: all 0.25s ease;
+        border-radius: 8px;
+        margin: 0.25rem 0.6rem;
+        padding: 0.78rem 0.9rem;
+        white-space: normal !important;
+        overflow-wrap: anywhere;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .sb-sidenav .nav-link:hover {
+        background-color: rgba(255,255,255,0.08);
+        color: #ffffff !important;
+        transform: none;
+        border-left-color: transparent;
+    }
+
+    .sb-sidenav .nav-link.active {
+        background: linear-gradient(90deg, #2563eb, #1d4ed8);
+        color: #ffffff !important;
+        border-left-color: #93c5fd;
+        box-shadow: 0 10px 24px rgba(37, 99, 235, 0.28);
+    }
+
+    .sb-sidenav .nav-link.active i,
+    .sb-sidenav .nav-link.active .sb-nav-link-icon {
+        color: #ffffff !important;
+    }
+
+    .sb-sidenav .nav-link i {
+        width: 1.4rem;
+        font-size: 1rem;
+    }
+
     .sb-sidenav-menu-nested .nav-link {
-        padding-left: 2.5rem !important;
-        font-size: 0.85rem;
-        margin: 0.15rem 0.75rem;
+        padding-left: 2.25rem !important;
+        font-size: 0.82rem;
+        line-height: 1.3;
+        margin: 0.2rem 0.6rem;
+        background-color: rgba(255,255,255,0.04);
     }
 
-    .sb-sidenav-menu-nested .nav-link:hover {
-        transform: translateX(2px);
-    }
-
-    /* Collapse arrow animation */
     .sb-sidenav-collapse-arrow i {
         transition: transform 0.3s ease;
+        color: rgba(255,255,255,0.72);
     }
 
     .collapsed .sb-sidenav-collapse-arrow i {
@@ -197,60 +225,26 @@
         transform: rotate(-180deg);
     }
 
-    /* Header area */
-    .sb-sidenav-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
-        margin-bottom: 0.5rem;
-    }
-
-    .logo-animated {
-        transition: transform 0.3s ease;
-    }
-
-    .logo-animated:hover {
-        transform: scale(1.05);
-    }
-
-    /* Footer */
     .sb-sidenav-footer {
         font-family: 'Poppins', sans-serif;
         font-size: 0.8rem;
         font-weight: 500;
-        color: #94a3b8;
-        padding: 1rem 1.2rem;
-        border-top: 1px solid rgba(255, 255, 255, 0.08);
-        background-color: rgba(0, 0, 0, 0.2);
+        color: rgba(255,255,255,0.62);
+        padding: 1rem;
+        border-top: 1px solid rgba(255,255,255,0.08);
+        background-color: rgba(0,0,0,0.2);
     }
 
-    /* Scrollbar styling */
     .sb-sidenav-menu::-webkit-scrollbar {
         width: 4px;
     }
 
     .sb-sidenav-menu::-webkit-scrollbar-track {
-        background: #1e293b;
+        background: #0f2b66;
     }
 
     .sb-sidenav-menu::-webkit-scrollbar-thumb {
-        background: #475569;
+        background: rgba(255,255,255,0.28);
         border-radius: 10px;
-    }
-
-    .sb-sidenav-menu::-webkit-scrollbar-thumb:hover {
-        background: #64748b;
-    }
-
-    /* Badge / icon tambahan untuk menu baru */
-    .fa-answers {
-        font-family: 'Font Awesome 6 Free';
-        content: "\f0e6";
-    }
-
-    /* Efek glassmorphism pada sidebar */
-    @supports (backdrop-filter: blur(10px)) {
-        .sb-sidenav {
-            background: linear-gradient(135deg, #0f172acc 0%, #1e293bcc 100%);
-            backdrop-filter: blur(10px);
-        }
     }
 </style>

@@ -1,30 +1,61 @@
 @extends('layoutLandingPage.app')
 
 @section('content')
-<section class="hero-section position-relative overflow-hidden" style="background-color: #1d4582;">
-    <div class="container fluid py-5">
-        <div class="row align-items-center min-vh-75 py-5">
-            <div class="col-lg-6 mb-5 mb-lg-0 text-white position-relative z-index-1">
-                <h1 class="display-4 fw-bold mb-4 animate__animated animate__fadeInDown">
-                    Selamat Datang di <span class="text-warning">Tracer Study</span><br>
-                    Politeknik Negeri Jember
+<section class="hero-section">
+    <div class="container hero-content">
+        <div class="row align-items-center g-5">
+            <div class="col-lg-6 text-white">
+                <div class="hero-badge mb-4 animate__animated animate__fadeInDown">
+                    <i class="fas fa-chart-line"></i>
+                    Portal pelacakan alumni
+                </div>
+
+                <h1 class="hero-title fw-bold mb-4 animate__animated animate__fadeInDown">
+                    Tracer Study <span class="text-gradient-blue">Politeknik Negeri Jember</span>
                 </h1>
-                <p class="lead mb-4 animate__animated animate__fadeIn animate__delay-1s" style="color: #ffffff;">
-                    Mari bersama-sama meningkatkan kualitas pendidikan melalui partisipasi Anda dalam tracer study kami.
+
+                <p class="hero-copy mb-4 animate__animated animate__fadeIn animate__delay-1s">
+                    Bantu kampus membaca perjalanan alumni, kebutuhan industri, dan kualitas kurikulum melalui data
+                    yang rapi, cepat, dan mudah diakses.
                 </p>
-                <div class="d-flex flex-wrap gap-3 animate__animated animate__fadeInUp animate__delay-1s">
-                    <a href="{{ url('/login') }}" class="btn btn-light rounded-pill px-4 py-3 fw-bold shadow-sm hover-scale" style="color: #004aad;">
-                        <i class="fas fa-user-graduate me-2"></i> Isi Tracer Alumni
+
+                <div class="hero-actions mb-4 animate__animated animate__fadeInUp animate__delay-1s">
+                    <a href="{{ url('/login') }}" class="btn btn-blue-glow rounded-pill px-4 py-3">
+                        <i class="fas fa-user-graduate me-2"></i>Mulai Isi Tracer
                     </a>
-                    <a href="{{ url('/login') }}" class="btn btn-outline-light rounded-pill px-4 py-3 fw-bold hover-scale border-2">
-                        <i class="fas fa-building me-2"></i> Tracer Stakeholder
+                    <a href="#about-tracer" class="btn btn-outline-glass rounded-pill px-4 py-3">
+                        <i class="fas fa-circle-info me-2"></i>Lihat Detail
                     </a>
                 </div>
+
+                <div class="hero-stat-grid animate__animated animate__fadeInUp animate__delay-1s">
+                    <div class="hero-stat">
+                        <strong>Alumni</strong>
+                        <span>Riwayat lulusan lebih mudah dilacak</span>
+                    </div>
+                    <div class="hero-stat">
+                        <strong>Data</strong>
+                        <span>Rekap survey tersusun otomatis</span>
+                    </div>
+                    <div class="hero-stat">
+                        <strong>Mutu</strong>
+                        <span>Evaluasi kurikulum lebih terukur</span>
+                    </div>
+                </div>
             </div>
+
             <div class="col-lg-6 position-relative">
-                <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/ilustrasi.png') }}" 
-                     alt="Ilustrasi Tracer Study" 
-                     class="img-fluid animate__animated animate__fadeInRight animate__delay-1s" />
+                <div class="hero-visual animate__animated animate__fadeInRight animate__delay-1s">
+                    <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/ilustrasi.png') }}"
+                        alt="Ilustrasi Tracer Study">
+                    <div class="hero-visual-note">
+                        <i class="fas fa-shield-halved"></i>
+                        <div>
+                            <strong>Portal resmi JTI Polije</strong>
+                            <div class="small text-muted">Data alumni, dosen, dan rekap survey dalam satu sistem.</div>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
     </div>
@@ -32,13 +63,8 @@
 
 @include('layoutLandingPage.about')
 @include('layoutLandingPage.manfaat')
+@include('layoutLandingPage.faq')
 @endsection
-
-@push('styles')
-<style>
-    /* Tambahkan CSS khusus di sini */
-</style>
-@endpush
 
 @push('scripts')
 <script>

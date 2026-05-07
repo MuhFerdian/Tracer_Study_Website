@@ -1,99 +1,95 @@
 <section id="tentangkami">
-<!-- Footer -->
-<footer class="text-white pt-5 mt-5" style="background-color: #1d4582;">
-    <div class="container">
-        <div class="row align-items-start mb-4">
-            <div class="col-md-6 mb-3">
-                <h3 class="fw-semibold">Mari sukseskan pelaksanaan <span class="text-warning">Tracer Study</span>
-                    Politeknik Negeri Jember.</h3>
-            </div>
-            <div class="col-md-6 text-md-end">
-                <a href="#" class="btn btn-warning text-dark fw-semibold rounded-pill px-4 py-2">Isi Survey</a>
-            </div>
-        </div>
-        <hr class="border-light">
-        <div class="row gy-4 text-white">
-            <div class="row gy-4 text-white">
-                <!-- Logo & Social Media -->
-                <div class="col-md-3">
-                    <div class="d-flex flex-column h-100">
-                        <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije.png') }}" alt="Logo Polije" width="80" class="mb-3">
-                        <h5 class="fw-bold mb-3">TRACER STUDY</h5>
-                        <div class="mt-auto">
-                            <div class="d-flex gap-3">
-                                <a href="#" class="text-white fs-5"><i class="fab fa-twitter"></i></a>
-                                <a href="#" class="text-white fs-5"><i class="fab fa-facebook-f"></i></a>
-                                <a href="#" class="text-white fs-5"><i class="fab fa-linkedin-in"></i></a>
-                                <a href="#" class="text-white fs-5"><i class="fab fa-instagram"></i></a>
-                                <a href="#" class="text-white fs-5"><i class="fab fa-youtube"></i></a>
-                            </div>
-                        </div>
+    <footer class="site-footer pt-5 mt-5">
+        <div class="container">
+            <div class="footer-cta mb-5">
+                <div class="row align-items-center g-4">
+                    <div class="col-md-8">
+                        <h3 class="fw-bold mb-2">Mari sukseskan pelaksanaan Tracer Study Politeknik Negeri Jember.</h3>
+                        <p class="mb-0 text-white-50">
+                            Partisipasi alumni membantu kampus melihat kualitas lulusan secara nyata.
+                        </p>
                     </div>
-                </div>
-
-                <!-- Kontak Kami -->
-                <div class="col-md-3">
-                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Tentang Kami</h6>
-                    <div class="d-flex mb-3">
-                        <i class="fas fa-university mt-1 me-2"></i>
-                        <p class="mb-0">Politeknik Negeri Jember</p>
-                    </div>
-                    <div class="d-flex mb-3">
-                        <i class="fas fa-map-marker-alt mt-1 me-2"></i>
-                        <p class="mb-0">Jl. Gatot Subroto No 02, Nganjuk - Jawa Timur</p>
-                    </div>
-                    <div class="d-flex">
-                        <i class="fas fa-envelope mt-1 me-2"></i>
-                        <p class="mb-0">Email: <a href="mailto:tracer@polije.ac.id"
-                                class="text-white text-decoration-none">tracer.study@polije.ac.id</a></p>
-                    </div>
-                </div>
-
-                <!-- Tautan Penting -->
-                <div class="col-md-2">
-                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Tautan Penting</h6>
-                    <ul class="list-unstyled">
-                        <li class="mb-2"><a href="#" class="text-white text-decoration-none d-flex align-items-center">
-                                <i class="fas fa-sign-in-alt me-2"></i> Login Admin
-                            </a></li>
-                        <li class="mb-2"><a href="#" class="text-white text-decoration-none d-flex align-items-center">
-                                <i class="fas fa-user-edit me-2"></i> Isi Data Alumni
-                            </a></li>
-                        <li class="mb-2"><a href="#" class="text-white text-decoration-none d-flex align-items-center">
-                                <i class="fas fa-clipboard-list me-2"></i> Isi Survey
-                            </a></li>
-                    </ul>
-                </div>
-
-                <!-- Berita Terbaru -->
-                <div class="col-md-4">
-                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Berita Terbaru</h6>
-                    <div class="news-item mb-3">
-                        <a href="#" class="text-white text-decoration-none">
-                            <div class="d-flex">
-                                <div class="flex-shrink-0 me-3">
-                                    <i class="fas fa-newspaper"></i>
-                                </div>
-                                <div>
-                                    <p class="mb-1 small">Hasil Tracer Study Tahun 2026</p>
-                                </div>
-                            </div>
+                    <div class="col-md-4 text-md-end">
+                        <a href="{{ url('/login') }}" class="btn btn-blue-glow rounded-pill px-4 py-3">
+                            <i class="fas fa-clipboard-check me-2"></i>Isi Survey
                         </a>
                     </div>
                 </div>
             </div>
-        </div>
-        <hr class="border-light mt-4">
-        <div class="text-center py-3">
-            © 2026 Tracer Study Politeknik Negeri Jember. All Rights Reserved.
-        </div>
-    </div>
 
-    <!-- Tombol Scroll to Top -->
-   <a href="#" 
-        class="position-fixed bottom-0 end-0 mb-2 me-2 bg-warning text-dark d-flex align-items-center justify-content-center"
-        style="z-index: 1000; width: 48px; height: 48px; border-radius: 50%;">
-        <i class="fas fa-arrow-up"></i>
-    </a>
-</footer>
+            <div class="row gy-4 text-white pb-4">
+                <div class="col-md-3">
+                    <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije.png') }}"
+                        alt="Logo Polije" width="82" class="mb-3">
+                    <h5 class="fw-bold mb-3">Tracer Study</h5>
+                    <p class="text-white-50 mb-4">
+                        Portal pelacakan alumni Jurusan Teknologi Informasi Politeknik Negeri Jember.
+                    </p>
+                    <div class="d-flex gap-2">
+                        <a href="#" class="footer-social" aria-label="Twitter"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="footer-social" aria-label="Facebook"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="footer-social" aria-label="LinkedIn"><i class="fab fa-linkedin-in"></i></a>
+                        <a href="#" class="footer-social" aria-label="Instagram"><i class="fab fa-instagram"></i></a>
+                    </div>
+                </div>
+
+                <div class="col-md-4">
+                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Tentang Kami</h6>
+                    <div class="d-flex mb-3">
+                        <i class="fas fa-university mt-1 me-3"></i>
+                        <p class="mb-0 text-white-50">Politeknik Negeri Jember</p>
+                    </div>
+                    <div class="d-flex mb-3">
+                        <i class="fas fa-map-marker-alt mt-1 me-3"></i>
+                        <p class="mb-0 text-white-50">Jl. Gatot Subroto No 02, Nganjuk, Jawa Timur</p>
+                    </div>
+                    <div class="d-flex">
+                        <i class="fas fa-envelope mt-1 me-3"></i>
+                        <p class="mb-0 text-white-50">
+                            <a href="mailto:tracer.study@polije.ac.id" class="footer-link">tracer.study@polije.ac.id</a>
+                        </p>
+                    </div>
+                </div>
+
+                <div class="col-md-2">
+                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Tautan</h6>
+                    <ul class="list-unstyled d-grid gap-2">
+                        <li>
+                            <a href="{{ url('/login') }}" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#about-tracer" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-circle-info me-2"></i>Tentang
+                            </a>
+                        </li>
+                        <li>
+                            <a href="#manfaat" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-chart-line me-2"></i>Manfaat
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="col-md-3">
+                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Info Terbaru</h6>
+                    <a href="#" class="footer-link d-flex gap-3">
+                        <i class="fas fa-newspaper mt-1"></i>
+                        <span>Hasil Tracer Study Tahun 2026</span>
+                    </a>
+                </div>
+            </div>
+
+            <hr class="border-light border-opacity-25">
+            <div class="d-flex flex-column flex-md-row justify-content-between gap-2 py-3 text-white-50 small">
+                <span>&copy; 2026 Tracer Study Politeknik Negeri Jember. All Rights Reserved.</span>
+                <span>Jurusan Teknologi Informasi</span>
+            </div>
+        </div>
+
+        <a href="#" class="scroll-top" aria-label="Kembali ke atas">
+            <i class="fas fa-arrow-up"></i>
+        </a>
+    </footer>
 </section>
