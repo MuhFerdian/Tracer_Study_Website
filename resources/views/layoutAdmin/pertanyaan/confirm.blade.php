@@ -1,5 +1,3 @@
-@extends('layoutAdmin.app')
-@section('content')
 
 <form action="{{ url('/admin/pertanyaan/' . $pertanyaan->id . '/delete_ajax') }}" method="POST" id="form-delete">
     @csrf
@@ -49,8 +47,10 @@ $(document).ready(function() {
         submitHandler: function(form) {
             $.ajax({
                 url: form.action,
-                type: form.method,
+                // type: form.method,
+                type: 'POST',
                 data: $(form).serialize(),
+                dataType: 'json',
                 success: function(response) {
                     if(response.status){
                         closeModalDelete();
@@ -92,4 +92,3 @@ $(document).ready(function() {
     });
 });
 </script>
-@endsection

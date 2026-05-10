@@ -15,7 +15,6 @@ class Question extends Model
         'type',
         'is_required',
         'urutan',
-        'deskripsi',
         'tipe_data',
     ];
 

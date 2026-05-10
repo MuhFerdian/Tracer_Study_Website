@@ -12,7 +12,7 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-user me-1"></i> Informasi Alumni</span>
-            <a href="{{ url('/admin/alumni') }}" class="btn btn-secondary btn-sm">
+            <a href="{{ url('/admin/alumni-sudah-mengisi') }}" class="btn btn-secondary btn-sm">
                 <i class="fas fa-arrow-left me-1"></i> Kembali
             </a>
         </div>

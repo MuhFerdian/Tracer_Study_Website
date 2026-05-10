@@ -8,12 +8,12 @@
                 <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body">
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <label>Download Template</label>
                     <a href="{{ asset('template_alumni.xlsx') }}" class="btn btn-info btn-sm" download>
                         <i class="fa fa-file-excel"></i> Download
                     </a>
-                </div>
+                </div> --}}
                 <div class="form-group">
                     <label>Pilih File</label>
                     <input type="file" name="file_user" id="file_user" class="form-control" required>

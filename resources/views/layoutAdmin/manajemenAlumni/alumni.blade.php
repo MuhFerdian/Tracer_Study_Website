@@ -7,6 +7,18 @@
         <li class="breadcrumb-item active">Dashboard / Alumni</li>
     </ol>
 
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show">
+            <i class="fas fa-exclamation-circle me-2"></i>
+            {{ session('error') }}
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    @endif
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-user-graduate me-1"></i> Tabel Alumni</span>
@@ -14,7 +26,7 @@
                 <button type="button" onclick="modalAction('{{ url('admin/alumni/import_ajax') }}')" class="btn btn-primary btn-sm">
                     <i class="fas fa-file-import me-1"></i> Import Data Alumni
                 </button>
-                <a href="{{ url('/admin/rekap/export/alumni-sudah') }}" class="btn btn-warning btn-sm">
+                <a href="{{ route('export.alumni') }}" class="btn btn-warning btn-sm">
                     <i class="fa fa-file-excel me-1"></i> Export Data Alumni
                 </a>
                 <button onclick="modalAction('{{ url('admin/alumni/create_ajax') }}')" 

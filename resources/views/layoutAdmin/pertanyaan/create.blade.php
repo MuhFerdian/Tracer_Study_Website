@@ -11,13 +11,7 @@
         <div class="modal-body">
             <div class="mb-3">
         <label for="kode_soal" class="form-label">Kode Soal</label>
-        <select name="kode_soal" id="kode_soal" class="form-control" required>
-          <option value="">-- Pilih Kode Soal --</option>
-          <option value="f8">f8 - Status Alumni</option>
-          <option value="f502">f502 - Nama Perusahaan</option>
-          <option value="f505">f505 - Gaji</option>
-          <option value="f510">f510 - Skill</option>
-        </select>
+        <input type="text" name="kode_soal" id="kode_soal" class="form-control" placeholder="Contoh: f8, f502, f1761/f1762">
         <small id="error-kode_soal" class="text-danger"></small>
       </div>
 

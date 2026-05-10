@@ -11,16 +11,20 @@ class MobileQuestionController extends Controller
     public function index(Request $request)
     {
         // ambil semua pertanyaan + options
-        $questions = Question::with('options')
+        $questions = Question::with(['options' => function ($query) {
+                $query->orderBy('urutan');
+            }, 'details'])
             ->orderBy('urutan')
             ->get();
 
         $result = $questions->map(function ($q) {
             return [
                 'id' => $q->id,
-                'kode' => $q->kode,
+                'kode' => $q->kode_soal,
+                'kode_soal' => $q->kode_soal,
                 'question_text' => $q->pertanyaan,
-                'type' => $q->type, // single, multiple, text, scale
+                'type' => $q->type, // single, multiple, text, scale, matrix
+                'tipe_data' => $q->tipe_data,
                 'is_required' => $q->is_required,
 
                 'options' => $q->options->map(function ($opt) {
@@ -29,7 +33,17 @@ class MobileQuestionController extends Controller
                         'label' => $opt->label,
                         'value' => $opt->value,
                     ];
-                })
+                }),
+
+                'details' => $q->details->map(function ($detail) {
+                    return [
+                        'id' => $detail->id,
+                        'label' => $detail->item_label,
+                        'field_code_a' => $detail->field_code_a,
+                        'field_code_b' => $detail->field_code_b,
+                        'urutan' => $detail->urutan,
+                    ];
+                }),
             ];
         });
 

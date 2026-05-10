@@ -10,6 +10,7 @@ use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 use App\Services\FcmService;
 use App\Models\User;
+use Illuminate\Support\Facades\Log;
 
 class PertanyaanController extends Controller
 {
@@ -29,9 +30,18 @@ class PertanyaanController extends Controller
                     return $row->pertanyaan;
                 })
                 ->addColumn('options_display', function ($row) {
+                    if ($row->type === 'matrix') {
+                        if ($row->details->isEmpty()) {
+                            return '-';
+                        }
+
+                        return $row->details->pluck('item_label')->implode(', ');
+                    }
+
                     if ($row->options->isEmpty()) {
                         return '-';
                     }
+
                     return $row->options->pluck('label')->implode(', ');
                 })
                 ->addColumn('aksi', function ($row) {
@@ -263,22 +273,27 @@ class PertanyaanController extends Controller
             ]);
 
             // =======================
-// 🔔 KIRIM NOTIF KE USER
-// =======================
-$fcm = app(FcmService::class);
-
-// ambil user yang BELUM isi survey
-$users = User::whereNotNull('fcm_token')
-    ->whereDoesntHave('alumni.answers')
-    ->get();
-
-foreach ($users as $user) {
-    $fcm->sendToUser(
-        $user->id,
-        "Survey Belum Diisi ⚠️",
-        "Ada perubahan pertanyaan, segera isi survey ya!"
-    );
-}
+            // 🔔 KIRIM NOTIF KE USER (optional, skip jika FCM tidak dikonfigurasi)
+            // =======================
+            try {
+                $credentialsPath = storage_path("app/firebase/service-account.json");
+                if (file_exists($credentialsPath)) {
+                    $fcm = app(FcmService::class);
+                    $users = User::whereNotNull('fcm_token')
+                        ->whereDoesntHave('alumni.answers')
+                        ->get();
+                    foreach ($users as $user) {
+                        $fcm->sendToUser(
+                            $user->id,
+                            "Survey Belum Diisi ⚠️",
+                            "Ada perubahan pertanyaan, segera isi survey ya!"
+                        );
+                    }
+                }
+            } catch (\Throwable $e) {
+                // FCM gagal tidak boleh menghentikan proses update
+                Log::warning('FCM notification gagal: ' . $e->getMessage());
+            }
 
             // Hapus options lama dan buat yang baru
             if ($request->filled('options') && in_array($request->type, ['single', 'multiple'])) {
@@ -348,7 +363,11 @@ foreach ($users as $user) {
             ]);
         }
 
-        return redirect('/');
+        // return redirect('/admin');
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid request'
+        ], 400);
     }
 
     public function getPertanyaan()
