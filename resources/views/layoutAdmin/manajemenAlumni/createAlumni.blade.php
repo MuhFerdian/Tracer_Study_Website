@@ -27,7 +27,7 @@
                     <small id="error-prodi" class="error-text form-text text-danger"></small>
                 </div>
 
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <label>No HP</label>
                     <input type="text" name="no_hp" id="no_hp" class="form-control">
                     <small id="error-no_hp" class="error-text form-text text-danger"></small>
@@ -37,7 +37,7 @@
                     <label>Email</label>
                     <input type="email" name="email" id="email" class="form-control">
                     <small id="error-email" class="error-text form-text text-danger"></small>
-                </div>
+                </div> --}}
 
                  <div class="form-group">
                     <label>Angkatan</label>
@@ -51,7 +51,7 @@
                     <small id="error-tanggal_lulus" class="error-text form-text text-danger"></small>
                 </div>
 
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <label>Status Pekerjaan</label>
                     <input type="text" name="status_pekerjaan" id="status_pekerjaan" class="form-control">
                     <small id="error-status_pekerjaan" class="error-text form-text text-danger"></small>
@@ -67,7 +67,7 @@
                     <label>Posisi</label>
                     <input type="text" name="posisi" id="posisi" class="form-control">
                     <small id="error-posisi" class="error-text form-text text-danger"></small>
-                </div>
+                </div> --}}
             </div>
 
             <div class="modal-footer">

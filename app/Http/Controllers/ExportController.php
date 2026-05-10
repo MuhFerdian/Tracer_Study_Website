@@ -2,218 +2,498 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
+use App\Models\alumniModel;
+use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Cell\Coordinate;
-use Illuminate\Support\Carbon;
-use App\Models\alumniModel;
-use Illuminate\Support\Facades\DB;
 use PhpOffice\PhpSpreadsheet\Style\Alignment;
+use PhpOffice\PhpSpreadsheet\Style\Fill;
+use PhpOffice\PhpSpreadsheet\Style\Border;
 
 class ExportController extends Controller
 {
-
+    /**
+     * =========================================
+     * HALAMAN ALUMNI BELUM MENGISI
+     * =========================================
+     */
     public function showAlumniBelumMengisi()
     {
-        $alumni = alumniModel::where(function ($query) {
-            $query->whereNull('status_pekerjaan')
-                ->whereNull('nama_instansi')
-                ->whereNull('posisi');
-        })->get();
-        return view('layoutAdmin.rekap.export_rekap_alumni_belum_mengisi', compact('alumni'));
-    }
-    public function showAlumni()
-    {
-        $alumni = alumniModel::where(function ($query) {
-            $query->whereNotNull('status_pekerjaan')
-                ->orWhereNotNull('nama_instansi')
-                ->orWhereNotNull('posisi');
-        })->get();
-        return view('layoutAdmin.rekap.export_rekap_alumni', compact('alumni'));
+        $alumni = alumniModel::whereNotIn(
+            'id',
+            DB::table('answers')
+                ->select('alumni_id')
+                ->distinct()
+        )->get();
+
+        return view(
+            'layoutAdmin.rekap.export_rekap_alumni_belum_mengisi',
+            compact('alumni')
+        );
     }
 
-    // Tambahkan ini
-    public function collection()
+    /**
+     * =========================================
+     * HALAMAN ALUMNI SUDAH MENGISI
+     * =========================================
+     */
+    public function showAlumniSudahMengisi()
     {
-        return alumniModel::query()
-            ->select('nama', 'nim', 'prodi', 'tahun_lulus')
-            ->get();
+        $alumni = alumniModel::whereIn(
+            'id',
+            DB::table('answers')
+                ->select('alumni_id')
+                ->distinct()
+        )->get();
+
+        return view(
+            'layoutAdmin.rekap.export_rekap_alumni',
+            compact('alumni')
+        );
     }
 
-    // Tambahkan ini
-    public function headings(): array
-    {
-        return [
-            'Nama',
-            'NIM',
-            'Program Studi',
-            'Tahun Lulus',
-        ];
-    }
-
+    /**
+     * =========================================
+     * EXPORT SEMUA DATA ALUMNI
+     * =========================================
+     */
     public function exportExcel()
     {
-        $spreadsheet = new Spreadsheet();
-        $sheet = $spreadsheet->getActiveSheet();
+        $data = alumniModel::select([
+                'nama',
+                'nim',
+                'prodi',
+                'no_hp',
+                'email',
+                'alamat',
+                'angkatan',
+                'tahun_lulus',
+                'status_pekerjaan',
+                'nama_instansi',
+                'posisi',
+            ])
+            ->orderBy('id')
+            ->get();
 
-        // Set header kolom
-        $headings = $this->headings();
-        foreach ($headings as $col => $heading) {
-            $columnLetter = Coordinate::stringFromColumnIndex($col + 1); // Ubah angka ke huruf (1 => A, 2 => B, dst)
-            $sheet->setCellValue($columnLetter . '1', $heading); // Misal: A1, B1, C1, ...
+        if ($data->isEmpty()) {
+
+        return redirect()
+            ->back()
+            ->with(
+                'error',
+                'Data alumni tracer study masih kosong!'
+            );
         }
 
-        // Heading bold
-        $sheet->getStyle('A1:D1')->getFont()->setBold(true);
-
-        // Atur lebar kolom agar tidak terlalu mepet
-        $sheet->getColumnDimension('A')->setWidth(15);
-        $sheet->getColumnDimension('B')->setWidth(15);
-        $sheet->getColumnDimension('C')->setWidth(15);
-        $sheet->getColumnDimension('D')->setWidth(15);
-
-        // Ambil data dari database
-        $data = $this->collection();
-        $row = 2;
-        foreach ($data as $item) {
-            // Order: Nama, NIM, Program Studi, Tahun Lulus
-            $sheet->setCellValue("A$row", $item->nama);
-            $sheet->setCellValue("B$row", $item->nim);
-            $sheet->setCellValue("C$row", $item->prodi);
-            $sheet->setCellValue("D$row", $item->tahun_lulus);
-            $row++;
-        }
-
-        // Terapkan rata kiri ke semua kolom dari A2 sampai D<lastRow>
-        $sheet->getStyle("A2:D" . ($row - 1))
-            ->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
-
-        // Siapkan file untuk download
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'alumni_.xlsx';
-
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-        ]);
+        return $this->generateExcel(
+            $data,
+            'DATA ALUMNI TRACER STUDY',
+            'data_alumni'
+        );
     }
-    public function exportExcelLulusan()
+
+    /**
+     * =========================================
+     * EXPORT ALUMNI SUDAH MENGISI
+     * =========================================
+     */
+    public function exportExcelSudahMengisi()
+    {
+        $data = alumniModel::whereIn(
+                'id',
+                DB::table('answers')
+                    ->select('alumni_id')
+                    ->distinct()
+            )
+            ->select([
+                'nama',
+                'nim',
+                'prodi',
+                'no_hp',
+                'email',
+                'alamat',
+                'angkatan',
+                'tahun_lulus',
+                'status_pekerjaan',
+                'nama_instansi',
+                'posisi',
+            ])
+            ->orderBy('id')
+            ->get();
+
+        if ($data->isEmpty()) {
+
+        return redirect()
+            ->back()
+            ->with(
+                'error',
+                'Data alumni yang sudah mengisi tracer study masih kosong!'
+            );
+        }
+
+        return $this->generateExcel(
+            $data,
+            'DATA ALUMNI SUDAH MENGISI TRACER STUDY',
+            'alumni_sudah_mengisi'
+        );
+    }
+
+    /**
+     * =========================================
+     * EXPORT ALUMNI BELUM MENGISI
+     * =========================================
+     */
+    public function exportExcelBelumMengisi()
+    {
+        $data = alumniModel::whereNotIn(
+                'id',
+                DB::table('answers')
+                    ->select('alumni_id')
+                    ->distinct()
+            )
+            ->select([
+                'nama',
+                'nim',
+                'prodi',
+                'no_hp',
+                'email',
+                'alamat',
+                'angkatan',
+                'tahun_lulus',
+            ])
+            ->orderBy('id')
+            ->get();
+
+        if ($data->isEmpty()) {
+
+        return redirect()
+            ->back()
+            ->with(
+                'error',
+                'Data alumni yang belum mengisi tracer study masih kosong!'
+            );
+        }
+
+        return $this->generateExcelBelumMengisi(
+            $data,
+            'DATA ALUMNI BELUM MENGISI TRACER STUDY',
+            'alumni_belum_mengisi'
+        );
+    }
+
+    /**
+     * =========================================
+     * GENERATE EXCEL FULL
+     * =========================================
+     */
+    private function generateExcel($data, $title, $fileName)
     {
         $spreadsheet = new Spreadsheet();
+
         $sheet = $spreadsheet->getActiveSheet();
 
-        // Header kolom
+        /**
+         * =========================================
+         * JUDUL
+         * =========================================
+         */
+        $sheet->mergeCells('A1:K1');
+
+        $sheet->setCellValue('A1', $title);
+
+        $sheet->getStyle('A1')->applyFromArray([
+
+            'font' => [
+                'bold' => true,
+                'size' => 16,
+            ],
+
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER
+            ]
+        ]);
+
+        /**
+         * =========================================
+         * HEADER
+         * =========================================
+         */
         $headings = [
-            'Nama Alumni',
+
+            'Nama',
             'NIM',
             'Program Studi',
             'No HP',
             'Email',
-            // 'Tanggal Lulus',
+            'Alamat',
             'Angkatan',
             'Tahun Lulus',
-            'Tanggal Kerja Pertama',
-            'Masa Tunggu (hitung)',
-            'Masa Tunggu (tersimpan)',
-            'Tanggal Mulai Instansi',
-            'Jenis Instansi',
+            'Status Pekerjaan',
             'Nama Instansi',
-            'Skala Instansi',
-            'Lokasi Instansi',
-            'Kategori Profesi',
-            'Profesi',
-            'Nama Atasan',
-            'Jabatan Atasan',
-            'No HP Atasan',
-            'Email Atasan'
+            'Posisi',
         ];
 
+        $headerRow = 3;
+
         foreach ($headings as $col => $heading) {
-            $columnLetter = Coordinate::stringFromColumnIndex($col + 1);
-            $sheet->setCellValue($columnLetter . '1', $heading);
+
+            $column =
+                Coordinate::stringFromColumnIndex($col + 1);
+
+            $sheet->setCellValue(
+                $column . $headerRow,
+                $heading
+            );
         }
 
-        $sheet->getStyle('A1:U1')->getFont()->setBold(true);
+        /**
+         * =========================================
+         * STYLE HEADER
+         * =========================================
+         */
+        $sheet->getStyle("A3:K3")->applyFromArray([
 
-        // Atur lebar kolom
+            'font' => [
+                'bold' => true,
+                'color' => [
+                    'rgb' => 'FFFFFF'
+                ],
+                'size' => 11
+            ],
+
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => [
+                    'rgb' => '1F4E78'
+                ]
+            ],
+
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER,
+                'vertical' => Alignment::VERTICAL_CENTER
+            ],
+
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN
+                ]
+            ]
+        ]);
+
+        /**
+         * =========================================
+         * AUTO SIZE
+         * =========================================
+         */
         foreach (range(1, count($headings)) as $index) {
-            $colLetter = Coordinate::stringFromColumnIndex($index);
-            $sheet->getColumnDimension($colLetter)->setAutoSize(true);
+
+            $column =
+                Coordinate::stringFromColumnIndex($index);
+
+            $sheet->getColumnDimension($column)
+                ->setAutoSize(true);
         }
 
-        // Query data
-        // Select columns in the same order as $headings above.
-        // Fill non-existing or not-yet-modeled fields with NULL so columns align.
-        $data = DB::table('alumni as al')
-            ->orderBy('al.id')
-            ->selectRaw(
-                'al.nama as nama_alumni,
-                 al.nim,
-                 al.prodi,
-                 al.no_hp,
-                 al.email,
-                 al.angkatan,
-                 al.tahun_lulus,
-                 NULL as tanggal_kerja_pertama,
-                 NULL as masa_tunggu_hitung,
-                 NULL as masa_tunggu_tersimpan,
-                 NULL as tanggal_mulai_instansi,
-                 NULL as jenis_instansi,
-                 al.nama_instansi,
-                 NULL as skala_instansi,
-                 NULL as lokasi_instansi,
-                 NULL as kategori_profesi,
-                 NULL as profesi,
-                 NULL as nama_atasan,
-                 NULL as jabatan_atasan,
-                 NULL as no_hp_atasan,
-                 NULL as email_atasan'
-            )
-            ->get();
+        /**
+         * =========================================
+         * ISI DATA
+         * =========================================
+         */
+        $row = 4;
 
-        // Isi data ke Excel
-        $row = 2;
         foreach ($data as $item) {
-            $sheet->setCellValue("A$row", $item->nama_alumni);
+
+            $sheet->setCellValue("A$row", $item->nama);
             $sheet->setCellValue("B$row", $item->nim);
             $sheet->setCellValue("C$row", $item->prodi);
             $sheet->setCellValue("D$row", $item->no_hp);
             $sheet->setCellValue("E$row", $item->email);
-            $sheet->setCellValue("F$row", $item->angkatan);
-            $sheet->setCellValue("G$row", $item->tahun_lulus);
-            $sheet->setCellValue("H$row", $item->tanggal_kerja_pertama);
-            $sheet->setCellValue("I$row", $item->masa_tunggu_hitung);
-            $sheet->setCellValue("J$row", $item->masa_tunggu_tersimpan);
-            $sheet->setCellValue("K$row", $item->tanggal_mulai_instansi);
-            $sheet->setCellValue("L$row", $item->jenis_instansi);
-            $sheet->setCellValue("M$row", $item->nama_instansi);
-            $sheet->setCellValue("N$row", $item->skala_instansi);
-            $sheet->setCellValue("O$row", $item->lokasi_instansi);
-            $sheet->setCellValue("P$row", $item->kategori_profesi);
-            $sheet->setCellValue("Q$row", $item->profesi);
-            $sheet->setCellValue("R$row", $item->nama_atasan);
-            $sheet->setCellValue("S$row", $item->jabatan_atasan);
-            $sheet->setCellValue("T$row", $item->no_hp_atasan);
-            $sheet->setCellValue("U$row", $item->email_atasan);
+            $sheet->setCellValue("F$row", $item->alamat);
+            $sheet->setCellValue("G$row", $item->angkatan);
+            $sheet->setCellValue("H$row", $item->tahun_lulus);
+            $sheet->setCellValue("I$row", $item->status_pekerjaan);
+            $sheet->setCellValue("J$row", $item->nama_instansi);
+            $sheet->setCellValue("K$row", $item->posisi);
+
             $row++;
         }
 
-        // Rata kiri semua isi data
-        $sheet->getStyle("A2:I" . ($row - 1))
-            ->getAlignment()
-            ->setHorizontal(\PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_LEFT);
+        $lastRow = $row - 1;
 
-        // Download
-        $writer = new Xlsx($spreadsheet);
-        $filename = 'rekap_alumni.xlsx';
+        /**
+         * =========================================
+         * STYLE DATA
+         * =========================================
+         */
+        $sheet->getStyle("A4:K$lastRow")->applyFromArray([
 
-        return response()->streamDownload(function () use ($writer) {
-            $writer->save('php://output');
-        }, $filename, [
-            'Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN
+                ]
+            ]
         ]);
+
+        /**
+         * =========================================
+         * DOWNLOAD
+         * =========================================
+         */
+        $writer = new Xlsx($spreadsheet);
+
+        $filename =
+            $fileName . '_' .
+            date('d-m-Y_H-i') .
+            '.xlsx';
+
+        return response()->streamDownload(
+
+            function () use ($writer) {
+                $writer->save('php://output');
+            },
+
+            $filename,
+
+            [
+                'Content-Type' =>
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]
+        );
+    }
+
+    /**
+     * =========================================
+     * GENERATE EXCEL BELUM MENGISI
+     * =========================================
+     */
+    private function generateExcelBelumMengisi($data, $title, $fileName)
+    {
+        $spreadsheet = new Spreadsheet();
+
+        $sheet = $spreadsheet->getActiveSheet();
+
+        $sheet->mergeCells('A1:H1');
+
+        $sheet->setCellValue('A1', $title);
+
+        $sheet->getStyle('A1')->applyFromArray([
+
+            'font' => [
+                'bold' => true,
+                'size' => 16,
+            ],
+
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER
+            ]
+        ]);
+
+        $headings = [
+
+            'Nama',
+            'NIM',
+            'Program Studi',
+            'No HP',
+            'Email',
+            'Alamat',
+            'Angkatan',
+            'Tahun Lulus',
+        ];
+
+        foreach ($headings as $col => $heading) {
+
+            $column =
+                Coordinate::stringFromColumnIndex($col + 1);
+
+            $sheet->setCellValue(
+                $column . '3',
+                $heading
+            );
+        }
+
+        $sheet->getStyle("A3:H3")->applyFromArray([
+
+            'font' => [
+                'bold' => true,
+                'color' => [
+                    'rgb' => 'FFFFFF'
+                ],
+            ],
+
+            'fill' => [
+                'fillType' => Fill::FILL_SOLID,
+                'startColor' => [
+                    'rgb' => 'C00000'
+                ]
+            ],
+
+            'alignment' => [
+                'horizontal' => Alignment::HORIZONTAL_CENTER
+            ],
+
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN
+                ]
+            ]
+        ]);
+
+        foreach (range(1, count($headings)) as $index) {
+
+            $column =
+                Coordinate::stringFromColumnIndex($index);
+
+            $sheet->getColumnDimension($column)
+                ->setAutoSize(true);
+        }
+
+        $row = 4;
+
+        foreach ($data as $item) {
+
+            $sheet->setCellValue("A$row", $item->nama);
+            $sheet->setCellValue("B$row", $item->nim);
+            $sheet->setCellValue("C$row", $item->prodi);
+            $sheet->setCellValue("D$row", $item->no_hp);
+            $sheet->setCellValue("E$row", $item->email);
+            $sheet->setCellValue("F$row", $item->alamat);
+            $sheet->setCellValue("G$row", $item->angkatan);
+            $sheet->setCellValue("H$row", $item->tahun_lulus);
+
+            $row++;
+        }
+
+        $lastRow = $row - 1;
+
+        $sheet->getStyle("A4:H$lastRow")->applyFromArray([
+
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => Border::BORDER_THIN
+                ]
+            ]
+        ]);
+
+        $writer = new Xlsx($spreadsheet);
+
+        $filename =
+            $fileName . '_' .
+            date('d-m-Y_H-i') .
+            '.xlsx';
+
+        return response()->streamDownload(
+
+            function () use ($writer) {
+                $writer->save('php://output');
+            },
+
+            $filename,
+
+            [
+                'Content-Type' =>
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
+            ]
+        );
     }
 }

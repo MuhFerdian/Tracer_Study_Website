@@ -9,12 +9,7 @@ return new class extends Migration
 {
     public function up(): void
     {
-        // Enhance questions table jika diperlukan
-        if (!Schema::hasColumn('questions', 'deskripsi')) {
-            Schema::table('questions', function (Blueprint $table) {
-                $table->text('deskripsi')->nullable()->after('pertanyaan');
-            });
-        }
+        // Enhance questions table - tambah tipe_data untuk hint input mobile
         if (!Schema::hasColumn('questions', 'tipe_data')) {
             Schema::table('questions', function (Blueprint $table) {
                 $table->string('tipe_data')->default('text')->after('type')->comment('text, number, date, year');
@@ -30,11 +25,6 @@ return new class extends Migration
 
     public function down(): void
     {
-        if (Schema::hasColumn('questions', 'deskripsi')) {
-            Schema::table('questions', function (Blueprint $table) {
-                $table->dropColumn('deskripsi');
-            });
-        }
         if (Schema::hasColumn('questions', 'tipe_data')) {
             Schema::table('questions', function (Blueprint $table) {
                 $table->dropColumn('tipe_data');

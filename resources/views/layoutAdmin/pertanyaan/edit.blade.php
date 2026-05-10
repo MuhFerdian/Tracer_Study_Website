@@ -10,17 +10,8 @@
         </div>
         <div class="modal-body">
           <div class="mb-3">
-            {{-- <label for="kode_soal" class="form-label">Kode Soal</label>
-            <input type="text" name="kode_soal" id="kode_soal" class="form-control" value="{{ $data->kode ?? '' }}">
-            <small id="error-kode_soal" class="error-text form-text text-danger"></small> --}}
             <label for="kode_soal" class="form-label">Kode Soal</label>
-              <select name="kode_soal" id="kode_soal" class="form-control" required>
-                <option value="">-- Pilih Kode Soal --</option>
-                <option value="f8">f8 - Status Alumni</option>
-                <option value="f502">f502 - Nama Perusahaan</option>
-                <option value="f505">f505 - Gaji</option>
-                <option value="f510">f510 - Skill</option>
-              </select>
+            <input type="text" name="kode_soal" id="kode_soal" class="form-control" value="{{ $data->kode_soal ?? '' }}" placeholder="Contoh: f8, f502, f1761/f1762">
           <small id="error-kode_soal" class="text-danger"></small>
           </div>
 
@@ -43,7 +34,7 @@
             <small id="error-type" class="error-text form-text text-danger"></small>
           </div>
 
-          <div class="mb-3" id="optionsGroup">
+          <div class="mb-3" id="optionsGroup" style="display: none;">
             <label for="options" class="form-label">Options <span class="text-danger" id="optionsRequired">*</span></label>
             <textarea name="options" id="options" class="form-control" placeholder='["Bekerja","Wiraswasta","Melanjutkan Pendidikan"]' data-required="false">{{ !empty($data->options) && $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
             <small class="form-text text-muted">Format: ["Opsi 1","Opsi 2","Opsi 3"]</small>
@@ -367,26 +358,6 @@
       });
 
       return false;
-    });
-
-    // Setup type change listener
-    setupTypeChangeListener();
-
-    // Setup urutan availability check
-    $('#urutan').on('blur', async function () {
-      const urutan = $(this).val();
-      const currentId = $('input[name="id"]').val();
-      
-      if (urutan && urutan != 0) {
-        const response = await checkUrutanAvailability(urutan, currentId);
-        if (!response.available) {
-          $('#urutan').addClass('is-invalid');
-          $('#error-urutan').text('Urutan ini sudah digunakan');
-        } else {
-          $('#urutan').removeClass('is-invalid');
-          $('#error-urutan').text('');
-        }
-      }
     });
 
     // Initialize form display based on current type

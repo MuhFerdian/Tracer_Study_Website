@@ -21,12 +21,61 @@ body {
     color: var(--tracer-ink);
 }
 
-body.landing-page,
+/* body.landing-page,
 body.auth-page {
     background:
         linear-gradient(rgba(37, 130, 243, 0.08) 1px, transparent 1px),
         linear-gradient(90deg, rgba(37, 130, 243, 0.08) 1px, transparent 1px),
         linear-gradient(135deg, #eef7ff 0%, #f7fbff 48%, #e8f3ff 100%);
+    background-size: 42px 42px, 42px 42px, auto;
+} */
+
+/* =========================================
+   BACKGROUND LOGIN
+========================================= */
+body.auth-page {
+    min-height: 100vh;
+
+    background:
+        linear-gradient(
+            rgba(15, 23, 42, 0.55),
+            rgba(15, 23, 42, 0.55)
+        ),
+        url('../startbootstrap-sb-admin-gh-pages/assets/img/Polije-bg.jpg');
+
+    background-size: cover;
+    background-position: center;
+    background-repeat: no-repeat;
+    background-attachment: fixed;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+}
+
+/* GRID EFFECT */
+body.auth-page::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+
+    background-image:
+        linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px);
+
+    background-size: 50px 50px;
+
+    pointer-events: none;
+}
+
+/* LANDING PAGE TETAP */
+body.landing-page {
+    background:
+        linear-gradient(rgba(37, 130, 243, 0.08) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(37, 130, 243, 0.08) 1px, transparent 1px),
+        linear-gradient(135deg, #eef7ff 0%, #f7fbff 48%, #e8f3ff 100%);
+
     background-size: 42px 42px, 42px 42px, auto;
 }
 
@@ -482,16 +531,18 @@ body.auth-page {
 }
 
 .login-shell {
-    width: min(1050px, 100%);
+    position: relative;
+    z-index: 2;
+    width: min(1120px, 100%);
     display: grid;
-    grid-template-columns: 0.95fr 1.05fr;
-    min-height: 620px;
-    border-radius: var(--tracer-radius);
+    grid-template-columns: 1fr 1.05fr;
+    min-height: 650px;
+    border-radius: 28px;
     overflow: hidden;
-    background: rgba(255, 255, 255, 0.56);
-    border: 1px solid rgba(255, 255, 255, 0.76);
-    box-shadow: var(--tracer-shadow);
-    backdrop-filter: blur(22px);
+    background: rgba(255,255,255,0.14);
+    border: 1px solid rgba(255,255,255,0.18);
+    box-shadow: 0 20px 60px rgba(0,0,0,0.35);
+    backdrop-filter: blur(18px);
 }
 
 .login-brand-panel {
@@ -499,13 +550,37 @@ body.auth-page {
     display: flex;
     flex-direction: column;
     justify-content: space-between;
-    padding: 42px;
+    padding: 48px;
     color: #ffffff;
     background:
-        linear-gradient(rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-        linear-gradient(90deg, rgba(255, 255, 255, 0.07) 1px, transparent 1px),
-        linear-gradient(145deg, #071a42 0%, #1557c0 65%, #18a9db 100%);
-    background-size: 38px 38px, 38px 38px, auto;
+        linear-gradient(rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255,255,255,0.05) 1px, transparent 1px),
+        linear-gradient(
+            145deg,
+            rgba(7,26,66,0.96) 0%,
+            rgba(21,87,192,0.92) 65%,
+            rgba(24,169,219,0.88) 100%
+        );
+    background-size: 40px 40px, 40px 40px, auto;
+}
+
+.login-brand-panel,
+.login-panel {
+    position: relative;
+    z-index: 2;
+}
+
+/* LIGHT EFFECT */
+.login-brand-panel::before {
+    content: '';
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    border-radius: 50%;
+    top: -120px;
+    right: -120px;
+    background: rgba(255,255,255,0.08);
+    filter: blur(18px);
 }
 
 .login-logo-wrap {
@@ -519,13 +594,137 @@ body.auth-page {
     box-shadow: 0 18px 38px rgba(0, 0, 0, 0.18);
 }
 
+.login-logo-wrap:hover {
+    transform: scale(1.04);
+}
+
 .login-logo-wrap img {
-    width: 68px;
-    height: 68px;
+    width: 70px;
+    height: 70px;
     object-fit: contain;
 }
 
+/* =========================================
+   TITLE
+========================================= */
+
 .login-brand-panel h1 {
+    position: relative;
+    z-index: 2;
+
+    margin: 34px 0 16px;
+
+    font-size: clamp(2.4rem, 4vw, 4rem);
+
+    line-height: 1.05;
+
+    font-weight: 800;
+
+    letter-spacing: -1px;
+}
+
+.login-brand-panel p {
+    position: relative;
+    z-index: 2;
+
+    color: rgba(255,255,255,0.82);
+
+    line-height: 1.9;
+
+    font-size: 1rem;
+}
+
+/* =========================================
+   MINI STATS
+========================================= */
+
+.login-mini-stats {
+    position: relative;
+    z-index: 2;
+
+    display: grid;
+
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+
+    gap: 1rem;
+}
+
+.login-mini-stat {
+    padding: 1rem 1.1rem;
+
+    border-radius: 20px;
+
+    background: rgba(255,255,255,0.12);
+
+    border: 1px solid rgba(255,255,255,0.14);
+
+    backdrop-filter: blur(14px);
+
+    transition: all 0.3s ease;
+}
+
+.login-mini-stat:hover {
+    transform: translateY(-3px);
+    background: rgba(255,255,255,0.16);
+}
+
+.login-mini-stat strong {
+    display: block;
+
+    font-size: 1.2rem;
+
+    margin-bottom: 6px;
+}
+
+.login-mini-stat span {
+    color: rgba(255,255,255,0.75);
+
+    font-size: 0.82rem;
+}
+
+/* =========================================
+   RIGHT PANEL
+========================================= */
+
+.login-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+
+    padding: 56px;
+
+    background: rgba(255,255,255,0.96);
+
+    backdrop-filter: blur(14px);
+}
+
+.login-panel h2 {
+    font-weight: 800;
+    font-size: 2.5rem;
+    color: var(--tracer-ink);
+}
+
+.login-panel .subtitle {
+    color: var(--tracer-muted);
+    line-height: 1.8;
+    font-size: 1rem;
+}
+
+/* =========================================
+   ALERT
+========================================= */
+
+.alert-soft {
+    border-radius: 18px;
+
+    padding: 0.9rem 1rem;
+
+    font-size: 0.9rem;
+
+    border: 1px solid transparent;
+}
+
+/* .login-brand-panel h1 {
     margin: 32px 0 14px;
     font-size: clamp(2rem, 4vw, 3.3rem);
     line-height: 1;
@@ -585,7 +784,7 @@ body.auth-page {
     padding: 0.9rem 1rem;
     font-size: 0.9rem;
     border: 1px solid transparent;
-}
+} */
 
 .alert-soft-danger {
     background: #fff1f2;
@@ -875,7 +1074,7 @@ body.sb-nav-fixed main > .container-fluid {
     background:
         linear-gradient(rgba(255, 255, 255, 0.08) 1px, transparent 1px),
         linear-gradient(90deg, rgba(255, 255, 255, 0.08) 1px, transparent 1px),
-        linear-gradient(135deg, #08224f 0%, #1557c0 62%, #16a6d7 100%);
+        linear-gradient(90deg, #16a6d7 0%, #1557c0 62%, #08224f 100%);
     background-size: 34px 34px, 34px 34px, auto;
     box-shadow: 0 22px 55px rgba(8, 34, 79, 0.18);
 }
@@ -1023,7 +1222,7 @@ body.sb-nav-fixed .alert {
     border-radius: var(--tracer-radius);
 }
 
-@media (max-width: 991.98px) {
+/* @media (max-width: 991.98px) {
     body.sb-nav-fixed {
         --admin-sidebar-width: 250px;
         --admin-topbar-height: 64px;
@@ -1129,5 +1328,397 @@ body.sb-nav-fixed .alert {
     .role-grid,
     .login-mini-stats {
         grid-template-columns: 1fr;
+    }
+} */
+
+/* =========================================
+   RESPONSIVE DESIGN
+========================================= */
+
+/* =========================================
+   LARGE TABLET
+========================================= */
+@media (max-width: 1199.98px) {
+
+    .login-shell {
+        width: min(1000px, 100%);
+    }
+
+    .login-brand-panel,
+    .login-panel {
+        padding: 42px;
+    }
+
+    .login-brand-panel h1 {
+        font-size: clamp(2rem, 4vw, 3.4rem);
+    }
+}
+
+/* =========================================
+   TABLET
+========================================= */
+@media (max-width: 991.98px) {
+
+    body.sb-nav-fixed {
+        --admin-sidebar-width: 250px;
+        --admin-topbar-height: 64px;
+    }
+
+    /* TOPBAR */
+    .sb-topnav .navbar-brand {
+        width: auto;
+        min-width: 0;
+        padding-left: 0.75rem;
+    }
+
+    .sb-topnav .navbar-brand .brand-title {
+        font-size: 1rem;
+    }
+
+    .sb-topnav .form-inline {
+        display: none !important;
+    }
+
+    .sb-nav-fixed #layoutSidenav #layoutSidenav_content {
+        padding-left: var(--admin-sidebar-width);
+    }
+
+    /* LANDING */
+    .landing-navbar .navbar-collapse {
+        margin-top: 1rem;
+        padding: 0.85rem;
+        border-radius: var(--tracer-radius);
+
+        background: rgba(8, 34, 79, 0.92);
+
+        border: 1px solid rgba(255, 255, 255, 0.12);
+    }
+
+    .hero-section {
+        padding-top: 110px;
+        padding-bottom: 80px;
+    }
+
+    .hero-stat-grid,
+    .glass-info-row {
+        grid-template-columns: 1fr;
+    }
+
+    /* LOGIN */
+    .login-shell {
+        width: min(700px, 100%);
+        grid-template-columns: 1fr;
+        min-height: auto;
+    }
+
+    .login-brand-panel {
+        min-height: auto;
+        padding: 42px;
+    }
+
+    .login-panel {
+        padding: 42px;
+    }
+
+    .login-brand-panel h1 {
+        font-size: 2.8rem;
+    }
+
+    .login-panel h2 {
+        font-size: 2rem;
+    }
+
+    .login-mini-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+/* =========================================
+   MOBILE
+========================================= */
+@media (max-width: 767.98px) {
+
+    .auth-page {
+        padding: 18px;
+        align-items: flex-start;
+    }
+
+    .login-shell {
+        width: 100%;
+
+        grid-template-columns: 1fr;
+
+        min-height: auto !important;
+
+        margin-top: 12px;
+        margin-bottom: 12px;
+
+        border-radius: 22px;
+    }
+
+    .login-brand-panel,
+    .login-panel {
+        padding: 30px;
+    }
+
+    .login-brand-panel {
+        min-height: auto;
+    }
+
+    .login-brand-panel h1 {
+        font-size: 2.2rem;
+        line-height: 1.15;
+
+        margin-top: 24px;
+        margin-bottom: 14px;
+    }
+
+    .login-brand-panel p {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    .login-panel h2 {
+        font-size: 1.9rem;
+        line-height: 1.2;
+    }
+
+    .login-panel .subtitle {
+        font-size: 0.95rem;
+        line-height: 1.7;
+    }
+
+    /* MINI CARD */
+    .login-mini-stats {
+        grid-template-columns: 1fr;
+        gap: 14px;
+        margin-top: 24px;
+    }
+
+    .login-mini-stat {
+        padding: 16px;
+    }
+
+    .login-mini-stat strong {
+        font-size: 1.1rem;
+    }
+
+    .login-mini-stat span {
+        font-size: 0.82rem;
+    }
+
+    /* ROLE */
+    .role-grid {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .role-option {
+        min-height: 62px;
+    }
+
+    /* INPUT */
+    .auth-input {
+        height: 54px;
+        font-size: 0.95rem;
+    }
+
+    /* BUTTON */
+    .login-submit {
+        width: 100%;
+        height: 56px;
+        font-size: 1rem;
+    }
+
+    /* LOGO */
+    .login-logo-wrap {
+        width: 78px;
+        height: 78px;
+    }
+
+    .login-logo-wrap img {
+        width: 58px;
+        height: 58px;
+    }
+
+    /* HERO */
+    .hero-actions {
+        flex-direction: column;
+    }
+
+    .hero-actions .btn {
+        width: 100%;
+    }
+}
+
+/* =========================================
+   SMALL MOBILE
+========================================= */
+@media (max-width: 575.98px) {
+
+    body.sb-nav-fixed {
+        --admin-sidebar-width: 240px;
+    }
+
+    /* CONTENT */
+    #layoutSidenav_content main {
+        padding-top: 1rem;
+    }
+
+    body.sb-nav-fixed main > .container-fluid {
+        padding-left: 0.75rem !important;
+        padding-right: 0.75rem !important;
+    }
+
+    /* CARD */
+    body.sb-nav-fixed .card-header {
+        align-items: flex-start;
+        gap: 10px;
+    }
+
+    body.sb-nav-fixed .card-header .btn {
+        width: 100%;
+    }
+
+    /* DATATABLE */
+    body.sb-nav-fixed div.dataTables_wrapper div.dataTables_length,
+    body.sb-nav-fixed div.dataTables_wrapper div.dataTables_filter,
+    body.sb-nav-fixed div.dataTables_wrapper div.dataTables_info,
+    body.sb-nav-fixed div.dataTables_wrapper div.dataTables_paginate {
+        float: none;
+        text-align: left;
+    }
+
+    body.sb-nav-fixed div.dataTables_wrapper div.dataTables_filter label,
+    body.sb-nav-fixed div.dataTables_wrapper div.dataTables_filter input {
+        width: 100%;
+        margin-left: 0;
+    }
+
+    /* HERO */
+    .hero-section {
+        padding-top: 100px;
+        padding-bottom: 70px;
+    }
+
+    /* LOGIN */
+    .auth-page {
+        padding: 14px;
+    }
+
+    .login-shell {
+        border-radius: 20px;
+    }
+
+    .login-brand-panel,
+    .login-panel {
+        padding: 24px;
+    }
+
+    .login-brand-panel h1 {
+        font-size: 2rem;
+    }
+
+    .login-brand-panel p {
+        font-size: 0.9rem;
+    }
+
+    .login-panel h2 {
+        font-size: 1.6rem;
+    }
+
+    .login-panel .subtitle {
+        font-size: 0.9rem;
+    }
+
+    .login-logo-wrap {
+        width: 72px;
+        height: 72px;
+    }
+
+    .login-logo-wrap img {
+        width: 52px;
+        height: 52px;
+    }
+
+    .login-mini-stats,
+    .role-grid {
+        grid-template-columns: 1fr;
+    }
+
+    .login-mini-stat {
+        padding: 14px;
+    }
+
+    .login-submit {
+        width: 100%;
+    }
+}
+
+/* =========================================
+   EXTRA SMALL DEVICE
+========================================= */
+@media (max-width: 420px) {
+
+    .auth-page {
+        padding: 10px;
+    }
+
+    .login-shell {
+        border-radius: 18px;
+    }
+
+    .login-brand-panel,
+    .login-panel {
+        padding: 20px;
+    }
+
+    .login-brand-panel h1 {
+        font-size: 1.75rem;
+        line-height: 1.15;
+    }
+
+    .login-brand-panel p,
+    .login-panel .subtitle {
+        font-size: 0.85rem;
+        line-height: 1.6;
+    }
+
+    .login-panel h2 {
+        font-size: 1.45rem;
+        line-height: 1.2;
+    }
+
+    .login-mini-stat strong {
+        font-size: 1rem;
+    }
+
+    .login-mini-stat span {
+        font-size: 0.74rem;
+    }
+
+    .auth-input {
+        height: 50px;
+        font-size: 0.9rem;
+    }
+
+    .login-submit {
+        height: 52px;
+        font-size: 0.95rem;
+    }
+
+    .role-option {
+        min-height: 56px;
+        padding: 12px;
+    }
+
+    .login-logo-wrap {
+        width: 66px;
+        height: 66px;
+    }
+
+    .login-logo-wrap img {
+        width: 48px;
+        height: 48px;
     }
 }

@@ -31,15 +31,6 @@ class alumniModel extends Authenticatable
         'nama_instansi',
         'posisi',
         'image',
-        'nik',
-        'npwp',
-        'kode_pt',
-        'kode_prodi',
-        'salary',
-        'provinsi_kerja',
-        'kota_kerja',
-        'jenis_instansi',
-        'bulan_dapat_kerja',
     ];
 
     protected $casts = [
@@ -97,18 +88,8 @@ class alumniModel extends Authenticatable
         return $this->belongsTo(User::class, 'user_id', 'id');
     }
 
-    public function provinsiKerja()
-    {
-        return $this->belongsTo(Provinsi::class, 'provinsi_kerja', 'id');
-    }
-
-    public function kotaKerja()
-    {
-        return $this->belongsTo(KotaKabupaten::class, 'kota_kerja', 'id');
-    }
-
     public function answers(): HasMany
-{
-    return $this->hasMany(Answer::class, 'alumni_id', 'id');
-}
+    {
+        return $this->hasMany(Answer::class, 'alumni_id', 'id');
+    }
 }

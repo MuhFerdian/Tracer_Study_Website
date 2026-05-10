@@ -16,7 +16,6 @@ class DatabaseSeeder extends Seeder
             UserSeeder::class,
             AlumniSeeder::class,
             ProvinsiSeeder::class,
-            JenisInstansiSeeder::class,
             QuestionSeeder::class,
         ]);
     }

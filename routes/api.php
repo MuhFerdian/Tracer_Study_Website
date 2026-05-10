@@ -35,9 +35,7 @@ Route::get('/cek-alumni', [MobileAuthController::class, 'checkAlumni']);
 // Route::post('/login', [MobileAuthController::class, 'login']);
 
 Route::get('/questions', [MobileQuestionController::class, 'index']);
-
 Route::post('/answers', [MobileAnswerController::class, 'store']);
-
 Route::post('/verify-otp', [MobileAuthController::class, 'verifyOtp']);
 Route::post('/resend-otp', [MobileAuthController::class, 'resendOtp']);
 

@@ -2,7 +2,6 @@
 
 namespace App\Services;
 
-use Google\Auth\Credentials\ServiceAccountCredentials;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\DB;
 use App\Models\User;
@@ -28,14 +27,8 @@ class FcmService
         // AUTH FIREBASE (V1)
         // ========================
         $credentialsPath = storage_path("app/firebase/service-account.json");
-
-        $credentials = new ServiceAccountCredentials(
-            "https://www.googleapis.com/auth/firebase.messaging",
-            $credentialsPath
-        );
-
-        $tokenData = $credentials->fetchAuthToken();
-        $accessToken = $tokenData['access_token'];
+        $serviceAccount = json_decode(file_get_contents($credentialsPath), true);
+        $accessToken = $this->getAccessToken($serviceAccount);
 
         // ========================
         // KIRIM FCM
@@ -69,4 +62,39 @@ class FcmService
         $userId
     );
 }
+
+    private function getAccessToken(array $serviceAccount): string
+    {
+        $now = time();
+
+        $header = $this->base64UrlEncode(json_encode([
+            'alg' => 'RS256',
+            'typ' => 'JWT',
+        ]));
+
+        $claims = $this->base64UrlEncode(json_encode([
+            'iss' => $serviceAccount['client_email'],
+            'scope' => 'https://www.googleapis.com/auth/firebase.messaging',
+            'aud' => 'https://oauth2.googleapis.com/token',
+            'iat' => $now,
+            'exp' => $now + 3600,
+        ]));
+
+        $signature = '';
+        openssl_sign($header . '.' . $claims, $signature, $serviceAccount['private_key'], OPENSSL_ALGO_SHA256);
+
+        $jwt = $header . '.' . $claims . '.' . $this->base64UrlEncode($signature);
+
+        $response = Http::asForm()->post('https://oauth2.googleapis.com/token', [
+            'grant_type' => 'urn:ietf:params:oauth:grant-type:jwt-bearer',
+            'assertion' => $jwt,
+        ]);
+
+        return $response->json('access_token');
+    }
+
+    private function base64UrlEncode(string $data): string
+    {
+        return rtrim(strtr(base64_encode($data), '+/', '-_'), '=');
+    }
 }

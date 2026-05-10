@@ -10,9 +10,9 @@ class AnswerDetail extends Model
     use HasFactory;
     protected $table = 'answer_details';
     protected $fillable = [
-    'answer_id',
-    'option_id',
-    'value'
+        'answer_id',
+        'option_id',
+        'value'
     ];
     public function answer()
     {

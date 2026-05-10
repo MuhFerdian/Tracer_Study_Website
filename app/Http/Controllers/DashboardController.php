@@ -11,46 +11,67 @@ class DashboardController extends Controller
     {
         return view('layoutAdmin.index');
     }
-    // public function indexDosen()
-    // {
-    //     return view('layoutAdmin.index'); // atau beda view
-    // }
 
+    // ==================================================
+    // Summary Cards (Total Alumni, Sudah Isi, Belum Isi)
+    // ==================================================
     public function getSummary()
     {
         $total = DB::table('alumni')->count();
-
-        $sudah = DB::table('answers')
-            ->distinct('alumni_id')
-            ->count('alumni_id');
+        $sudah = DB::table('answers')->distinct('alumni_id')->count('alumni_id');
 
         return response()->json([
             'total_alumni' => $total,
-            'sudah_isi' => $sudah,
-            'belum_isi' => $total - $sudah,
+            'sudah_isi'    => $sudah,
+            'belum_isi'    => $total - $sudah,
         ]);
     }
+
+    // ==================================================
+    // Grafik Sebaran Jenis Instansi
+    // Diambil dari jawaban questionnaire f1101
+    // ==================================================
     public function getInstansiChartData()
     {
-        $data = DB::table('alumni')
-            ->selectRaw("
-                CASE 
-                    WHEN nama_instansi IS NULL OR nama_instansi = '' THEN 'Belum Diisi'
-                    ELSE nama_instansi
-                END as jenis_instansi,
-                COUNT(*) as total
-            ")
-            ->groupBy('jenis_instansi')
-            ->orderByDesc('total')
-            ->get();
+        $data = DB::select("
+            SELECT
+                qo.label AS jenis_instansi,
+                COUNT(ad.id) AS total
+            FROM answer_details ad
+            JOIN answers a    ON a.id  = ad.answer_id
+            JOIN questions q  ON q.id  = a.question_id
+            JOIN question_options qo ON qo.id = ad.option_id
+            WHERE q.kode_soal = 'f1101'
+            GROUP BY qo.id, qo.label
+            ORDER BY total DESC
+        ");
+
+        // Fallback jika belum ada jawaban
+        if (empty($data)) {
+            $data = DB::table('alumni')
+                ->selectRaw("
+                    CASE
+                        WHEN nama_instansi IS NULL OR nama_instansi = '' THEN 'Belum Diisi'
+                        ELSE nama_instansi
+                    END as jenis_instansi,
+                    COUNT(*) as total
+                ")
+                ->groupBy('jenis_instansi')
+                ->orderByDesc('total')
+                ->get();
+        }
 
         return response()->json($data);
     }
+
+    // ==================================================
+    // Grafik Sebaran Profesi Lulusan
+    // ==================================================
     public function getProfesiChart()
     {
         $data = DB::table('alumni')
             ->selectRaw("
-                CASE 
+                CASE
                     WHEN posisi IS NOT NULL AND posisi != '' THEN posisi
                     WHEN status_pekerjaan IS NOT NULL AND status_pekerjaan != '' THEN status_pekerjaan
                     ELSE 'Belum Diisi'
@@ -64,6 +85,9 @@ class DashboardController extends Controller
         return response()->json($data);
     }
 
+    // ==================================================
+    // Tabel Rekap Alumni per Tahun Lulus
+    // ==================================================
     public function getRekapAlumni()
     {
         $data = DB::table('alumni')
@@ -84,225 +108,147 @@ class DashboardController extends Controller
         return response()->json($data);
     }
 
+    // ==================================================
+    // Tabel Rata-rata Masa Tunggu
+    // ==================================================
     public function getAverageWaitingTime()
     {
         $results = DB::select("
             SELECT
                 COALESCE(a.tahun_lulus, 0) AS tahunlulus,
                 COUNT(a.id) AS jumlahlulusan,
-                SUM(CASE WHEN a.status_pekerjaan IS NOT NULL OR a.nama_instansi IS NOT NULL OR a.posisi IS NOT NULL THEN 1 ELSE 0 END) AS terlacaklulusan,
+                SUM(CASE
+                    WHEN a.status_pekerjaan IS NOT NULL
+                      OR a.nama_instansi IS NOT NULL
+                      OR a.posisi IS NOT NULL
+                    THEN 1 ELSE 0
+                END) AS terlacaklulusan,
                 'N/A' AS rata_rata_waktu_tunggu_bulan
-            FROM
-                alumni AS a
-            GROUP BY
-                a.tahun_lulus
-            ORDER BY
-                tahunlulus;
+            FROM alumni AS a
+            GROUP BY a.tahun_lulus
+            ORDER BY tahunlulus
         ");
 
         return response()->json($results);
     }
+
+    // ==================================================
+    // Tabel Penilaian Kepuasan Pengguna Lulusan
+    // Menggunakan schema baru: answer_details + question_options
+    // Scale: Sangat Tinggi→Sangat Baik, Tinggi→Baik, Sedang→Cukup, Rendah/SangatRendah→Kurang
+    // ==================================================
     public function getAlumniSatisfaction()
     {
         $results = DB::select("
             SELECT
                 q.pertanyaan AS jenis_kemampuan,
-                SUM(CASE WHEN qo.option_text = 'Sangat Baik' THEN 1 ELSE 0 END) AS sangat_baik,
-                SUM(CASE WHEN qo.option_text = 'Baik' THEN 1 ELSE 0 END) AS baik,
-                SUM(CASE WHEN qo.option_text = 'Cukup' THEN 1 ELSE 0 END) AS cukup,
-                SUM(CASE WHEN qo.option_text = 'Kurang' THEN 1 ELSE 0 END) AS kurang,
-                COUNT(ad.id) as total
+                SUM(CASE WHEN qo.label = 'Sangat Tinggi' THEN 1 ELSE 0 END) AS sangat_baik,
+                SUM(CASE WHEN qo.label = 'Tinggi'        THEN 1 ELSE 0 END) AS baik,
+                SUM(CASE WHEN qo.label = 'Sedang'        THEN 1 ELSE 0 END) AS cukup,
+                SUM(CASE WHEN qo.label IN ('Rendah', 'Sangat Rendah') THEN 1 ELSE 0 END) AS kurang,
+                COUNT(ad.id) AS total
             FROM answer_details ad
-            JOIN answers a ON a.id = ad.answer_id
-            JOIN questions q ON q.id = a.question_id
-            JOIN question_options qo ON qo.id = ad.question_option_id
+            JOIN answers a           ON a.id  = ad.answer_id
+            JOIN questions q         ON q.id  = a.question_id
+            JOIN question_options qo ON qo.id = ad.option_id
             GROUP BY q.id, q.pertanyaan
-            ORDER BY q.id
+            ORDER BY q.urutan
         ");
 
-        // Calculate percentages and format them
-        $formattedResults = [];
+        $formatted = [];
         foreach ($results as $item) {
-            $total = (int)$item->total; // Ensure total is an integer for division
-
-            $sangat_baik_persen = ($total > 0) ? ($item->sangat_baik / $total) * 100 : 0;
-            $baik_persen = ($total > 0) ? ($item->baik / $total) * 100 : 0;
-            $cukup_persen = ($total > 0) ? ($item->cukup / $total) * 100 : 0;
-            $kurang_persen = ($total > 0) ? ($item->kurang / $total) * 100 : 0;
-
-            $formattedResults[] = (object) [
+            $total = (int) $item->total;
+            $formatted[] = (object) [
                 'jenis_kemampuan' => $item->jenis_kemampuan,
-                'sangat_baik_persen' => number_format($sangat_baik_persen, 2, '.', '') . '%',
-                'baik_persen' => number_format($baik_persen, 2, '.', '') . '%',
-                'cukup_persen' => number_format($cukup_persen, 2, '.', '') . '%',
-                'kurang_persen' => number_format($kurang_persen, 2, '.', '') . '%',
-                'sangat_baik_raw' => $sangat_baik_persen, // Keep raw for total calculation
-                'baik_raw' => $baik_persen,
-                'cukup_raw' => $cukup_persen,
-                'kurang_raw' => $kurang_persen,
+                'sangat_baik'     => $total > 0 ? number_format(($item->sangat_baik / $total) * 100, 1) . '%' : '0%',
+                'baik'            => $total > 0 ? number_format(($item->baik     / $total) * 100, 1) . '%' : '0%',
+                'cukup'           => $total > 0 ? number_format(($item->cukup    / $total) * 100, 1) . '%' : '0%',
+                'kurang'          => $total > 0 ? number_format(($item->kurang   / $total) * 100, 1) . '%' : '0%',
             ];
         }
 
-        return response()->json($formattedResults);
+        return response()->json($formatted);
     }
 
-    public function getKerjaSama()
+    // ==================================================
+    // PRIVATE HELPER: Distribusi Jawaban per Kode Soal
+    // Memetakan skala 5 (Sangat Rendah–Sangat Tinggi)
+    // ke 4 kategori yang dipakai chart JS
+    // ==================================================
+    private function getSkillChartData(string $kodeSoal): \Illuminate\Http\JsonResponse
     {
         $results = DB::select("
-        SELECT
-            p.pertanyaan AS jenis_kemampuan,
-            j.jawaban AS tingkat_kepuasan,
-            COUNT(j.jawaban_id) AS jumlah_responden_per_tingkat
-        FROM
-            jawaban AS j
-        JOIN
-            pertanyaan AS p ON j.pertanyaan_id = p.pertanyaan_id
-        WHERE
-            p.pertanyaan_id = 1 
-        AND j.jawaban IN ('Sangat Baik', 'Baik', 'Cukup', 'Kurang') -- Ensure only valid satisfaction levels are counted
-        GROUP BY
-            p.pertanyaan,
-            j.jawaban
-        ORDER BY
-            p.pertanyaan,
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END;");
+            SELECT
+                CASE qo.label
+                    WHEN 'Sangat Tinggi' THEN 'Sangat Baik'
+                    WHEN 'Tinggi'        THEN 'Baik'
+                    WHEN 'Sedang'        THEN 'Cukup'
+                    WHEN 'Rendah'        THEN 'Kurang'
+                    WHEN 'Sangat Rendah' THEN 'Kurang'
+                    ELSE qo.label
+                END AS tingkat_kepuasan,
+                COUNT(ad.id) AS jumlah_responden_per_tingkat
+            FROM answer_details ad
+            JOIN answers a           ON a.id  = ad.answer_id
+            JOIN questions q         ON q.id  = a.question_id
+            JOIN question_options qo ON qo.id = ad.option_id
+            WHERE q.kode_soal = ?
+            GROUP BY tingkat_kepuasan
+            ORDER BY jumlah_responden_per_tingkat DESC
+        ", [$kodeSoal]);
+
         return response()->json($results);
     }
 
+    // ==================================================
+    // Chart Functions — menggunakan kode_soal dari QuestionSeeder
+    // ==================================================
+
+    /** Grafik Kerjasama Tim → f1771 (saat lulus) */
+    public function getKerjaSama()
+    {
+        return $this->getSkillChartData('f1771');
+    }
+
+    /** Grafik Keahlian Bidang Ilmu → f1763 (saat lulus) */
     public function keahlianChart()
     {
-        $data = DB::table('jawaban as j')
-            ->join('pertanyaan as p', 'j.pertanyaan_id', '=', 'p.pertanyaan_id')
-            ->select('p.pertanyaan as jenis_kemampuan', 'j.jawaban as tingkat_kepuasan', DB::raw('COUNT(j.jawaban_id) as jumlah_responden_per_tingkat'))
-            ->where('p.pertanyaan_id', 2)
-            ->whereIn('j.jawaban', ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'])
-            ->groupBy('p.pertanyaan', 'j.jawaban')
-            ->orderByRaw("
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END
-        ")
-            ->get();
-
-        return response()->json($data);
+        return $this->getSkillChartData('f1763');
     }
+
+    /** Grafik Kemampuan Bahasa Inggris → f1765 (saat lulus) */
     public function kemampuanBahasaChart()
     {
-        $data = DB::table('jawaban as j')
-            ->join('pertanyaan as p', 'j.pertanyaan_id', '=', 'p.pertanyaan_id')
-            ->select('p.pertanyaan as jenis_kemampuan', 'j.jawaban as tingkat_kepuasan', DB::raw('COUNT(j.jawaban_id) as jumlah_responden_per_tingkat'))
-            ->where('p.pertanyaan_id', 3)
-            ->whereIn('j.jawaban', ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'])
-            ->groupBy('p.pertanyaan', 'j.jawaban')
-            ->orderByRaw("
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END
-        ")
-            ->get();
-
-        return response()->json($data);
+        return $this->getSkillChartData('f1765');
     }
+
+    /** Grafik Kemampuan Komunikasi → f1769 (saat lulus) */
     public function kemampuanKomunikasiChart()
     {
-        $data = DB::table('jawaban as j')
-            ->join('pertanyaan as p', 'j.pertanyaan_id', '=', 'p.pertanyaan_id')
-            ->select('p.pertanyaan as jenis_kemampuan', 'j.jawaban as tingkat_kepuasan', DB::raw('COUNT(j.jawaban_id) as jumlah_responden_per_tingkat'))
-            ->where('p.pertanyaan_id', 4)
-            ->whereIn('j.jawaban', ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'])
-            ->groupBy('p.pertanyaan', 'j.jawaban')
-            ->orderByRaw("
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END
-        ")
-            ->get();
-
-        return response()->json($data);
+        return $this->getSkillChartData('f1769');
     }
+
+    /** Grafik Pengembangan Diri → f1773 (saat lulus) */
     public function pengembanganDiriChart()
     {
-        $data = DB::table('jawaban as j')
-            ->join('pertanyaan as p', 'j.pertanyaan_id', '=', 'p.pertanyaan_id')
-            ->select('p.pertanyaan as jenis_kemampuan', 'j.jawaban as tingkat_kepuasan', DB::raw('COUNT(j.jawaban_id) as jumlah_responden_per_tingkat'))
-            ->where('p.pertanyaan_id', 5)
-            ->whereIn('j.jawaban', ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'])
-            ->groupBy('p.pertanyaan', 'j.jawaban')
-            ->orderByRaw("
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END
-        ")
-            ->get();
-
-        return response()->json($data);
+        return $this->getSkillChartData('f1773');
     }
+
+    /**
+     * Grafik Kepemimpinan — belum ada pertanyaan di seeder.
+     * Tambahkan pertanyaan kepemimpinan via admin panel agar chart berisi data.
+     */
     public function kepemimpinanChart()
     {
-        $data = DB::table('jawaban as j')
-            ->join('pertanyaan as p', 'j.pertanyaan_id', '=', 'p.pertanyaan_id')
-            ->select('p.pertanyaan as jenis_kemampuan', 'j.jawaban as tingkat_kepuasan', DB::raw('COUNT(j.jawaban_id) as jumlah_responden_per_tingkat'))
-            ->where('p.pertanyaan_id', 6)
-            ->whereIn('j.jawaban', ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'])
-            ->groupBy('p.pertanyaan', 'j.jawaban')
-            ->orderByRaw("
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END
-        ")
-            ->get();
-
-        return response()->json($data);
+        return response()->json([]);
     }
+
+    /**
+     * Grafik Etos Kerja — belum ada pertanyaan di seeder.
+     * Tambahkan pertanyaan etos kerja via admin panel agar chart berisi data.
+     */
     public function etosKerjaChart()
     {
-        $data = DB::table('jawaban as j')
-            ->join('pertanyaan as p', 'j.pertanyaan_id', '=', 'p.pertanyaan_id')
-            ->select(
-                'p.pertanyaan as jenis_kemampuan',
-                'j.jawaban as tingkat_kepuasan',
-                DB::raw('COUNT(j.jawaban_id) as jumlah_responden_per_tingkat')
-            )
-            ->where('p.pertanyaan_id', 7)
-            ->whereIn('j.jawaban', ['Sangat Baik', 'Baik', 'Cukup', 'Kurang'])
-            ->groupBy('p.pertanyaan', 'j.jawaban')
-            ->orderByRaw("
-            CASE j.jawaban
-                WHEN 'Sangat Baik' THEN 1
-                WHEN 'Baik' THEN 2
-                WHEN 'Cukup' THEN 3
-                WHEN 'Kurang' THEN 4
-                ELSE 5
-            END
-        ")
-            ->get();
-
-        return response()->json($data);
+        return response()->json([]);
     }
 }

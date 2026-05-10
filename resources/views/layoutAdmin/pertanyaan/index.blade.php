@@ -69,7 +69,7 @@
 @push('js')
 <script>
 $(document).ready(function () {
-    window.dataPertanyaan = $('#tablePertanyaan').DataTable({
+    window.tablePertanyaan = $('#tablePertanyaan').DataTable({
         processing: true,
         serverSide: true,
         responsive: true,

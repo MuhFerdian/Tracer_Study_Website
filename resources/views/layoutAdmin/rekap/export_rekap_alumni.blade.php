@@ -7,10 +7,22 @@
             <li class="breadcrumb-item active">Dashboard / Alumni Sudah Mengisi</li>
         </ol>
 
+        @if(session('error'))
+            <div class="alert alert-danger alert-dismissible fade show">
+                <i class="fas fa-exclamation-circle me-2"></i>
+                {{ session('error') }}
+
+                <button type="button"
+                        class="btn-close"
+                        data-bs-dismiss="alert">
+                </button>
+            </div>
+        @endif
+
         <div class="card mb-4">
             <div class="card-header d-flex justify-content-between align-items-center">
                 <span class="fs-5"><i class="fas fa-users me-2"></i> Daftar Alumni Sudah Mengisi TS</span>
-                <a href="{{ url('/admin/rekap/export/alumni-sudah') }}" class="btn btn-success px-4 py-2 fs-6">
+                <a href="{{ route('export.alumni.sudah') }}" class="btn btn-success px-4 py-2 fs-6">
                     <i class="fas fa-file-export me-2"></i> Export
                 </a>
             </div>

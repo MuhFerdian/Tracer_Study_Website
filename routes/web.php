@@ -3,10 +3,8 @@
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ManajemenAlumniController;
-use App\Http\Controllers\ProfesiController;
 use App\Http\Controllers\PertanyaanController;
 use App\Http\Controllers\ExportController;
-use App\Http\Controllers\SurveiController;
 use App\Http\Controllers\ManajemenDosenController;
 use Illuminate\Support\Facades\Route;
 
@@ -120,10 +118,15 @@ Route::group([
     });
 
     // =======================
-    // EXPORT
+    // SURVEI ALUMNI
     // =======================
-    Route::get('/alumni-belum-mengisi', [ExportController::class, 'showAlumniBelumMengisi']);
-    Route::get('/rekap/export/excel', [ExportController::class, 'exportExcel']);
-    Route::get('/alumni-sudah-mengisi', [ExportController::class, 'showAlumni']);
-    Route::get('/rekap/export/alumni-sudah', [ExportController::class, 'exportExcelLulusan']);
+    Route::get('/alumni-sudah-mengisi', [ExportController::class, 'showAlumniSudahMengisi'])->name('alumni.sudah.mengisi');
+    Route::get('/alumni-belum-mengisi', [ExportController::class, 'showAlumniBelumMengisi'])->name('alumni.belum.mengisi');
+
+    // =======================
+    // EXPORT SEMUA DATA ALUMNI
+    // =======================
+    Route::get('/admin/export/alumni', [ExportController::class, 'exportExcel'])->name('export.alumni');
+    Route::get('/admin/export/alumni-sudah', [ExportController::class, 'exportExcelSudahMengisi'])->name('export.alumni.sudah');
+    Route::get('/admin/export/alumni-belum', [ExportController::class, 'exportExcelBelumMengisi'])->name('export.alumni.belum');
 });

@@ -24,20 +24,13 @@ return new class extends Migration
             $table->string('nama');
             $table->timestamps();
         });
-
-        // Tabel Jenis Instansi (untuk master data pekerjaan)
-        Schema::create('jenis_instansi', function (Blueprint $table) {
-            $table->id();
-            $table->string('kode')->unique();
-            $table->string('nama');
-            $table->text('deskripsi')->nullable();
-            $table->timestamps();
-        });
+        // Catatan: jenis_instansi dihapus dari master table.
+        // Data jenis instansi diambil langsung dari jawaban questionnaire
+        // (question f1101 → answer_details → question_options.label)
     }
 
     public function down(): void
     {
-        Schema::dropIfExists('jenis_instansi');
         Schema::dropIfExists('kota_kabupaten');
         Schema::dropIfExists('provinsi');
     }

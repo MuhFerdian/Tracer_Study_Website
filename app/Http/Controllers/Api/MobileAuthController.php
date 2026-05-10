@@ -43,8 +43,8 @@ class MobileAuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'nim' => 'required|string',
-            'email' => 'required|email',
+            'nim' => 'required|string|unique:users,nim',
+            'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
         ]);
 
