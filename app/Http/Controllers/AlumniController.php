@@ -70,4 +70,39 @@ class AlumniController extends Controller
 
         return response()->json(['message' => 'Data alumni berhasil diperbarui']);
     }
+
+    public function updateProfile(Request $request)
+    {
+        $request->validate([
+            'nim' => 'required',
+            'nama' => 'required',
+            'prodi' => 'required',
+            'angkatan' => 'required',
+            'tahun_lulus' => 'required',
+            'alamat' => 'required',
+        ]);
+
+        $alumni = alumniModel::where('nim', $request->nim)->first();
+
+        if (!$alumni) {
+            return response()->json([
+                'status' => false,
+                'message' => 'Data tidak ditemukan'
+            ]);
+        }
+
+        $alumni->update([
+            'nama' => $request->nama,
+            'prodi' => $request->prodi,
+            'angkatan' => $request->angkatan,
+            'tahun_lulus' => $request->tahun_lulus,
+            'alamat' => $request->alamat,
+        ]);
+
+        return response()->json([
+            'status' => true,
+            'message' => 'Profile berhasil diupdate',
+            'data' => $alumni
+        ]);
+    }
 }

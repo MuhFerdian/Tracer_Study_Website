@@ -15,13 +15,13 @@ class FcmService
         // ========================
         // SIMPAN KE DATABASE
         // ========================
-        DB::table('notifications')->insert([
-            'user_id' => $userId,
-            'title' => $title,
-            'body' => $body,
-            'created_at' => now(),
-            'updated_at' => now(),
-        ]);
+        // DB::table('notifications')->insert([
+        //     'user_id' => $userId,
+        //     'title' => $title,
+        //     'body' => $body,
+        //     'created_at' => now(),
+        //     'updated_at' => now(),
+        // ]);
 
         // ========================
         // AUTH FIREBASE (V1)
