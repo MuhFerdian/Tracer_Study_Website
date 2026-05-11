@@ -12,72 +12,52 @@ class MobileAnswerController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'answers' => 'required|array|min:1',
-            'answers.*.question_id' => 'required|exists:questions,id',
-            'answers.*.option_ids' => 'nullable|array',
-            'answers.*.value' => 'nullable'
+            'answers'                  => 'required|array|min:1',
+            'answers.*.question_id'    => 'required|exists:questions,id',
+            'answers.*.value'          => 'nullable',
         ]);
 
-        // ambil user login
-        $user = auth()->user();
-
-        // ambil alumni berdasarkan user
+        $user   = auth()->user();
         $alumni = $user->alumni;
 
         if (!$alumni) {
             return response()->json([
-                'status' => false,
-                'message' => 'Data alumni tidak ditemukan'
+                'status'  => false,
+                'message' => 'Data alumni tidak ditemukan',
             ], 404);
-        }
-        // DEBUG
-        if (!$alumni->id) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Alumni ID kosong'
-            ], 500);
         }
 
         foreach ($request->answers as $item) {
+            $value = $item['value'] ?? null;
 
-            // simpan ke table answers
+            // Skip jika value kosong / null
+            if ($value === null || $value === '' || $value === '[]') {
+                continue;
+            }
+
+            // Simpan / update header jawaban
             $answer = Answer::updateOrCreate(
                 [
-                    'alumni_id' => $alumni->id,
+                    'alumni_id'   => $alumni->id,
                     'question_id' => $item['question_id'],
                 ],
                 []
             );
 
-            // hapus detail lama
+            // Hapus detail lama sebelum simpan yang baru
             AnswerDetail::where('answer_id', $answer->id)->delete();
 
-            // =========================
-            // MULTIPLE / SINGLE OPTION
-            // =========================
-            if (!empty($item['option_ids'])) {
-                foreach ($item['option_ids'] as $optId) {
-                    AnswerDetail::create([
-                        'answer_id' => $answer->id,
-                        'option_id' => $optId,
-                    ]);
-                }
-            }
-
-            // =========================
-            // TEXT / SCALE
-            // =========================
-            if (!empty($item['value'])) {
-                AnswerDetail::create([
-                    'answer_id' => $answer->id,
-                    'value' => $item['value'],
-                ]);
-            }
+            // Simpan value langsung (bisa berupa string, angka, atau JSON array)
+            AnswerDetail::create([
+                'answer_id' => $answer->id,
+                'option_id' => null,
+                'value'     => is_array($value) ? json_encode($value) : (string) $value,
+            ]);
         }
 
         return response()->json([
-            'status' => true,
-            'message' => 'Jawaban berhasil disimpan'
+            'status'  => true,
+            'message' => 'Jawaban berhasil disimpan',
         ]);
     }
 }

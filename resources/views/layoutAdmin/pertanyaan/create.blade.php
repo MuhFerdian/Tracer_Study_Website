@@ -17,8 +17,15 @@
 
       <div class="mb-3">
         <label for="question_text" class="form-label">Pertanyaan</label>
-        <textarea class="form-control" id="question_text" name="question_text" placeholder='Jelaskan status Anda saat ini?' rows="3" required></textarea>
+        <textarea class="form-control" id="question_text" name="question_text" placeholder='Contoh: Jelaskan status Anda saat ini?' rows="3" required></textarea>
         <small id="error-question_text" class="text-danger"></small>
+      </div>
+
+      <div class="mb-3">
+        <label for="hint" class="form-label">Keterangan / Petunjuk <span class="text-muted">(opsional)</span></label>
+        <textarea class="form-control" id="hint" name="hint" rows="2" placeholder="Contoh: Pilih satu status yang paling sesuai kondisi Anda saat ini setelah lulus."></textarea>
+        <small class="form-text text-muted">Keterangan ini akan ditampilkan di bawah pertanyaan pada aplikasi mobile untuk membantu alumni memahami soal.</small>
+        <small id="error-hint" class="text-danger"></small>
       </div>
 
       <div class="mb-3">
@@ -57,6 +64,18 @@
         <button type="button" class="btn btn-sm btn-success mt-2" id="addMatrixItemBtn" onclick="addMatrixItemRow()">+ Tambah Item</button>
         <small class="form-text text-muted d-block mt-2">Masukkan setiap sub-pertanyaan (item) untuk matrix. Contoh: "Etika", "Bahasa Inggris", dll</small>
         <small id="error-matrix_items" class="text-danger"></small>
+      </div>
+
+      <div class="mb-3" id="tipeDataGroup" style="display: none;">
+        <label for="tipe_data" class="form-label">Tipe Data Input</label>
+        <select name="tipe_data" id="tipe_data" class="form-control">
+          <option value="text">Text (default)</option>
+          <option value="number">Number (angka)</option>
+          <option value="date">Date (tanggal)</option>
+          <option value="year">Year (tahun)</option>
+        </select>
+        <small class="form-text text-muted">Hanya berlaku untuk tipe pertanyaan <strong>Text</strong>. Digunakan sebagai hint input di mobile.</small>
+        <small id="error-tipe_data" class="text-danger"></small>
       </div>
 
       <div class="mb-3">
@@ -110,12 +129,20 @@
     const optionsGroup = $('#optionsGroup');
     const scaleInfo = $('#scaleInfo');
     const matrixItemsGroup = $('#matrixItemsGroup');
+    const tipeDataGroup = $('#tipeDataGroup');
     const optionsField = $('#options');
     const optionsRequired = $('#optionsRequired');
     const selectedType = typeSelect.val();
 
     // Tipe yang memerlukan options
     const typesWithOptions = ['single', 'multiple'];
+
+    // tipe_data hanya relevan untuk text
+    if (selectedType === 'text') {
+      tipeDataGroup.slideDown(300);
+    } else {
+      tipeDataGroup.slideUp(300);
+    }
 
     if (typesWithOptions.includes(selectedType)) {
       // Tampilkan field options dan set sebagai required

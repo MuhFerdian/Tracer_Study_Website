@@ -276,9 +276,14 @@ class MobileAuthController extends Controller
             ], 403);
         }
 
+        // Hapus token lama, buat token baru
+        $alumni->user->tokens()->delete();
+        $token = $alumni->user->createToken('alumni-token')->plainTextToken;
+
         return response()->json([
             'status' => true,
             'message' => 'Login berhasil',
+            'token' => $token,
             'user' => [
                 'user_id' => $alumni->user->id,
                 'alumni_id' => $alumni->id,

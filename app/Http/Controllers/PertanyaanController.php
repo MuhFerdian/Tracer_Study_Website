@@ -64,12 +64,15 @@ class PertanyaanController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
-                'kode_soal' => 'nullable|string|max:50',
+                'kode_soal'     => 'nullable|string|max:50',
+                'group_label'   => 'nullable|string|max:100',
                 'question_text' => 'required|string|min:5|max:255',
-                'type' => 'required|in:text,single,multiple,scale,matrix',
-                'urutan' => 'nullable|integer|min:1',
-                'options' => 'nullable|string',
-                'matrix_items' => 'nullable|string',
+                'hint'          => 'nullable|string|max:500',
+                'type'          => 'required|in:text,single,multiple,scale,matrix',
+                'tipe_data'     => 'nullable|in:text,number,date,year',
+                'urutan'        => 'nullable|integer|min:1',
+                'options'       => 'nullable|string',
+                'matrix_items'  => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -136,11 +139,17 @@ class PertanyaanController extends Controller
                 }
             }
 
+            // Tentukan tipe_data default berdasarkan type jika tidak diisi
+            $tipeData = $request->filled('tipe_data') ? $request->tipe_data : 'text';
+
             $question = Question::create([
-                'kode_soal' => $request->kode_soal,
-                'pertanyaan' => $request->question_text,
-                'type' => $request->type,
-                'urutan' => $request->filled('urutan') ? (int) $request->urutan : 0,
+                'kode_soal'   => $request->kode_soal,
+                'group_label' => $request->group_label,
+                'pertanyaan'  => $request->question_text,
+                'hint'        => $request->hint,
+                'type'        => $request->type,
+                'tipe_data'   => $tipeData,
+                'urutan'      => $request->filled('urutan') ? (int) $request->urutan : 0,
                 'is_required' => true,
             ]);
 
@@ -190,12 +199,15 @@ class PertanyaanController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
-                'kode_soal' => 'nullable|string|max:50',
+                'kode_soal'     => 'nullable|string|max:50',
+                'group_label'   => 'nullable|string|max:100',
                 'question_text' => 'required|string|min:5|max:255',
-                'type' => 'required|in:text,single,multiple,scale,matrix',
-                'urutan' => 'nullable|integer|min:1',
-                'options' => 'nullable|string',
-                'matrix_items' => 'nullable|string',
+                'hint'          => 'nullable|string|max:500',
+                'type'          => 'required|in:text,single,multiple,scale,matrix',
+                'tipe_data'     => 'nullable|in:text,number,date,year',
+                'urutan'        => 'nullable|integer|min:1',
+                'options'       => 'nullable|string',
+                'matrix_items'  => 'nullable|string',
             ]);
 
             if ($validator->fails()) {
@@ -266,10 +278,13 @@ class PertanyaanController extends Controller
 
             $question = Question::findOrFail($id);
             $question->update([
-                'kode_soal' => $request->kode_soal,
-                'pertanyaan' => $request->question_text,
-                'type' => $request->type,
-                'urutan' => $request->filled('urutan') ? (int) $request->urutan : 0,
+                'kode_soal'   => $request->kode_soal,
+                'group_label' => $request->group_label,
+                'pertanyaan'  => $request->question_text,
+                'hint'        => $request->hint,
+                'type'        => $request->type,
+                'tipe_data'   => $request->filled('tipe_data') ? $request->tipe_data : 'text',
+                'urutan'      => $request->filled('urutan') ? (int) $request->urutan : 0,
             ]);
 
             // =======================

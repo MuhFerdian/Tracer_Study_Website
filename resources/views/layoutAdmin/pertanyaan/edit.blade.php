@@ -22,6 +22,13 @@
           </div>
 
           <div class="mb-3">
+            <label for="hint" class="form-label">Keterangan / Petunjuk <span class="text-muted">(opsional)</span></label>
+            <textarea name="hint" id="hint" class="form-control" rows="2" placeholder="Contoh: Pilih satu status yang paling sesuai kondisi Anda saat ini setelah lulus.">{{ $data->hint ?? '' }}</textarea>
+            <small class="form-text text-muted">Keterangan ini akan ditampilkan di bawah pertanyaan pada aplikasi mobile untuk membantu alumni memahami soal.</small>
+            <small id="error-hint" class="error-text form-text text-danger"></small>
+          </div>
+
+          <div class="mb-3">
             <label for="type" class="form-label">Tipe</label>
             <select name="type" id="type" class="form-control" required>
               <option value="">-- Pilih Tipe --</option>
@@ -56,6 +63,18 @@
             <small class="form-text text-muted d-block mt-2">Masukkan setiap sub-pertanyaan (item) untuk matrix. Contoh: "Etika", "Bahasa Inggris", dll</small>
             <small id="error-matrix_items" class="error-text form-text text-danger"></small>
           </div>
+          <div class="mb-3" id="tipeDataGroup" style="{{ $data->type == 'text' ? '' : 'display:none;' }}">
+            <label for="tipe_data" class="form-label">Tipe Data Input</label>
+            <select name="tipe_data" id="tipe_data" class="form-control">
+              <option value="text" {{ ($data->tipe_data ?? 'text') == 'text' ? 'selected' : '' }}>Text (default)</option>
+              <option value="number" {{ ($data->tipe_data ?? '') == 'number' ? 'selected' : '' }}>Number (angka)</option>
+              <option value="date" {{ ($data->tipe_data ?? '') == 'date' ? 'selected' : '' }}>Date (tanggal)</option>
+              <option value="year" {{ ($data->tipe_data ?? '') == 'year' ? 'selected' : '' }}>Year (tahun)</option>
+            </select>
+            <small class="form-text text-muted">Hanya berlaku untuk tipe pertanyaan <strong>Text</strong>. Digunakan sebagai hint input di mobile.</small>
+            <small id="error-tipe_data" class="error-text form-text text-danger"></small>
+          </div>
+
           <div class="mb-3">
             <label for="urutan" class="form-label">Urutan pertanyaan</label>
             <input type="number" name="urutan" id="urutan" class="form-control" min="1" value="{{ $data->urutan ?? 1 }}">
@@ -106,12 +125,20 @@
     const optionsGroup = $('#optionsGroup');
     const scaleInfo = $('#scaleInfo');
     const matrixItemsGroup = $('#matrixItemsGroup');
+    const tipeDataGroup = $('#tipeDataGroup');
     const optionsField = $('#options');
     const optionsRequired = $('#optionsRequired');
     const selectedType = typeSelect.val();
 
     // Tipe yang memerlukan options
     const typesWithOptions = ['single', 'multiple'];
+
+    // tipe_data hanya relevan untuk text
+    if (selectedType === 'text') {
+      tipeDataGroup.slideDown(300);
+    } else {
+      tipeDataGroup.slideUp(300);
+    }
 
     if (typesWithOptions.includes(selectedType)) {
       // Tampilkan field options dan set sebagai required
