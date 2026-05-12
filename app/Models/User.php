@@ -20,6 +20,7 @@ class User extends Authenticatable
         'username',
         'name',
         'email',
+        'no_telp',
         'nim',
         'status',
         'tanggal_lahir',
