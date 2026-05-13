@@ -8,6 +8,7 @@ use App\Http\Controllers\PertanyaanReferenceController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManajemenDosenController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\LokerController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -140,4 +141,18 @@ Route::group([
     // =======================
     Route::get('/profile/change-password', [ProfileController::class, 'changePasswordForm'])->name('profile.change-password.form');
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
+    
+    // =======================
+    // TAMBAH LOWONGAN KERJA
+    // =======================
+    Route::prefix('loker')->group(function () {
+        Route::get('/', [LokerController::class, 'index']);
+        Route::get('/list', [LokerController::class, 'list']);
+        Route::get('/create_ajax', [LokerController::class, 'create_ajax']);
+        Route::post('/store', [LokerController::class, 'store']);
+        Route::get('/{id}/edit', [LokerController::class, 'edit']);
+        Route::put('/{id}/update', [LokerController::class, 'update']);
+        Route::get('/{id}/delete', [LokerController::class, 'confirm']);
+        Route::delete('/{id}/delete', [LokerController::class, 'destroy']);
+    });
 });
