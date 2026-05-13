@@ -11,7 +11,6 @@ class Question extends Model
     
     protected $fillable = [
         'kode_soal',
-        'group_label',
         'pertanyaan',
         'hint',
         'type',

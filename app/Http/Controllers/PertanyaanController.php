@@ -45,8 +45,10 @@ class PertanyaanController extends Controller
                     return $row->options->pluck('label')->implode(', ');
                 })
                 ->addColumn('aksi', function ($row) {
-                    $btn = '<button onclick="modalEdit(\'' . url('/admin/pertanyaan/' . $row->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button> ';
+                    $btn  = '<div class="d-flex gap-1 justify-content-center">';
+                    $btn .= '<button onclick="modalEdit(\'' . url('/admin/pertanyaan/' . $row->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button>';
                     $btn .= '<button onclick="modalDelete(\'' . url('/admin/pertanyaan/' . $row->id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
+                    $btn .= '</div>';
                     return $btn;
                 })
                 ->rawColumns(['aksi'])
@@ -65,7 +67,6 @@ class PertanyaanController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
                 'kode_soal'     => 'nullable|string|max:50',
-                'group_label'   => 'nullable|string|max:100',
                 'question_text' => 'required|string|min:5|max:255',
                 'hint'          => 'nullable|string|max:500',
                 'type'          => 'required|in:text,single,multiple,scale,matrix',
@@ -83,9 +84,14 @@ class PertanyaanController extends Controller
                 ]);
             }
 
-            // Validasi urutan - cek duplicate
-            $urutan = $request->filled('urutan') ? (int) $request->urutan : 0;
-            if ($urutan > 0) {
+            // Tentukan urutan - jika kosong, gunakan max + 1
+            $urutan = $request->filled('urutan') ? (int) $request->urutan : null;
+            if ($urutan === null || $urutan <= 0) {
+                // Auto-increment ke urutan terakhir + 1
+                $maxUrutan = Question::max('urutan') ?? 0;
+                $urutan = $maxUrutan + 1;
+            } else {
+                // Validasi duplicate jika urutan diisi manual
                 $urutanExists = Question::where('urutan', $urutan)->exists();
                 if ($urutanExists) {
                     return response()->json([
@@ -144,12 +150,11 @@ class PertanyaanController extends Controller
 
             $question = Question::create([
                 'kode_soal'   => $request->kode_soal,
-                'group_label' => $request->group_label,
                 'pertanyaan'  => $request->question_text,
                 'hint'        => $request->hint,
                 'type'        => $request->type,
                 'tipe_data'   => $tipeData,
-                'urutan'      => $request->filled('urutan') ? (int) $request->urutan : 0,
+                'urutan'      => $urutan,
                 'is_required' => true,
             ]);
 
@@ -173,8 +178,6 @@ class PertanyaanController extends Controller
                     QuestionDetail::create([
                         'question_id' => $question->id,
                         'item_label' => $item['label'] ?? '',
-                        'field_code_a' => $item['field_code_a'] ?? null,
-                        'field_code_b' => $item['field_code_b'] ?? null,
                         'urutan' => $idx + 1,
                     ]);
                 }
@@ -200,7 +203,6 @@ class PertanyaanController extends Controller
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
                 'kode_soal'     => 'nullable|string|max:50',
-                'group_label'   => 'nullable|string|max:100',
                 'question_text' => 'required|string|min:5|max:255',
                 'hint'          => 'nullable|string|max:500',
                 'type'          => 'required|in:text,single,multiple,scale,matrix',
@@ -218,9 +220,14 @@ class PertanyaanController extends Controller
                 ]);
             }
 
-            // Validasi urutan - cek duplicate (kecuali untuk record yang sedang di-edit)
-            $urutan = $request->filled('urutan') ? (int) $request->urutan : 0;
-            if ($urutan > 0) {
+            // Tentukan urutan - jika kosong, gunakan max + 1
+            $urutan = $request->filled('urutan') ? (int) $request->urutan : null;
+            if ($urutan === null || $urutan <= 0) {
+                // Auto-increment ke urutan terakhir + 1
+                $maxUrutan = Question::max('urutan') ?? 0;
+                $urutan = $maxUrutan + 1;
+            } else {
+                // Validasi duplicate jika urutan diisi manual (kecuali untuk record yang sedang di-edit)
                 $urutanExists = Question::where('urutan', $urutan)
                     ->where('id', '!=', $id)
                     ->exists();
@@ -279,12 +286,11 @@ class PertanyaanController extends Controller
             $question = Question::findOrFail($id);
             $question->update([
                 'kode_soal'   => $request->kode_soal,
-                'group_label' => $request->group_label,
                 'pertanyaan'  => $request->question_text,
                 'hint'        => $request->hint,
                 'type'        => $request->type,
                 'tipe_data'   => $request->filled('tipe_data') ? $request->tipe_data : 'text',
-                'urutan'      => $request->filled('urutan') ? (int) $request->urutan : 0,
+                'urutan'      => $urutan,
             ]);
 
             // =======================
@@ -310,40 +316,33 @@ class PertanyaanController extends Controller
                 Log::warning('FCM notification gagal: ' . $e->getMessage());
             }
 
-            // Hapus options lama dan buat yang baru
-            if ($request->filled('options') && in_array($request->type, ['single', 'multiple'])) {
-                $question->options()->delete();
+            // Hapus semua options dan details lama dulu, lalu isi ulang sesuai tipe baru
+            $question->options()->delete();
+            $question->details()->delete();
+
+            if (in_array($request->type, ['single', 'multiple'])) {
+                // Simpan options baru
                 $options = $this->parseOptions($request->options);
                 foreach ($options as $idx => $label) {
                     QuestionOption::create([
                         'question_id' => $question->id,
-                        'label' => $label,
-                        'value' => $label,
-                        'urutan' => $idx + 1,
+                        'label'       => $label,
+                        'value'       => $label,
+                        'urutan'      => $idx + 1,
                     ]);
                 }
-            } else if (in_array($request->type, ['text', 'scale'])) {
-                // Hapus options jika type diubah ke text atau scale
-                $question->options()->delete();
-            }
-
-            // Hapus matrix items lama dan buat yang baru
-            if ($request->filled('matrix_items') && $request->type === 'matrix') {
-                $question->details()->delete();
+            } elseif ($request->type === 'matrix' && $request->filled('matrix_items')) {
+                // Simpan matrix items baru
                 $matrixItems = $this->parseMatrixItems($request->matrix_items);
                 foreach ($matrixItems as $idx => $item) {
                     QuestionDetail::create([
                         'question_id' => $question->id,
-                        'item_label' => $item['label'] ?? '',
-                        'field_code_a' => $item['field_code_a'] ?? null,
-                        'field_code_b' => $item['field_code_b'] ?? null,
-                        'urutan' => $idx + 1,
+                        'item_label'  => $item['label'] ?? '',
+                        'urutan'      => $idx + 1,
                     ]);
                 }
-            } else if ($request->type !== 'matrix') {
-                // Hapus matrix items jika type diubah dari matrix
-                $question->details()->delete();
             }
+            // Untuk tipe text dan scale tidak perlu options/details
 
             return response()->json([
                 'status' => true,

@@ -12,8 +12,6 @@ class QuestionDetail extends Model
     protected $fillable = [
         'question_id',
         'item_label',
-        'field_code_a',
-        'field_code_b',
         'urutan'
     ];
 

@@ -1,87 +1,120 @@
-<div class="modal fade" id="modalEdit" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
+﻿<div class="modal fade" id="modalEdit" tabindex="-1" role="dialog" aria-labelledby="editModalLabel" aria-hidden="true">
   <div class="modal-dialog modal-lg" role="document">
-    <form action="{{ url('/admin/pertanyaan/' . $data->id . '/update_ajax') }}" method="POST" id="form-edit">
+    <form action="{{ url("/admin/pertanyaan/" . $data->id . "/update_ajax") }}" method="POST" id="form-edit">
       @csrf
-      @method('PUT')
+      @method("PUT")
       <div class="modal-content">
         <div class="modal-header">
           <h5 class="modal-title" id="editModalLabel">Edit Pertanyaan</h5>
           <button type="button" class="btn-close" aria-label="Close" onclick="closeModalEdit()"></button>
         </div>
         <div class="modal-body">
+
+          {{-- Kode Soal --}}
           <div class="mb-3">
-            <label for="kode_soal" class="form-label">Kode Soal</label>
-            <input type="text" name="kode_soal" id="kode_soal" class="form-control" value="{{ $data->kode_soal ?? '' }}" placeholder="Contoh: f8, f502, f1761/f1762">
-          <small id="error-kode_soal" class="text-danger"></small>
+            <label class="form-label">Kode Soal</label>
+            <input type="text" name="kode_soal" id="kode_soal" class="form-control"
+                   value="{{ $data->kode_soal ?? '' }}" placeholder="Contoh: f8, f502">
+            <small id="error-kode_soal" class="text-danger"></small>
           </div>
 
+          {{-- Pertanyaan --}}
           <div class="mb-3">
-            <label for="question_text" class="form-label">Pertanyaan</label>
-            <textarea name="question_text" id="question_text" class="form-control" placeholder='Jelaskan status Anda saat ini?' rows="3" required>{{ $data->pertanyaan }}</textarea>
-            <small id="error-question_text" class="error-text form-text text-danger"></small>
+            <label class="form-label">Pertanyaan <span class="text-danger">*</span></label>
+            <textarea name="question_text" id="question_text" class="form-control" rows="3" required
+                      placeholder="Contoh: Jelaskan status Anda saat ini?">{{ $data->pertanyaan }}</textarea>
+            <small id="error-question_text" class="text-danger"></small>
           </div>
 
+          {{-- Hint --}}
           <div class="mb-3">
-            <label for="hint" class="form-label">Keterangan / Petunjuk <span class="text-muted">(opsional)</span></label>
-            <textarea name="hint" id="hint" class="form-control" rows="2" placeholder="Contoh: Pilih satu status yang paling sesuai kondisi Anda saat ini setelah lulus.">{{ $data->hint ?? '' }}</textarea>
-            <small class="form-text text-muted">Keterangan ini akan ditampilkan di bawah pertanyaan pada aplikasi mobile untuk membantu alumni memahami soal.</small>
-            <small id="error-hint" class="error-text form-text text-danger"></small>
+            <label class="form-label">Keterangan / Petunjuk <span class="text-muted">(opsional)</span></label>
+            <textarea name="hint" id="hint" class="form-control" rows="2"
+                      placeholder="Keterangan untuk membantu alumni memahami soal">{{ $data->hint ?? '' }}</textarea>
+            <small class="form-text text-muted">Ditampilkan di bawah pertanyaan pada aplikasi mobile.</small>
+            <small id="error-hint" class="text-danger"></small>
           </div>
 
+          {{-- Tipe --}}
           <div class="mb-3">
-            <label for="type" class="form-label">Tipe</label>
-            <select name="type" id="type" class="form-control" required>
+            <label class="form-label">Tipe <span class="text-danger">*</span></label>
+            <select name="type" id="type" class="form-select" required>
               <option value="">-- Pilih Tipe --</option>
-              <option value="text" {{ $data->type == 'text' ? 'selected' : '' }}>Text (Input Teks)</option>
-              <option value="single" {{ $data->type == 'single' ? 'selected' : '' }}>Single (Pilihan Tunggal)</option>
+              <option value="text"     {{ $data->type == 'text'     ? 'selected' : '' }}>Text (Input Teks)</option>
+              <option value="single"   {{ $data->type == 'single'   ? 'selected' : '' }}>Single (Pilihan Tunggal)</option>
               <option value="multiple" {{ $data->type == 'multiple' ? 'selected' : '' }}>Multiple (Pilihan Ganda)</option>
-              <option value="scale" {{ $data->type == 'scale' ? 'selected' : '' }}>Scale (Skala 1-5)</option>
-              <option value="matrix" {{ $data->type == 'matrix' ? 'selected' : '' }}>Matrix (Tabel dengan Sub-Items)</option>
+              <option value="scale"    {{ $data->type == 'scale'    ? 'selected' : '' }}>Scale (Skala 1-5)</option>
+              <option value="matrix"   {{ $data->type == 'matrix'   ? 'selected' : '' }}>Matrix (Tabel Sub-Items)</option>
             </select>
-            <small id="error-type" class="error-text form-text text-danger"></small>
+            <small id="error-type" class="text-danger"></small>
           </div>
 
-          <div class="mb-3" id="optionsGroup" style="display: none;">
-            <label for="options" class="form-label">Options <span class="text-danger" id="optionsRequired">*</span></label>
-            <textarea name="options" id="options" class="form-control" placeholder='["Bekerja","Wiraswasta","Melanjutkan Pendidikan"]' data-required="false">{{ !empty($data->options) && $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
-            <small class="form-text text-muted">Format: ["Opsi 1","Opsi 2","Opsi 3"]</small>
-            <small id="error-options" class="error-text form-text text-danger"></small>
+          {{-- Options (single/multiple) - tampil langsung jika tipe sesuai --}}
+          <div class="mb-3" id="optionsGroup"
+               @if(!in_array($data->type, ['single','multiple'])) style="display:none;" @endif>
+            <label class="form-label">Options <span class="text-danger">*</span></label>
+            <textarea name="options" id="options" class="form-control" rows="3"
+                      placeholder='["Opsi 1","Opsi 2","Opsi 3"]'
+                      @if(in_array($data->type, ['single','multiple'])) required @endif
+            >{{ $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
+            <small class="form-text text-muted">Format JSON: ["Opsi 1","Opsi 2"] atau pisahkan dengan koma</small>
+            <small id="error-options" class="text-danger"></small>
           </div>
-          <div class="mb-3" id="scaleInfo" style="display: none;">
-            <div class="alert alert-info" role="alert">
-              <strong>ℹ️ Informasi Skala:</strong> Tipe Scale akan secara otomatis menggunakan skala <strong>1 hingga 5</strong>. Anda tidak perlu menambahkan options.
-              <br>
-              <small class="text-muted">Skala: 1 (Sangat Rendah) → 5 (Sangat Tinggi)</small>
+
+          {{-- Scale info --}}
+          <div class="mb-3" id="scaleInfo"
+               @if($data->type !== 'scale') style="display:none;" @endif>
+            <div class="alert alert-info mb-0">
+              <strong>&#8505;&#65039; Scale:</strong> Otomatis menggunakan skala 1&ndash;5.
+              <br><small>1 = Sangat Rendah &nbsp;&rarr;&nbsp; 5 = Sangat Tinggi</small>
             </div>
           </div>
-          <div class="mb-3" id="matrixItemsGroup" style="display: none;">
+
+          {{-- Matrix items --}}
+          <div class="mb-3" id="matrixItemsGroup"
+               @if($data->type !== 'matrix') style="display:none;" @endif>
             <label class="form-label">Matrix Items <span class="text-danger">*</span></label>
-            <div id="matrixItemsList" class="border rounded p-3" style="max-height: 300px; overflow-y: auto;">
-              <!-- Matrix items akan ditambahkan di sini via JavaScript -->
+            <div id="matrixItemsList" class="border rounded p-3" style="max-height:300px;overflow-y:auto;">
+              @if($data->type === 'matrix')
+                @foreach($data->details as $detail)
+                  <div class="input-group mb-2" id="mi_blade_{{ $loop->index }}">
+                    <input type="text" class="form-control matrix-item-input"
+                           placeholder="Contoh: Etika" value="{{ $detail->item_label }}">
+                    <button type="button" class="btn btn-danger btn-sm"
+                            onclick="$(this).closest('.input-group').remove()">Hapus</button>
+                  </div>
+                @endforeach
+              @endif
             </div>
-            <button type="button" class="btn btn-sm btn-success mt-2" id="addMatrixItemBtn" onclick="addMatrixItemRow()">+ Tambah Item</button>
-            <small class="form-text text-muted d-block mt-2">Masukkan setiap sub-pertanyaan (item) untuk matrix. Contoh: "Etika", "Bahasa Inggris", dll</small>
-            <small id="error-matrix_items" class="error-text form-text text-danger"></small>
-          </div>
-          <div class="mb-3" id="tipeDataGroup" style="{{ $data->type == 'text' ? '' : 'display:none;' }}">
-            <label for="tipe_data" class="form-label">Tipe Data Input</label>
-            <select name="tipe_data" id="tipe_data" class="form-control">
-              <option value="text" {{ ($data->tipe_data ?? 'text') == 'text' ? 'selected' : '' }}>Text (default)</option>
-              <option value="number" {{ ($data->tipe_data ?? '') == 'number' ? 'selected' : '' }}>Number (angka)</option>
-              <option value="date" {{ ($data->tipe_data ?? '') == 'date' ? 'selected' : '' }}>Date (tanggal)</option>
-              <option value="year" {{ ($data->tipe_data ?? '') == 'year' ? 'selected' : '' }}>Year (tahun)</option>
-            </select>
-            <small class="form-text text-muted">Hanya berlaku untuk tipe pertanyaan <strong>Text</strong>. Digunakan sebagai hint input di mobile.</small>
-            <small id="error-tipe_data" class="error-text form-text text-danger"></small>
+            <button type="button" class="btn btn-sm btn-success mt-2" onclick="addMatrixItemRow()">+ Tambah Item</button>
+            <small class="form-text text-muted d-block mt-1">Contoh: "Etika", "Bahasa Inggris", dll.</small>
+            <small id="error-matrix_items" class="text-danger"></small>
           </div>
 
-          <div class="mb-3">
-            <label for="urutan" class="form-label">Urutan pertanyaan</label>
-            <input type="number" name="urutan" id="urutan" class="form-control" min="1" value="{{ $data->urutan ?? 1 }}">
-            <small class="form-text text-muted">Isi dengan angka unik. Kosongkan atau 1 untuk otomatis.</small>
-            <small id="error-urutan" class="error-text form-text text-danger"></small>
-            <small id="warning-urutan" class="text-warning" style="display: none;"></small>
+          {{-- Tipe Data (hanya untuk text) --}}
+          <div class="mb-3" id="tipeDataGroup"
+               @if($data->type !== 'text') style="display:none;" @endif>
+            <label class="form-label">Tipe Data Input</label>
+            <select name="tipe_data" id="tipe_data" class="form-select">
+              <option value="text"   {{ ($data->tipe_data ?? 'text') == 'text'   ? 'selected' : '' }}>Text (default)</option>
+              <option value="number" {{ ($data->tipe_data ?? '')     == 'number' ? 'selected' : '' }}>Number (angka)</option>
+              <option value="date"   {{ ($data->tipe_data ?? '')     == 'date'   ? 'selected' : '' }}>Date (tanggal)</option>
+              <option value="year"   {{ ($data->tipe_data ?? '')     == 'year'   ? 'selected' : '' }}>Year (tahun)</option>
+            </select>
+            <small class="form-text text-muted">Hint input di mobile. Hanya berlaku untuk tipe Text.</small>
+            <small id="error-tipe_data" class="text-danger"></small>
           </div>
+
+          {{-- Urutan --}}
+          <div class="mb-3">
+            <label class="form-label">Urutan Pertanyaan</label>
+            <input type="number" name="urutan" id="urutan" class="form-control" min="1"
+                   value="{{ $data->urutan ?: '' }}" placeholder="Kosongkan untuk otomatis">
+            <small class="form-text text-muted">Angka unik. Kosongkan untuk otomatis.</small>
+            <small id="error-urutan" class="text-danger"></small>
+            <small id="warning-urutan" class="text-warning" style="display:none;"></small>
+          </div>
+
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" onclick="closeModalEdit()">Batal</button>
@@ -93,303 +126,181 @@
 </div>
 
 <script>
-  // Function untuk cek ketersediaan urutan via AJAX
-  function checkUrutanAvailability(urutan, excludeId = null) {
-    return new Promise((resolve) => {
-      if (!urutan || urutan == 0) {
-        resolve({ available: true });
-        return;
-      }
+// =============================================
+// TOGGLE FIELD BERDASARKAN TIPE (saat user ganti tipe)
+// =============================================
+function toggleOptionsField() {
+  const type = $('#type').val();
 
-      $.ajax({
-        url: "{{ url('/admin/pertanyaan/check-urutan') }}",
-        method: "GET",
-        data: {
-          urutan: urutan,
-          excludeId: excludeId
-        },
-        dataType: "json",
-        success: function (response) {
-          resolve(response);
-        },
-        error: function () {
-          resolve({ available: true });
-        }
-      });
-    });
+  $('#optionsGroup').hide();
+  $('#scaleInfo').hide();
+  $('#matrixItemsGroup').hide();
+  $('#tipeDataGroup').hide();
+  $('#options').removeAttr('required');
+
+  if (type === 'text') {
+    $('#tipeDataGroup').show();
+
+  } else if (type === 'single' || type === 'multiple') {
+    $('#optionsGroup').show();
+    $('#options').attr('required', true);
+
+  } else if (type === 'scale') {
+    $('#scaleInfo').show();
+
+  } else if (type === 'matrix') {
+    $('#matrixItemsGroup').show();
+    if ($('#matrixItemsList').children().length === 0) {
+      addMatrixItemRow();
+    }
+  }
+}
+
+// =============================================
+// MATRIX ITEM ROWS
+// =============================================
+function addMatrixItemRow(label = '') {
+  const id = 'mi_' + Date.now() + '_' + Math.random().toString(36).substr(2, 6);
+  $('#matrixItemsList').append(
+    '<div class="input-group mb-2" id="' + id + '">' +
+      '<input type="text" class="form-control matrix-item-input" placeholder="Contoh: Etika" value="' + label + '">' +
+      '<button type="button" class="btn btn-danger btn-sm" onclick="$(\'#' + id + '\').remove()">Hapus</button>' +
+    '</div>'
+  );
+}
+
+function getMatrixItems() {
+  const items = [];
+  $('#matrixItemsList .matrix-item-input').each(function(i) {
+    const v = $(this).val().trim();
+    if (v) items.push({ label: v, urutan: i + 1 });
+  });
+  return items;
+}
+
+// =============================================
+// VALIDASI
+// =============================================
+function validateEditForm() {
+  const type = $('#type').val();
+  $('.text-danger').text('');
+  $('.form-control, .form-select').removeClass('is-invalid');
+  $('input[name="matrix_items"]').remove();
+
+  if (!type) {
+    $('#error-type').text('Tipe wajib dipilih');
+    return false;
   }
 
-  // Function untuk toggle visibility dan required status field options
-  function toggleOptionsField() {
-    const typeSelect = $('#type');
-    const optionsGroup = $('#optionsGroup');
-    const scaleInfo = $('#scaleInfo');
-    const matrixItemsGroup = $('#matrixItemsGroup');
-    const tipeDataGroup = $('#tipeDataGroup');
-    const optionsField = $('#options');
-    const optionsRequired = $('#optionsRequired');
-    const selectedType = typeSelect.val();
-
-    // Tipe yang memerlukan options
-    const typesWithOptions = ['single', 'multiple'];
-
-    // tipe_data hanya relevan untuk text
-    if (selectedType === 'text') {
-      tipeDataGroup.slideDown(300);
-    } else {
-      tipeDataGroup.slideUp(300);
+  if (type === 'single' || type === 'multiple') {
+    const opts = $('#options').val().trim();
+    if (!opts) {
+      $('#error-options').text('Options wajib diisi');
+      $('#options').addClass('is-invalid');
+      return false;
     }
-
-    if (typesWithOptions.includes(selectedType)) {
-      // Tampilkan field options dan set sebagai required
-      optionsGroup.slideDown(300);
-      scaleInfo.slideUp(300);
-      matrixItemsGroup.slideUp(300);
-      optionsField.attr('required', 'required');
-      optionsField.data('required', 'true');
-      optionsRequired.show();
-      optionsField.addClass('is-options-required');
-    } else if (selectedType === 'scale') {
-      // Untuk scale, tampilkan info dan hide options
-      optionsGroup.slideUp(300);
-      scaleInfo.slideDown(300);
-      matrixItemsGroup.slideUp(300);
-      optionsField.removeAttr('required');
-      optionsField.data('required', 'false');
-      optionsRequired.hide();
-      optionsField.removeClass('is-options-required');
-      optionsField.val('');
-    } else if (selectedType === 'matrix') {
-      // Untuk matrix, tampilkan matrix items dan hide options
-      optionsGroup.slideUp(300);
-      scaleInfo.slideUp(300);
-      matrixItemsGroup.slideDown(300);
-      optionsField.removeAttr('required');
-      optionsField.data('required', 'false');
-      optionsRequired.hide();
-      optionsField.removeClass('is-options-required');
-      optionsField.val('');
-      // Initialize matrix items jika belum ada
-      if ($('#matrixItemsList').children().length === 0) {
-        // Load dari details jika ada
-        const details = {{ json_encode($data->details->pluck('item_label')->toArray() ?? []) }};
-        if (details.length > 0) {
-          details.forEach(label => addMatrixItemRow(label));
-        } else {
-          addMatrixItemRow();
-        }
-      }
-    } else {
-      // Untuk text, sembunyikan keduanya
-      optionsGroup.slideUp(300);
-      scaleInfo.slideUp(300);
-      matrixItemsGroup.slideUp(300);
-      optionsField.removeAttr('required');
-      optionsField.data('required', 'false');
-      optionsRequired.hide();
-      optionsField.removeClass('is-options-required');
-      optionsField.val('');
+    const parsed = parseOpts(opts);
+    if (parsed.length < 2) {
+      $('#error-options').text('Minimal 2 opsi');
+      $('#options').addClass('is-invalid');
+      return false;
     }
   }
 
-  // Function untuk tambah matrix item row
-  function addMatrixItemRow(label = '') {
-    const itemsList = $('#matrixItemsList');
-    const itemCount = itemsList.children().length;
-    const itemId = 'matrixItem_' + Date.now() + '_' + Math.random().toString(36).substr(2, 9);
-    
-    const html = `
-      <div class="input-group mb-2" id="${itemId}">
-        <input type="text" class="form-control matrix-item-input" placeholder="Contoh: Etika, Bahasa Inggris" value="${label}">
-        <button type="button" class="btn btn-danger btn-sm" onclick="removeMatrixItemRow('${itemId}')">Hapus</button>
-      </div>
-    `;
-    
-    itemsList.append(html);
-  }
-
-  // Function untuk hapus matrix item row
-  function removeMatrixItemRow(itemId) {
-    $(`#${itemId}`).remove();
-  }
-
-  // Function untuk get matrix items
-  function getMatrixItems() {
-    const items = [];
-    $('#matrixItemsList .matrix-item-input').each(function(idx) {
-      const label = $(this).val().trim();
-      if (label) {
-        items.push({
-          label: label,
-          urutan: idx + 1
-        });
-      }
-    });
-    return items;
-  }
-
-  // Event listener untuk perubahan type
-  function setupTypeChangeListener() {
-    $('#type').on('change', function () {
-      toggleOptionsField();
-      // Bersihkan error message jika ada
-      $('#error-type').text('');
-      $('#type').removeClass('is-invalid');
-    });
-  }
-
-  // Validasi options sebelum submit
-  function validateOptions() {
-    const type = $('#type').val();
-    const typesWithOptions = ['single', 'multiple'];
-
-    if (typesWithOptions.includes(type)) {
-      const options = $('#options').val().trim();
-      if (!options) {
-        $('#error-options').text('Options wajib diisi untuk tipe ' + type);
-        $('#options').addClass('is-invalid');
-        return false;
-      }
-
-      // Validasi format options
-      const parsed = parseOptionsFormat(options);
-      if (parsed.length < 2) {
-        $('#error-options').text('Minimal harus ada 2 opsi untuk tipe ' + type);
-        $('#options').addClass('is-invalid');
-        return false;
-      }
+  if (type === 'matrix') {
+    const items = getMatrixItems();
+    if (items.length === 0) {
+      $('#error-matrix_items').text('Minimal 1 item matrix');
+      return false;
     }
-
-    // Validasi matrix items
-    if (type === 'matrix') {
-      const matrixItems = getMatrixItems();
-      if (matrixItems.length === 0) {
-        $('#error-matrix_items').text('Minimal harus ada 1 item untuk tipe matrix');
-        return false;
-      }
-      
-      // Store matrix items ke hidden field untuk dikirim
-      $('input[name="matrix_items"]').remove();
-      const hiddenInput = '<input type="hidden" name="matrix_items" value="' + JSON.stringify(matrixItems).replace(/"/g, '&quot;') + '">';
-      $('form#form-edit').append(hiddenInput);
-    }
-
-    return true;
+    $('<input>').attr({ type: 'hidden', name: 'matrix_items', value: JSON.stringify(items) })
+                .appendTo('#form-edit');
   }
 
-  // Function untuk parse options dari berbagai format
-  function parseOptionsFormat(optionsInput) {
-    try {
-      const decoded = JSON.parse(optionsInput);
-      if (Array.isArray(decoded)) {
-        return decoded.filter(item => item.trim() !== '');
-      }
-    } catch (e) {
-      // Bukan JSON, coba split dengan koma
-      return optionsInput
-        .split(',')
-        .map(item => item.trim())
-        .filter(item => item !== '');
-    }
-  }
+  return true;
+}
 
-  function closeModalEdit() {
-    $('#modalEdit').modal('hide');
-    setTimeout(function () {
-      $('#modalEdit').remove(); // hapus dari DOM
-      $('.modal-backdrop').remove();
-    }, 300);
-  }
+function parseOpts(input) {
+  try {
+    const d = JSON.parse(input);
+    if (Array.isArray(d)) return d.filter(x => x.trim() !== '');
+  } catch(e) {}
+  return input.split(',').map(x => x.trim()).filter(x => x !== '');
+}
 
-  $(function () {
-    // Setup change listener saat modal dibuka
-    setupTypeChangeListener();
-    // Trigger untuk set state awal sesuai type yang sudah dipilih
+// =============================================
+// URUTAN CHECK
+// =============================================
+async function checkUrutanEdit(urutan) {
+  if (!urutan || urutan == 0) return true;
+  const res = await $.ajax({
+    url: "{{ url('/admin/pertanyaan/check-urutan') }}",
+    data: { urutan, excludeId: "{{ $data->id }}" }
+  });
+  return res.available;
+}
+
+// =============================================
+// CLOSE MODAL
+// =============================================
+function closeModalEdit() {
+  $('#modalEdit').modal('hide');
+  setTimeout(() => { $('#modalEdit').remove(); $('.modal-backdrop').remove(); }, 300);
+}
+
+// =============================================
+// INIT
+// =============================================
+$(function () {
+  $('#type').on('change', function () {
     toggleOptionsField();
+    $('#error-type').text('');
+    $(this).removeClass('is-invalid');
+  });
 
-    // Validasi urutan saat blur
-    $('#urutan').on('blur', async function () {
-      const urutan = $(this).val();
-      const questionId = "{{ $data->id }}";
-      const warningEl = $('#warning-urutan');
-      const errorEl = $('#error-urutan');
-      
-      warningEl.hide().text('');
-      errorEl.text('');
-      $(this).removeClass('is-invalid');
-
-      if (urutan && urutan != 0) {
-        const response = await checkUrutanAvailability(urutan, questionId);
-        if (!response.available) {
-          warningEl.text('⚠️ Urutan ' + urutan + ' sudah digunakan. Silakan gunakan urutan yang berbeda.').show();
-          $(this).addClass('is-invalid');
-        }
+  $('#urutan').on('blur', async function () {
+    const val = $(this).val();
+    $('#warning-urutan').hide().text('');
+    if (val && val > 0) {
+      const ok = await checkUrutanEdit(val);
+      if (!ok) {
+        $('#warning-urutan').text('Urutan ' + val + ' sudah digunakan.').show();
+        $(this).addClass('is-invalid');
+      } else {
+        $(this).removeClass('is-invalid');
       }
-    });
+    }
+  });
 
-    $('#form-edit').on('submit', function (e) {
-      e.preventDefault();
+  $('#form-edit').on('submit', function (e) {
+    e.preventDefault();
+    if (!validateEditForm()) return;
+    if ($('#urutan').hasClass('is-invalid')) return;
 
-      // Clear previous errors
-      $('.error-text').text('');
-      $('.form-control').removeClass('is-invalid');
-
-      // Validasi options terlebih dahulu
-      if (!validateOptions()) {
-        return;
-      }
-
-      // Validasi urutan
-      const urutan = $('#urutan').val();
-      if (urutan && urutan != 0 && $('#urutan').hasClass('is-invalid')) {
-        return;
-      }
-
-      $.ajax({
-        url: $(this).attr('action'),
-        method: $(this).attr('method'),
-        data: $(this).serialize(),
-        dataType: 'json',
-        success: function (response) {
-          if (response.status) {
-            closeModalEdit();
-            Swal.fire({
-              icon: 'success',
-              title: 'Berhasil',
-              text: response.message
-            });
-            $('#tablePertanyaan').DataTable().ajax.reload(null, false);
-          } else {
-            $('.error-text').text('');
-            $('.form-control').removeClass('is-invalid');
-            if (response.msgField) {
-              $.each(response.msgField, function (field, msg) {
-                $('#error-' + field).text(msg[0]);
-                $('#' + field).addClass('is-invalid');
-              });
-            }
-            Swal.fire({
-              icon: 'error',
-              title: 'Gagal',
-              text: response.message
+    $.ajax({
+      url: $(this).attr('action'),
+      method: 'POST',
+      data: $(this).serialize(),
+      dataType: 'json',
+      success: function (res) {
+        if (res.status) {
+          closeModalEdit();
+          Swal.fire({ icon: 'success', title: 'Berhasil', text: res.message });
+          $('#tablePertanyaan').DataTable().ajax.reload(null, false);
+        } else {
+          if (res.msgField) {
+            $.each(res.msgField, function (field, msg) {
+              $('#error-' + field).text(msg[0]);
+              $('#' + field).addClass('is-invalid');
             });
           }
-        },
-        error: function () {
-          Swal.fire({
-            icon: 'error',
-            title: 'Kesalahan Server',
-            text: 'Gagal memperbarui data. Silakan coba lagi.'
-          });
+          Swal.fire({ icon: 'error', title: 'Gagal', text: res.message });
         }
-      });
-
-      return false;
+      },
+      error: function () {
+        Swal.fire({ icon: 'error', title: 'Error', text: 'Gagal memperbarui data.' });
+      }
     });
-
-    // Initialize form display based on current type
-    setTimeout(() => {
-      toggleOptionsField();
-    }, 100);
   });
+});
 </script>

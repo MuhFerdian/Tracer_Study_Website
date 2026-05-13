@@ -58,9 +58,7 @@
                         <th>Email</th>
                         <th>Angkatan</th>
                         <th>Tahun Lulus</th>
-                        <th>Status Pekerjaan</th>
-                        <th>Nama Instansi</th>
-                        <th>Posisi</th>
+                        <th>Status Survey</th>
                         <th>Aksi</th>
                     </tr>
                 </thead>
@@ -136,9 +134,7 @@
                 { data: "email", name: "email" },
                 { data: "angkatan", name: "angkatan" },
                 { data: "tahun_lulus", name: "tahun_lulus" },
-                { data: "status_pekerjaan", name: "status_pekerjaan" },
-                { data: "nama_instansi", name: "nama_instansi" },
-                { data: "posisi", name: "posisi" },
+                { data: "status_survey", name: "status_survey", orderable: false, searchable: false },
                 { data: "aksi", className: "text-center", orderable: false, searchable: false }
             ]
         });

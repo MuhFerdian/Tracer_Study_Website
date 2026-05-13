@@ -86,7 +86,8 @@
                                 <div class="accordion-body">
                                     @if($hasAnswered)
                                         @php
-                                            $answerDetails = $answer->answerDetails;
+                                            // Get answer details with proper null handling
+                                            $answerDetails = ($answer && $answer->answerDetails) ? $answer->answerDetails : collect([]);
                                         @endphp
                                         
                                         @if($question->type == 'text')
@@ -100,12 +101,27 @@
                                             {{-- Single Option Answer --}}
                                             @php
                                                 $option = $answerDetails->first()?->option;
+                                                $scaleValue = $answerDetails->first()->value ?? null;
+                                                $scaleLabel = null;
+                                                
+                                                // Cek apakah ini scale type dengan option
+                                                if ($question->type == 'single' && $question->options->count() > 0) {
+                                                    // Ambil label dari option berdasarkan value
+                                                    $matchedOption = $question->options->firstWhere('value', $scaleValue);
+                                                    if ($matchedOption) {
+                                                        $scaleLabel = $matchedOption->label;
+                                                    }
+                                                }
                                             @endphp
                                             <p class="mb-0">
                                                 <strong>Jawaban:</strong><br>
-                                                <span class="badge bg-primary">
-                                                    {{ $option->label ?? '-' }}
-                                                </span>
+                                                @if($option)
+                                                    <span class="badge bg-primary">{{ $option->label ?? '-' }}</span>
+                                                @elseif($scaleLabel)
+                                                    <span class="badge bg-primary">{{ $scaleLabel }}</span>
+                                                @else
+                                                    <span class="badge bg-primary">{{ $scaleValue ?? '-' }}</span>
+                                                @endif
                                             </p>
                                         
                                         @elseif($question->type == 'multiple')
@@ -114,19 +130,56 @@
                                                 <strong>Jawaban (Pilih Lebih Dari Satu):</strong>
                                             </p>
                                             <div>
-                                                @forelse($answerDetails as $detail)
-                                                    @if($detail->option)
-                                                        <span class="badge bg-primary mb-2">
-                                                            {{ $detail->option->label }}
-                                                        </span>
-                                                    @endif
-                                                @empty
+                                                @php
+                                                    $multipleAnswers = [];
+                                                    if ($answerDetails && count($answerDetails) > 0) {
+                                                        $firstValue = $answerDetails->first()->value ?? null;
+
+                                                        if ($firstValue && !empty($firstValue)) {
+                                                            // Decode pertama
+                                                            $decoded = json_decode($firstValue, true);
+
+                                                            if (is_array($decoded)) {
+                                                                // Format normal: ["opsi1","opsi2"]
+                                                                $multipleAnswers = $decoded;
+                                                            } elseif (is_string($decoded)) {
+                                                                // Double-encoded: value tersimpan sebagai "\"[\\\"opsi1\\\"]\"" 
+                                                                $decoded2 = json_decode($decoded, true);
+                                                                if (is_array($decoded2)) {
+                                                                    $multipleAnswers = $decoded2;
+                                                                } else {
+                                                                    // Single string value
+                                                                    $multipleAnswers = [$decoded];
+                                                                }
+                                                            } else {
+                                                                // Bukan JSON — plain string (misal: "anjay")
+                                                                $multipleAnswers = [$firstValue];
+                                                            }
+                                                        }
+
+                                                        // Fallback: tersimpan sebagai multiple detail records dengan option_id
+                                                        if (empty($multipleAnswers)) {
+                                                            foreach ($answerDetails as $detail) {
+                                                                if ($detail->option) {
+                                                                    $multipleAnswers[] = $detail->option->label;
+                                                                } elseif (!empty($detail->value)) {
+                                                                    $multipleAnswers[] = $detail->value;
+                                                                }
+                                                            }
+                                                        }
+                                                    }
+                                                @endphp
+                                                @if(count($multipleAnswers) > 0)
+                                                    @foreach($multipleAnswers as $ans)
+                                                        <span class="badge bg-primary mb-2">{{ $ans }}</span>
+                                                    @endforeach
+                                                @else
                                                     <span class="text-muted">-</span>
-                                                @endforelse
+                                                @endif
                                             </div>
                                         
                                         @elseif($question->type == 'scale')
-                                            {{-- Scale Answer (1-5) --}}
+                                            {{-- Scale Answer (1-5) dengan options --}}
                                             @php
                                                 $scaleValue = $answerDetails->first()->value ?? '-';
                                                 $scaleLabels = [
@@ -144,8 +197,65 @@
                                                 </span>
                                             </p>
                                         
+                                        @elseif($question->type == 'matrix')
+                                            {{-- Matrix Answer (Tabel dengan Sub-Items) --}}
+                                            @php
+                                                // Decode JSON jawaban matrix: {"item_label": value, ...}
+                                                $matrixAnswerRaw = [];
+                                                $firstDetail = $answerDetails->first();
+                                                if ($firstDetail && !empty($firstDetail->value)) {
+                                                    $decoded = json_decode($firstDetail->value, true);
+                                                    if (is_array($decoded)) {
+                                                        $matrixAnswerRaw = $decoded;
+                                                    }
+                                                }
+
+                                                // Ambil urutan item dari question_details (sumber kebenaran urutan)
+                                                $questionDetails = $question->details
+                                                    ? $question->details->sortBy('urutan')
+                                                    : collect([]);
+                                            @endphp
+                                            <p class="mb-2">
+                                                <strong>Jawaban (Matrix):</strong>
+                                            </p>
+                                            @if($questionDetails->isNotEmpty() && count($matrixAnswerRaw) > 0)
+                                                <div class="table-responsive">
+                                                    <table class="table table-bordered table-sm">
+                                                        <thead style="background-color:#1a73e8; color:#fff;">
+                                                            <tr>
+                                                                <th>Item</th>
+                                                                <th>Jawaban</th>
+                                                            </tr>
+                                                        </thead>
+                                                        <tbody>
+                                                            {{-- Iterasi dari question_details agar urutan selalu konsisten --}}
+                                                            @foreach($questionDetails as $detailItem)
+                                                                @php
+                                                                    $label = $detailItem->item_label;
+                                                                    $val   = $matrixAnswerRaw[$label] ?? '-';
+                                                                @endphp
+                                                                <tr>
+                                                                    <td><strong>{{ $label }}</strong></td>
+                                                                    <td>
+                                                                        @if(is_array($val))
+                                                                            @foreach($val as $v)
+                                                                                <span class="badge bg-info mb-1">{{ $v }}</span>
+                                                                            @endforeach
+                                                                        @else
+                                                                            <span class="badge bg-info">{{ $val }}</span>
+                                                                        @endif
+                                                                    </td>
+                                                                </tr>
+                                                            @endforeach
+                                                        </tbody>
+                                                    </table>
+                                                </div>
+                                            @else
+                                                <span class="text-muted">Belum ada jawaban</span>
+                                            @endif
+                                        
                                         @else
-                                            <p class="text-muted mb-0">Format jawaban tidak dikenali</p>
+                                            <p class="text-muted mb-0">Format jawaban tidak dikenali (Type: {{ $question->type }})</p>
                                         @endif
                                     @else
                                         <p class="text-muted mb-0">Alumni belum menjawab pertanyaan ini</p>
