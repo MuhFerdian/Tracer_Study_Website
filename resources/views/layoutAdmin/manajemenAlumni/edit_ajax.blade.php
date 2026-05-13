@@ -34,11 +34,11 @@
                     <small id="error-no_hp" class="error-text text-danger"></small>
                 </div>
 
-                <div class="form-group">
+                {{-- <div class="form-group">
                     <label>Email</label>
                     <input type="email" name="email" value="{{ $alumni->email }}" id="email" class="form-control">
                     <small id="error-email" class="error-text form-text text-danger"></small>
-                </div>
+                </div> --}}
 
                 <div class="form-group">
                     <label>Angkatan</label>
@@ -52,7 +52,7 @@
                     <small id="error-tanggal_lulus" class="error-text text-danger"></small>
                 </div>
 
-                <div class="form-group">
+                <!-- <div class="form-group">
                     <label>Status Pekerjaan</label>
                     <input type="text" name="status_pekerjaan" value="{{ $alumni->status_pekerjaan }}" class="form-control">
                     <small id="error-status_pekerjaan" class="error-text text-danger"></small>
@@ -68,7 +68,7 @@
                     <label>Posisi</label>
                     <input type="text" name="posisi" value="{{ $alumni->posisi }}" class="form-control">
                     <small id="error-posisi" class="error-text text-danger"></small>
-                </div>
+                </div> -->
             </div>
 
             <div class="modal-footer">

@@ -4,9 +4,11 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ManajemenAlumniController;
 use App\Http\Controllers\PertanyaanController;
+use App\Http\Controllers\PertanyaanReferenceController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManajemenDosenController;
 use App\Http\Controllers\LowonganPekerjaanController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingPageController;
 
@@ -16,7 +18,11 @@ use App\Http\Controllers\LandingPageController;
 |--------------------------------------------------------------------------
 */
 // LANDING PAGE
-Route::get('/', [LandingPageController::class, 'index']);
+Route::get('/', function () {
+    return redirect()->route('landing');
+});
+
+Route::get('/landingpage', [LandingPageController::class, 'index'])->name('landing');
 
 // LOGIN & LOGOUT
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -24,9 +30,9 @@ Route::post('/login', [LoginController::class, 'login']);
 Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
 // LANDING PAGE
-Route::get('/landingpage', function () {
-    return view('layoutLandingPage.hero');
-});
+// Route::get('/landingpage', function () {
+//     return view('layoutLandingPage.hero');
+// });
 
    /*
 |--------------------------------------------------------------------------
@@ -100,6 +106,9 @@ Route::group([
     // =======================
     Route::prefix('pertanyaan')->group(function () {
         Route::get('/', [PertanyaanController::class, 'index']);
+        Route::get('/reference', [PertanyaanReferenceController::class, 'index'])->name('pertanyaan.reference');
+        Route::get('/reference/download-template', [PertanyaanReferenceController::class, 'downloadTemplate'])->name('pertanyaan.download-template');
+        Route::post('/reference/import-questions', [PertanyaanReferenceController::class, 'importQuestions'])->name('pertanyaan.import-questions');
         Route::get('/list', [PertanyaanController::class, 'list']);
         Route::get('/check-urutan', [PertanyaanController::class, 'checkUrutan']);
         Route::get('/create_ajax', [PertanyaanController::class, 'create_ajax']);
@@ -153,4 +162,10 @@ Route::group([
     Route::get('/admin/export/alumni', [ExportController::class, 'exportExcel'])->name('export.alumni');
     Route::get('/admin/export/alumni-sudah', [ExportController::class, 'exportExcelSudahMengisi'])->name('export.alumni.sudah');
     Route::get('/admin/export/alumni-belum', [ExportController::class, 'exportExcelBelumMengisi'])->name('export.alumni.belum');
+
+    // =======================
+    // PROFILE / GANTI PASSWORD
+    // =======================
+    Route::get('/profile/change-password', [ProfileController::class, 'changePasswordForm'])->name('profile.change-password.form');
+    Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 });

@@ -20,7 +20,7 @@
 
         <div class="row">
 
-            @forelse($lowongan as $item)
+            @forelse($lowongan ?? [] as $item)
 
             <div class="col-lg-4 mb-4">
 

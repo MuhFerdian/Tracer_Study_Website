@@ -23,21 +23,19 @@ class ManajemenAlumniController extends Controller
      */
     public function list()
     {
-        $alumni = alumniModel::query()->select([
-            'id',
-            'user_id',
-            'nim',
-            'nama',
-            'prodi',
-            'no_hp',
-            'email',
-            'alamat',
-            'angkatan',
-            'tahun_lulus',
-            'status_pekerjaan',
-            'nama_instansi',
-            'posisi',
-        ]);
+        $alumni = alumniModel::query()
+            ->select([
+                'id',
+                'user_id',
+                'nim',
+                'nama',
+                'prodi',
+                'no_hp',
+                'email',
+                'angkatan',
+                'tahun_lulus',
+            ])
+            ->withCount('answers');
 
         return DataTables::of($alumni)
             ->addIndexColumn()
@@ -46,30 +44,41 @@ class ManajemenAlumniController extends Controller
                 return $alumni->tahun_lulus ?: '-';
             })
 
+            ->addColumn('status_survey', function ($alumni) {
+                $totalQuestions = \App\Models\Question::count();
+                $answered = $alumni->answers_count;
+
+                if ($answered === 0) {
+                    return '<span class="badge bg-danger">Belum Mengisi</span>';
+                } elseif ($answered < $totalQuestions) {
+                    return '<span class="badge bg-warning text-dark">Sebagian (' . $answered . '/' . $totalQuestions . ')</span>';
+                } else {
+                    return '<span class="badge bg-success">Sudah Mengisi</span>';
+                }
+            })
+
             ->addColumn('aksi', function ($alumni) {
 
-                $btn = '';
+                $btn  = '<div class="d-flex gap-1 justify-content-center">';
 
-                $btn .= '
-                    <button 
+                $btn .= '<button 
                         onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/edit_ajax') . '\')" 
                         class="btn btn-warning btn-sm">
                         Edit
-                    </button>
-                ';
+                    </button>';
 
-                $btn .= '
-                    <button 
+                $btn .= '<button 
                         onclick="modalAction(\'' . url('/admin/alumni/' . $alumni->id . '/delete_ajax') . '\')" 
                         class="btn btn-danger btn-sm">
                         Hapus
-                    </button>
-                ';
+                    </button>';
+
+                $btn .= '</div>';
 
                 return $btn;
             })
 
-            ->rawColumns(['aksi'])
+            ->rawColumns(['status_survey', 'aksi'])
             ->make(true);
     }
 
@@ -781,13 +790,15 @@ class ManajemenAlumniController extends Controller
         $questions = Question::select(
                 'id',
                 'pertanyaan',
-                'type'
+                'type',
+                'urutan'
             )
+            ->with(['options' => function($q) { $q->orderBy('urutan'); }, 'details' => function($q) { $q->orderBy('urutan'); }])
             ->orderBy('urutan')
             ->get();
 
         $answers = Answer::where('alumni_id', $id)
-            ->with('answerDetails.option')
+            ->with(['answerDetails' => function($q) { $q->with('option'); }])
             ->get()
             ->keyBy('question_id');
 

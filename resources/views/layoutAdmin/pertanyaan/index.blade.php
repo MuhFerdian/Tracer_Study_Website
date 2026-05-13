@@ -12,7 +12,14 @@
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-table me-1"></i> Tabel Pertanyaan</span>
-            <button class="btn btn-success btn-sm" onclick="createPertanyaan()"><i class="fas fa-plus-circle me-1"></i>Tambah Pertanyaan</button>
+            <div class="gap-2" style="display: flex; gap: 0.5rem;">
+                <a href="{{ url('/admin/pertanyaan/reference') }}" class="btn btn-info btn-sm" title="Lihat panduan pertanyaan wajib Kemendikbud">
+                    <i class="fas fa-book me-1"></i>Panduan Kemendikbud
+                </a>
+                <button class="btn btn-success btn-sm" onclick="createPertanyaan()">
+                    <i class="fas fa-plus-circle me-1"></i>Tambah Pertanyaan
+                </button>
+            </div>
         </div>
         <div class="card-body">
             <table id="tablePertanyaan" class="table table-bordered table-striped">
@@ -107,6 +114,16 @@ function modalEdit(url) {
         success: function (html) {
             $('#modalEdit').remove();
             $('body').append(html);
+
+            const modalEl = document.getElementById('modalEdit');
+
+            // Panggil toggleOptionsField setelah modal fully rendered
+            modalEl.addEventListener('shown.bs.modal', function () {
+                if (typeof toggleOptionsField === 'function') {
+                    toggleOptionsField();
+                }
+            }, { once: true });
+
             $('#modalEdit').modal('show');
         },
         error: function () {

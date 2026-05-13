@@ -45,6 +45,8 @@ class MobileAuthController extends Controller
         $request->validate([
             'nim' => 'required|string|unique:users,nim',
             'email' => 'required|email|unique:users,email',
+            'username' => 'required|regex:/^[a-z0-9]+$/|unique:users,username',
+            'no_hp' => 'required|string|unique:users,no_hp',
             'password' => 'required|min:6',
         ]);
 
@@ -63,6 +65,8 @@ class MobileAuthController extends Controller
         Cache::put('register_'.$request->email, [
             'nim' => $request->nim,
             'email' => $request->email,
+            'username' => $request->username,
+            'no_hp' => $request->no_hp,
             'password' => Hash::make($request->password),
             'otp' => Hash::make($otp),
         ], now()->addMinutes(5));
@@ -160,9 +164,10 @@ class MobileAuthController extends Controller
 
                 $userId = DB::table('users')->insertGetId([
                     'role_id' => $roleId,
-                    'username' => $data['email'],
+                    'username' => $data['username'],
                     'name' => $alumni->nama,
                     'email' => $data['email'],
+                    'no_hp' => $data['no_hp'],
                     'password' => $data['password'],
                     'status' => 'active',
                     'is_verified' => true,
@@ -174,6 +179,7 @@ class MobileAuthController extends Controller
                 $alumni->update([
                     'user_id' => $userId,
                     'email' => $data['email'],
+                    'no_hp' => $data['no_hp'],
                 ]);
             });
         }
@@ -290,6 +296,7 @@ class MobileAuthController extends Controller
                 'nim' => $alumni->nim,
                 'name' => $alumni->nama_alumni,
                 'email' => $alumni->email,
+                'no_hp' => $alumni->no_hp,
             ],
         ]);
     }
