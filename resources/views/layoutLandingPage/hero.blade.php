@@ -63,7 +63,7 @@
 
 @include('layoutLandingPage.about')
 @include('layoutLandingPage.manfaat')
-@include('layoutLandingPage.lowongan')
+@include('layoutLandingPage.lowongan', ['lowongan' => $lowongan])
 @include('layoutLandingPage.faq')
 @endsection
 
