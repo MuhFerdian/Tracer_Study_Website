@@ -7,8 +7,10 @@ use App\Http\Controllers\PertanyaanController;
 use App\Http\Controllers\PertanyaanReferenceController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManajemenDosenController;
+use App\Http\Controllers\LowonganPekerjaanController;
 use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\LandingPageController;
 
 /*
 |--------------------------------------------------------------------------
@@ -16,9 +18,7 @@ use Illuminate\Support\Facades\Route;
 |--------------------------------------------------------------------------
 */
 // LANDING PAGE
-Route::get('/', function () {
-    return view('layoutLandingPage.hero');
-});
+Route::get('/', [LandingPageController::class, 'index']);
 
 // LOGIN & LOGOUT
 Route::get('/login', [LoginController::class, 'showLoginForm'])->name('login');
@@ -29,6 +29,16 @@ Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 Route::get('/landingpage', function () {
     return view('layoutLandingPage.hero');
 });
+
+   /*
+|--------------------------------------------------------------------------
+| LOWONGAN PUBLIC landing page
+|--------------------------------------------------------------------------
+*/
+
+Route::get('/lowongan', [LowonganPekerjaanController::class, 'publicIndex']);
+
+Route::get('/lowongan/{id}', [LowonganPekerjaanController::class, 'show']);
 
 /*
 |--------------------------------------------------------------------------
@@ -121,6 +131,20 @@ Route::group([
         Route::get('/{id}/delete_ajax', [ManajemenDosenController::class, 'confirm_ajax']);
         Route::delete('/{id}/delete', [ManajemenDosenController::class, 'destroy']);
     });
+
+    // =======================
+    // LOWONGAN PEKERJAAN
+    // =======================
+    Route::prefix('lowongan-pekerjaan')->group(function () {
+
+    Route::get('/', [LowonganPekerjaanController::class, 'index']);
+    Route::get('/list', [LowonganPekerjaanController::class, 'list']);
+    Route::get('/create', [LowonganPekerjaanController::class, 'create']);
+    Route::post('/store', [LowonganPekerjaanController::class, 'store']);
+    Route::get('/{id}/edit', [LowonganPekerjaanController::class, 'edit']);
+    Route::put('/{id}/update', [LowonganPekerjaanController::class, 'update']);
+    Route::delete('/{id}/delete', [LowonganPekerjaanController::class, 'destroy']);
+   });
 
     // =======================
     // SURVEI ALUMNI

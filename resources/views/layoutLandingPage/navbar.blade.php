@@ -17,6 +17,7 @@
                 <li class="nav-item"><a class="nav-link active" href="/">Beranda</a></li>
                 <li class="nav-item"><a class="nav-link" href="#about-tracer">Tentang</a></li>
                 <li class="nav-item"><a class="nav-link" href="#manfaat">Manfaat</a></li>
+                <li class="nav-item"><a class="nav-link" href="#lowongan">Lowongan</a></li>
                 <li class="nav-item"><a class="nav-link" href="#tentangkami">Kontak</a></li>
                 <li class="nav-item"><a class="nav-link" href="#faq">FAQ</a></li>
                 <li class="nav-item ms-lg-2">
