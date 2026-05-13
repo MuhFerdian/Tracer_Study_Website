@@ -17,7 +17,7 @@ return new class extends Migration
             $table->string('username')->nullable()->unique();
             $table->string('name');
             $table->string('nim')->nullable()->unique();
-            $table->string('no_telp')->nullable()->unique();
+            $table->string('no_hp')->nullable()->unique();
             $table->string('email')->nullable()->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('status')->default('pending');

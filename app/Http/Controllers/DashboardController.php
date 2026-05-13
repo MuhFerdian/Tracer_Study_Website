@@ -38,27 +38,18 @@ class DashboardController extends Controller
                 qo.label AS jenis_instansi,
                 COUNT(ad.id) AS total
             FROM answer_details ad
-            JOIN answers a    ON a.id  = ad.answer_id
-            JOIN questions q  ON q.id  = a.question_id
+            JOIN answers a           ON a.id  = ad.answer_id
+            JOIN questions q         ON q.id  = a.question_id
             JOIN question_options qo ON qo.id = ad.option_id
             WHERE q.kode_soal = 'f1101'
             GROUP BY qo.id, qo.label
             ORDER BY total DESC
         ");
 
-        // Fallback jika belum ada jawaban
         if (empty($data)) {
-            $data = DB::table('alumni')
-                ->selectRaw("
-                    CASE
-                        WHEN nama_instansi IS NULL OR nama_instansi = '' THEN 'Belum Diisi'
-                        ELSE nama_instansi
-                    END as jenis_instansi,
-                    COUNT(*) as total
-                ")
-                ->groupBy('jenis_instansi')
-                ->orderByDesc('total')
-                ->get();
+            return response()->json([
+                ['jenis_instansi' => 'Belum Ada Data', 'total' => 0]
+            ]);
         }
 
         return response()->json($data);
@@ -66,66 +57,83 @@ class DashboardController extends Controller
 
     // ==================================================
     // Grafik Sebaran Profesi Lulusan
+    // Diambil dari jawaban f8 (status saat ini)
     // ==================================================
     public function getProfesiChart()
     {
-        $data = DB::table('alumni')
-            ->selectRaw("
-                CASE
-                    WHEN posisi IS NOT NULL AND posisi != '' THEN posisi
-                    WHEN status_pekerjaan IS NOT NULL AND status_pekerjaan != '' THEN status_pekerjaan
-                    ELSE 'Belum Diisi'
-                END as profesi,
-                COUNT(*) as total
-            ")
-            ->groupBy('profesi')
-            ->orderByDesc('total')
-            ->get();
+        $data = DB::select("
+            SELECT
+                qo.label AS profesi,
+                COUNT(DISTINCT a.alumni_id) AS total
+            FROM answers a
+            JOIN answer_details ad   ON ad.answer_id  = a.id
+            JOIN questions q         ON q.id           = a.question_id
+            JOIN question_options qo ON qo.id          = ad.option_id
+            WHERE q.kode_soal = 'f8'
+            GROUP BY qo.id, qo.label
+            ORDER BY total DESC
+        ");
+
+        if (empty($data)) {
+            return response()->json([
+                ['profesi' => 'Belum Ada Data', 'total' => 0]
+            ]);
+        }
 
         return response()->json($data);
     }
 
     // ==================================================
     // Tabel Rekap Alumni per Tahun Lulus
+    // terlacaklulusan = alumni yang sudah ada jawaban
     // ==================================================
     public function getRekapAlumni()
     {
-        $data = DB::table('alumni')
-            ->select(
-                'tahun_lulus as tahunlulus',
-                DB::raw('COUNT(*) as jumlahlulusan'),
-                DB::raw('COUNT(CASE WHEN nama_instansi IS NOT NULL OR posisi IS NOT NULL THEN 1 END) as terlacaklulusan'),
-                DB::raw("SUM(CASE WHEN posisi LIKE '%IT%' OR posisi LIKE '%Developer%' THEN 1 ELSE 0 END) as infokom"),
-                DB::raw("SUM(CASE WHEN posisi NOT LIKE '%IT%' AND posisi IS NOT NULL THEN 1 ELSE 0 END) as noninfokom"),
-                DB::raw("SUM(CASE WHEN nama_instansi LIKE '%PT%' THEN 1 ELSE 0 END) as nasional"),
-                DB::raw("SUM(CASE WHEN posisi LIKE '%wirausaha%' THEN 1 ELSE 0 END) as wirausaha"),
-                DB::raw("0 as multinasional")
-            )
-            ->groupBy('tahun_lulus')
-            ->orderBy('tahun_lulus')
-            ->get();
+        $data = DB::select("
+            SELECT
+                al.tahun_lulus AS tahunlulus,
+                COUNT(DISTINCT al.id) AS jumlahlulusan,
+                COUNT(DISTINCT CASE WHEN ans.id IS NOT NULL THEN al.id END) AS terlacaklulusan,
+                0 AS infokom,
+                0 AS noninfokom,
+                0 AS nasional,
+                0 AS wirausaha,
+                0 AS multinasional
+            FROM alumni al
+            LEFT JOIN answers ans ON ans.alumni_id = al.id
+            GROUP BY al.tahun_lulus
+            ORDER BY al.tahun_lulus
+        ");
 
         return response()->json($data);
     }
 
     // ==================================================
     // Tabel Rata-rata Masa Tunggu
+    // Diambil dari jawaban f502 (bulan dapat kerja pertama)
     // ==================================================
     public function getAverageWaitingTime()
     {
         $results = DB::select("
             SELECT
-                COALESCE(a.tahun_lulus, 0) AS tahunlulus,
-                COUNT(a.id) AS jumlahlulusan,
-                SUM(CASE
-                    WHEN a.status_pekerjaan IS NOT NULL
-                      OR a.nama_instansi IS NOT NULL
-                      OR a.posisi IS NOT NULL
-                    THEN 1 ELSE 0
-                END) AS terlacaklulusan,
-                'N/A' AS rata_rata_waktu_tunggu_bulan
-            FROM alumni AS a
-            GROUP BY a.tahun_lulus
+                COALESCE(al.tahun_lulus, 0) AS tahunlulus,
+                COUNT(DISTINCT al.id) AS jumlahlulusan,
+                COUNT(DISTINCT CASE WHEN ans.id IS NOT NULL THEN al.id END) AS terlacaklulusan,
+                COALESCE(
+                    CONCAT(
+                        ROUND(AVG(CASE
+                            WHEN q.kode_soal = 'f502' AND ad.value REGEXP '^[0-9]+\$'
+                            THEN CAST(ad.value AS UNSIGNED)
+                        END), 1),
+                        ' bulan'
+                    ),
+                    'N/A'
+                ) AS rata_rata_waktu_tunggu_bulan
+            FROM alumni al
+            LEFT JOIN answers ans       ON ans.alumni_id = al.id
+            LEFT JOIN answer_details ad ON ad.answer_id  = ans.id
+            LEFT JOIN questions q       ON q.id          = ans.question_id
+            GROUP BY al.tahun_lulus
             ORDER BY tahunlulus
         ");
 
@@ -134,11 +142,19 @@ class DashboardController extends Controller
 
     // ==================================================
     // Tabel Penilaian Kepuasan Pengguna Lulusan
-    // Menggunakan schema baru: answer_details + question_options
+    // Hanya untuk pertanyaan kompetensi (f1761-f1774)
     // Scale: Sangat Tinggi→Sangat Baik, Tinggi→Baik, Sedang→Cukup, Rendah/SangatRendah→Kurang
     // ==================================================
     public function getAlumniSatisfaction()
     {
+        $kompetensiKodes = [
+            'f1761','f1762','f1763','f1764','f1765','f1766',
+            'f1767','f1768','f1769','f1770','f1771','f1772',
+            'f1773','f1774',
+        ];
+
+        $placeholders = implode(',', array_fill(0, count($kompetensiKodes), '?'));
+
         $results = DB::select("
             SELECT
                 q.pertanyaan AS jenis_kemampuan,
@@ -151,9 +167,10 @@ class DashboardController extends Controller
             JOIN answers a           ON a.id  = ad.answer_id
             JOIN questions q         ON q.id  = a.question_id
             JOIN question_options qo ON qo.id = ad.option_id
+            WHERE q.kode_soal IN ($placeholders)
             GROUP BY q.id, q.pertanyaan
             ORDER BY q.urutan
-        ");
+        ", $kompetensiKodes);
 
         $formatted = [];
         foreach ($results as $item) {
@@ -161,9 +178,9 @@ class DashboardController extends Controller
             $formatted[] = (object) [
                 'jenis_kemampuan' => $item->jenis_kemampuan,
                 'sangat_baik'     => $total > 0 ? number_format(($item->sangat_baik / $total) * 100, 1) . '%' : '0%',
-                'baik'            => $total > 0 ? number_format(($item->baik     / $total) * 100, 1) . '%' : '0%',
-                'cukup'           => $total > 0 ? number_format(($item->cukup    / $total) * 100, 1) . '%' : '0%',
-                'kurang'          => $total > 0 ? number_format(($item->kurang   / $total) * 100, 1) . '%' : '0%',
+                'baik'            => $total > 0 ? number_format(($item->baik        / $total) * 100, 1) . '%' : '0%',
+                'cukup'           => $total > 0 ? number_format(($item->cukup       / $total) * 100, 1) . '%' : '0%',
+                'kurang'          => $total > 0 ? number_format(($item->kurang      / $total) * 100, 1) . '%' : '0%',
             ];
         }
 
@@ -172,8 +189,6 @@ class DashboardController extends Controller
 
     // ==================================================
     // PRIVATE HELPER: Distribusi Jawaban per Kode Soal
-    // Memetakan skala 5 (Sangat Rendah–Sangat Tinggi)
-    // ke 4 kategori yang dipakai chart JS
     // ==================================================
     private function getSkillChartData(string $kodeSoal): \Illuminate\Http\JsonResponse
     {
@@ -201,52 +216,46 @@ class DashboardController extends Controller
     }
 
     // ==================================================
-    // Chart Functions — menggunakan kode_soal dari QuestionSeeder
+    // Chart Functions
     // ==================================================
 
-    /** Grafik Kerjasama Tim → f1771 (saat lulus) */
+    /** Grafik Kerjasama Tim → f1771 */
     public function getKerjaSama()
     {
         return $this->getSkillChartData('f1771');
     }
 
-    /** Grafik Keahlian Bidang Ilmu → f1763 (saat lulus) */
+    /** Grafik Keahlian Bidang Ilmu → f1763 */
     public function keahlianChart()
     {
         return $this->getSkillChartData('f1763');
     }
 
-    /** Grafik Kemampuan Bahasa Inggris → f1765 (saat lulus) */
+    /** Grafik Kemampuan Bahasa Inggris → f1765 */
     public function kemampuanBahasaChart()
     {
         return $this->getSkillChartData('f1765');
     }
 
-    /** Grafik Kemampuan Komunikasi → f1769 (saat lulus) */
+    /** Grafik Kemampuan Komunikasi → f1769 */
     public function kemampuanKomunikasiChart()
     {
         return $this->getSkillChartData('f1769');
     }
 
-    /** Grafik Pengembangan Diri → f1773 (saat lulus) */
+    /** Grafik Pengembangan Diri → f1773 */
     public function pengembanganDiriChart()
     {
         return $this->getSkillChartData('f1773');
     }
 
-    /**
-     * Grafik Kepemimpinan — belum ada pertanyaan di seeder.
-     * Tambahkan pertanyaan kepemimpinan via admin panel agar chart berisi data.
-     */
+    /** Grafik Kepemimpinan — belum ada kode soal di seeder */
     public function kepemimpinanChart()
     {
         return response()->json([]);
     }
 
-    /**
-     * Grafik Etos Kerja — belum ada pertanyaan di seeder.
-     * Tambahkan pertanyaan etos kerja via admin panel agar chart berisi data.
-     */
+    /** Grafik Etos Kerja — belum ada kode soal di seeder */
     public function etosKerjaChart()
     {
         return response()->json([]);

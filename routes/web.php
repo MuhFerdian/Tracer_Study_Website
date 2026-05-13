@@ -4,8 +4,10 @@ use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\LoginController;
 use App\Http\Controllers\ManajemenAlumniController;
 use App\Http\Controllers\PertanyaanController;
+use App\Http\Controllers\PertanyaanReferenceController;
 use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManajemenDosenController;
+use App\Http\Controllers\ProfileController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -90,6 +92,9 @@ Route::group([
     // =======================
     Route::prefix('pertanyaan')->group(function () {
         Route::get('/', [PertanyaanController::class, 'index']);
+        Route::get('/reference', [PertanyaanReferenceController::class, 'index'])->name('pertanyaan.reference');
+        Route::get('/reference/download-template', [PertanyaanReferenceController::class, 'downloadTemplate'])->name('pertanyaan.download-template');
+        Route::post('/reference/import-questions', [PertanyaanReferenceController::class, 'importQuestions'])->name('pertanyaan.import-questions');
         Route::get('/list', [PertanyaanController::class, 'list']);
         Route::get('/check-urutan', [PertanyaanController::class, 'checkUrutan']);
         Route::get('/create_ajax', [PertanyaanController::class, 'create_ajax']);
@@ -129,4 +134,10 @@ Route::group([
     Route::get('/admin/export/alumni', [ExportController::class, 'exportExcel'])->name('export.alumni');
     Route::get('/admin/export/alumni-sudah', [ExportController::class, 'exportExcelSudahMengisi'])->name('export.alumni.sudah');
     Route::get('/admin/export/alumni-belum', [ExportController::class, 'exportExcelBelumMengisi'])->name('export.alumni.belum');
+
+    // =======================
+    // PROFILE / GANTI PASSWORD
+    // =======================
+    Route::get('/profile/change-password', [ProfileController::class, 'changePasswordForm'])->name('profile.change-password.form');
+    Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
 });

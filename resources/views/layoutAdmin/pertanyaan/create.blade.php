@@ -80,8 +80,8 @@
 
       <div class="mb-3">
         <label for="urutan" class="form-label">Urutan pertanyaan</label>
-        <input type="number" name="urutan" id="urutan" class="form-control" value="1" min="1">
-        <small class="form-text text-muted">Isi dengan angka unik. Kosongkan atau 1 untuk otomatis.</small>
+        <input type="number" name="urutan" id="urutan" class="form-control" min="1" placeholder="Kosongkan untuk otomatis">
+        <small class="form-text text-muted">Isi dengan angka unik. Kosongkan untuk otomatis sesuai urutan terakhir.</small>
         <small id="error-urutan" class="text-danger"></small>
         <small id="warning-urutan" class="text-warning" style="display: none;"></small>
       </div>
@@ -137,6 +137,27 @@
     // Tipe yang memerlukan options
     const typesWithOptions = ['single', 'multiple'];
 
+    // ============================================
+    // AGGRESSIVE ERROR & STATE CLEANUP
+    // ============================================
+    // Clear semua error messages
+    $('.error-text').text('');
+    // Remove invalid class dari semua form controls
+    $('.form-control').removeClass('is-invalid');
+    // Reset warning urutan
+    $('#warning-urutan').hide().text('');
+    // PENTING: Hapus matrix_items hidden field sekarang (sebelum conditional logic)
+    $('input[name="matrix_items"]').remove();
+    // Clear semua error fields
+    $('#error-type').text('');
+    $('#error-options').text('');
+    $('#error-matrix_items').text('');
+    $('#error-tipe_data').text('');
+    $('#error-urutan').text('');
+
+    // ============================================
+    // LOGIC PENAMPILAN FIELD BERDASARKAN TYPE
+    // ============================================
     // tipe_data hanya relevan untuk text
     if (selectedType === 'text') {
       tipeDataGroup.slideDown(300);
@@ -178,7 +199,7 @@
         addMatrixItemRow();
       }
     } else {
-      // Untuk text, sembunyikan keduanya
+      // Untuk text dan tipe lainnya
       optionsGroup.slideUp(300);
       scaleInfo.slideUp(300);
       matrixItemsGroup.slideUp(300);
@@ -241,6 +262,7 @@
     const type = $('#type').val();
     const typesWithOptions = ['single', 'multiple'];
 
+    // LANGKAH 1: Validasi options untuk tipe yang memerlukan options
     if (typesWithOptions.includes(type)) {
       const options = $('#options').val().trim();
       if (!options) {
@@ -258,7 +280,7 @@
       }
     }
 
-    // Validasi matrix items
+    // LANGKAH 2: Validasi matrix items untuk tipe matrix
     if (type === 'matrix') {
       const matrixItems = getMatrixItems();
       if (matrixItems.length === 0) {
@@ -266,11 +288,23 @@
         return false;
       }
       
-      // Store matrix items ke hidden field untuk dikirim
+      // Store matrix items ke hidden field untuk dikirim - gunakan jQuery untuk proper escaping
       $('input[name="matrix_items"]').remove();
-      $('form#formCreatePertanyaan').append(
-        '<input type="hidden" name="matrix_items" value=\'' + JSON.stringify(matrixItems) + '\'>'
-      );
+      const $hiddenInput = $('<input>').attr({
+        'type': 'hidden',
+        'name': 'matrix_items',
+        'value': JSON.stringify(matrixItems)
+      });
+      $('form#formCreatePertanyaan').append($hiddenInput);
+    } else {
+      // LANGKAH 3: Cleanup matrix_items jika type bukan matrix
+      $('input[name="matrix_items"]').remove();
+    }
+
+    // LANGKAH 4: Final check - pastikan form dalam state yang valid
+    if (!typesWithOptions.includes(type)) {
+      $('#options').removeAttr('required');
+      $('#options').val('');
     }
 
     return true;

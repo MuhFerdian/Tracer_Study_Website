@@ -27,9 +27,8 @@ class alumniModel extends Authenticatable
         'alamat',
         'angkatan',
         'tahun_lulus',
-        'status_pekerjaan',
-        'nama_instansi',
-        'posisi',
+        'tempat_lahir',
+        'tanggal_lahir',
         'image',
     ];
 
