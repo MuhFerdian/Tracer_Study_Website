@@ -118,6 +118,18 @@
 
                     Pertanyaan
                 </a>
+
+                {{-- LOWONGAN PEKERJAAN --}}
+<a class="nav-link
+    {{ request()->is('admin/lowongan-pekerjaan*') ? 'active' : '' }}"
+    href="{{ url('admin/lowongan-pekerjaan') }}">
+
+    <div class="sb-nav-link-icon">
+        <i class="fas fa-briefcase"></i>
+    </div>
+
+    Lowongan Pekerjaan
+</a>
             </div>
         </div>
         <div class="sb-sidenav-footer">
