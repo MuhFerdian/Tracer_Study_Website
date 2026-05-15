@@ -19,6 +19,7 @@ class LowonganPekerjaan extends Model
         'link_lamaran',
         'dibuat_oleh',
         'role',
-        'aktif'
+        'aktif',
+        'foto'
     ];
 }

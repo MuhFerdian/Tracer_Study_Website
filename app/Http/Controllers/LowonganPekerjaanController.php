@@ -29,9 +29,19 @@ class LowonganPekerjaanController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'posisi' => 'required',
-            'nama_perusahaan' => 'required',
-        ]);
+        'posisi' => 'required',
+        'nama_perusahaan' => 'required',
+        'kontak' => ['required', 'regex:/^(08)[0-9]{8,12}$/'],
+        'batas_lamaran' => ['required', 'date'],
+        'link_lamaran' => ['nullable', 'url'],
+        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:5120'
+    ]);
+
+    $foto = null;
+
+    if ($request->hasFile('foto')) {
+        $foto = $request->file('foto')->store('loker', 'public');
+    }
 
         LowonganPekerjaan::create([
             'posisi' => $request->posisi,
@@ -45,37 +55,68 @@ class LowonganPekerjaanController extends Controller
             'dibuat_oleh' => auth()->id(),
             'role' => auth()->user()->role->role_nama ?? 'Dosen',
             'aktif' => true,
+            'foto' => $foto
         ]);
 
-        return redirect('/admin/lowongan-pekerjaan')
-            ->with('success', 'Lowongan berhasil ditambahkan');
-    }
+        return response()->json([
+        'success' => true,
+        'message' => 'Lowongan berhasil ditambahkan'
+    ]);
+}
 
     public function edit($id)
     {
         $lowongan = LowonganPekerjaan::findOrFail($id);
-
-        return view('layoutAdmin.lowongan.edit', compact('lowongan'));
-    }
+    return response()->json(
+        LowonganPekerjaan::findOrFail($id));
+}
 
     public function update(Request $request, $id)
-    {
-        $lowongan = LowonganPekerjaan::findOrFail($id);
+{
+    $request->validate([
+        'posisi' => 'required',
+        'nama_perusahaan' => 'required',
+        'kontak' => ['required', 'regex:/^(08)[0-9]{8,12}$/'],
+        'batas_lamaran' => ['required', 'date'],
+        'link_lamaran' => ['nullable', 'url'],
+        'foto' => 'nullable|image|mimes:jpg,jpeg,png|max:5120'
+    ]);
 
-        $lowongan->update($request->all());
-
-        return redirect('/admin/lowongan-pekerjaan')
-            ->with('success', 'Lowongan berhasil diupdate');
+    $lowongan = LowonganPekerjaan::findOrFail($id);
+    $data = $request->except('foto');
+    if ($request->hasFile('foto')) {
+        // Hapus foto lama jika ada (opsional tapi disarankan)
+        if ($lowongan->foto && \Storage::disk('public')->exists($lowongan->foto)) {
+            \Storage::disk('public')->delete($lowongan->foto);
+        }
+        $data['foto'] = $request->file('foto')->store('loker', 'public');
     }
+
+     $lowongan->update($data);
+
+    return response()->json([
+        'success' => true,
+        'message' => 'Lowongan berhasil diupdate'
+    ]);
+}
 
     public function destroy($id)
-    {
-        $lowongan = LowonganPekerjaan::findOrFail($id);
+{
+    $lowongan = LowonganPekerjaan::findOrFail($id);
+    $lowongan->delete();
 
-        $lowongan->delete();
+    return response()->json([
+        'success' => true,
+        'message' => 'Lowongan berhasil dihapus'
+    ]);
+}
 
-        return back()->with('success', 'Lowongan berhasil dihapus');
-    }
+    public function showAdmin($id)
+{
+    $lowongan = LowonganPekerjaan::findOrFail($id);
+    // Kita arahkan ke view khusus detail admin
+    return view('layoutAdmin.lowongan.show', compact('lowongan'));
+}
 
 // =======================
 // LOWONGAN PUBLIC

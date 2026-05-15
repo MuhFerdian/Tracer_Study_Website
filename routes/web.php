@@ -145,6 +145,7 @@ Route::group([
     Route::get('/list', [LowonganPekerjaanController::class, 'list']);
     Route::get('/create', [LowonganPekerjaanController::class, 'create']);
     Route::post('/store', [LowonganPekerjaanController::class, 'store']);
+    Route::get('/{id}/show', [LowonganPekerjaanController::class, 'showAdmin']);
     Route::get('/{id}/edit', [LowonganPekerjaanController::class, 'edit']);
     Route::put('/{id}/update', [LowonganPekerjaanController::class, 'update']);
     Route::delete('/{id}/delete', [LowonganPekerjaanController::class, 'destroy']);
