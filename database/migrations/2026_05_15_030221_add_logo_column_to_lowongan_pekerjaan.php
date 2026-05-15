@@ -1,0 +1,25 @@
+<?php
+
+use Illuminate\Database\Migrations\Migration;
+use Illuminate\Database\Schema\Blueprint;
+use Illuminate\Support\Facades\Schema;
+
+return new class extends Migration
+{
+    public function up(): void
+    {
+        Schema::table('lowongan_pekerjaan', function (Blueprint $table) {
+            // Cek dulu agar tidak error jika kolom sudah ada
+            if (!Schema::hasColumn('lowongan_pekerjaan', 'logo')) {
+                $table->string('logo')->nullable()->after('link_lamaran');
+            }
+        });
+    }
+
+    public function down(): void
+    {
+        Schema::table('lowongan_pekerjaan', function (Blueprint $table) {
+            $table->dropColumn('logo');
+        });
+    }
+};
