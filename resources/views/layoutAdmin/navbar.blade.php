@@ -3,7 +3,7 @@
     {{-- BRAND --}}
     <a class="navbar-brand ps-3 d-flex align-items-center" href="{{ url('/admin') }}">
 
-        <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logoTC.png') }}"
+        <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc3.png') }}"
             alt="Logo">
 
         <div class="brand-wrapper">
@@ -18,20 +18,34 @@
         <i class="fas fa-bars"></i>
     </button>
 
-    {{-- SEARCH --}}
-    <form class="d-none d-md-inline-block form-inline ms-auto me-3">
+    {{-- NOTIFIKASI --}}
+    <div class="nav-notif-wrap ms-auto me-2 position-relative">
+        <button class="btn notif-btn" id="notifToggle" title="Notifikasi Alumni">
+            <i class="fas fa-bell"></i>
+            <span class="notif-badge d-none" id="notifBadge">0</span>
+        </button>
 
-        <div class="input-group search-box">
-
-            <input class="form-control" type="text" placeholder="Cari data..." />
-
-            <button class="btn btn-primary" type="button">
-                <i class="fas fa-search"></i>
-            </button>
-
+        {{-- Dropdown Panel --}}
+        <div class="notif-panel shadow" id="notifPanel">
+            <div class="notif-panel-header d-flex align-items-center justify-content-between">
+                <span class="fw-bold"><i class="fas fa-bell me-2 text-warning"></i>Notifikasi Alumni</span>
+                <button class="btn btn-sm btn-link text-muted p-0" id="notifMarkAll" title="Tandai semua sudah dibaca">
+                    <i class="fas fa-check-double"></i>
+                </button>
+            </div>
+            <div class="notif-panel-body" id="notifList">
+                <div class="notif-empty text-center py-4 text-muted">
+                    <i class="fas fa-bell-slash fs-3 mb-2 d-block"></i>
+                    <small>Belum ada alumni yang mengisi</small>
+                </div>
+            </div>
+            <div class="notif-panel-footer text-center">
+                <a href="{{ url('/admin/alumni-sudah-mengisi') }}" class="text-primary small fw-semibold">
+                    Lihat semua alumni yang mengisi →
+                </a>
+            </div>
         </div>
-
-    </form>
+    </div>
 
     {{-- PROFILE --}}
     <ul class="navbar-nav me-3">
@@ -322,25 +336,149 @@
     }
 
     /* =========================
-       SEARCH BOX
+       SEARCH BOX (dihapus)
     ========================== */
-    .search-box {
-        width: 280px;
-        overflow: hidden;
-        border-radius: 12px;
+
+    /* =========================
+       NOTIFIKASI BELL
+    ========================== */
+    .nav-notif-wrap {
+        position: relative;
     }
 
-    .search-box .form-control {
+    .notif-btn {
+        position: relative;
+        color: white !important;
+        font-size: 1.25rem;
+        background: transparent;
         border: none;
+        padding: 0.4rem 0.6rem;
+        border-radius: 50%;
+        transition: background 0.2s;
         box-shadow: none !important;
-        font-family: 'Poppins', sans-serif;
-        font-size: 0.9rem;
-        padding-left: 15px;
     }
 
-    .search-box .btn {
-        border: none;
-        width: 50px;
+    .notif-btn:hover {
+        background: rgba(255,255,255,0.15) !important;
+    }
+
+    .notif-badge {
+        position: absolute;
+        top: 2px;
+        right: 2px;
+        min-width: 18px;
+        height: 18px;
+        padding: 0 4px;
+        border-radius: 999px;
+        background: #ef4444;
+        color: #fff;
+        font-size: 0.68rem;
+        font-weight: 700;
+        line-height: 18px;
+        text-align: center;
+        pointer-events: none;
+    }
+
+    .notif-panel {
+        display: none;
+        position: absolute;
+        top: calc(100% + 10px);
+        right: 0;
+        width: 340px;
+        max-height: 420px;
+        background: #fff;
+        border-radius: 16px;
+        overflow: hidden;
+        z-index: 2000;
+        border: 1px solid rgba(0,0,0,0.08);
+        flex-direction: column;
+    }
+
+    .notif-panel.open {
+        display: flex;
+    }
+
+    .notif-panel-header {
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        background: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    .notif-panel-body {
+        overflow-y: auto;
+        flex: 1;
+    }
+
+    .notif-item {
+        display: flex;
+        align-items: flex-start;
+        gap: 0.75rem;
+        padding: 0.85rem 1rem;
+        border-bottom: 1px solid #f1f5f9;
+        transition: background 0.15s;
+        text-decoration: none;
+        color: inherit;
+    }
+
+    .notif-item:hover {
+        background: #f0f9ff;
+    }
+
+    .notif-item:last-child {
+        border-bottom: none;
+    }
+
+    .notif-avatar {
+        flex-shrink: 0;
+        width: 38px;
+        height: 38px;
+        border-radius: 50%;
+        background: linear-gradient(135deg, #2563eb, #38bdf8);
+        color: #fff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 0.9rem;
+        font-weight: 700;
+    }
+
+    .notif-item-body {
+        flex: 1;
+        min-width: 0;
+    }
+
+    .notif-item-name {
+        font-weight: 700;
+        font-size: 0.88rem;
+        color: #1e293b;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .notif-item-meta {
+        font-size: 0.78rem;
+        color: #64748b;
+        margin-top: 2px;
+    }
+
+    .notif-item-time {
+        font-size: 0.72rem;
+        color: #94a3b8;
+        white-space: nowrap;
+        flex-shrink: 0;
+    }
+
+    .notif-panel-footer {
+        padding: 0.7rem 1rem;
+        border-top: 1px solid #f1f5f9;
+        background: #f8fafc;
+        flex-shrink: 0;
+    }
+
+    .notif-empty {
+        color: #94a3b8;
     }
 
     /* =========================
@@ -391,10 +529,6 @@
             display: none;
         }
 
-        .search-box {
-            width: 140px;
-        }
-
         .brand-title {
             font-size: 1rem;
         }
@@ -412,6 +546,11 @@
             order: 2;
             margin-left: auto;
             margin-right: 1rem;
+        }
+
+        .notif-panel {
+            width: 300px;
+            right: -10px;
         }
     }
 
@@ -433,10 +572,6 @@
             height: 30px;
         }
 
-        .search-box {
-            display: none !important;
-        }
-
         .toggle-btn {
             font-size: 1rem;
             padding: 0.25rem;
@@ -446,5 +581,116 @@
             min-width: 160px;
             font-size: 0.85rem;
         }
+
+        .notif-panel {
+            width: 280px;
+            right: -40px;
+        }
     }
 </style>
+
+<script>
+(function () {
+    var btn      = document.getElementById('notifToggle');
+    var panel    = document.getElementById('notifPanel');
+    var badge    = document.getElementById('notifBadge');
+    var list     = document.getElementById('notifList');
+    var markAll  = document.getElementById('notifMarkAll');
+    var loaded   = false;
+
+    // ── Toggle panel ───────────────────────────────────────────
+    btn.addEventListener('click', function (e) {
+        e.stopPropagation();
+        panel.classList.toggle('open');
+        if (panel.classList.contains('open') && !loaded) {
+            loadNotif();
+        }
+    });
+
+    // Tutup saat klik di luar
+    document.addEventListener('click', function (e) {
+        if (!panel.contains(e.target) && e.target !== btn) {
+            panel.classList.remove('open');
+        }
+    });
+
+    // ── Load data alumni yang mengisi ──────────────────────────
+    function loadNotif() {
+        list.innerHTML = '<div class="text-center py-4 text-muted"><span class="spinner-border spinner-border-sm"></span></div>';
+        fetch('{{ route("notif.alumni.mengisi") }}', {
+            headers: { 'X-Requested-With': 'XMLHttpRequest' }
+        })
+        .then(function (r) { return r.json(); })
+        .then(function (res) {
+            loaded = true;
+            renderList(res.data);
+            updateBadge(res.unread);
+        })
+        .catch(function () {
+            list.innerHTML = '<div class="text-center py-4 text-danger small">Gagal memuat notifikasi</div>';
+        });
+    }
+
+    // ── Render item list ───────────────────────────────────────
+    function renderList(data) {
+        if (!data || data.length === 0) {
+            list.innerHTML = '<div class="notif-empty text-center py-4"><i class="fas fa-bell-slash fs-3 mb-2 d-block"></i><small>Belum ada alumni yang mengisi</small></div>';
+            return;
+        }
+        var html = '';
+        data.forEach(function (item) {
+            var initial = (item.nama || 'A').charAt(0).toUpperCase();
+            html += '<a href="{{ url("/admin/alumni") }}/' + item.alumni_id + '/answers" class="notif-item">' +
+                '<div class="notif-avatar">' + initial + '</div>' +
+                '<div class="notif-item-body">' +
+                    '<div class="notif-item-name">' + escHtml(item.nama) + '</div>' +
+                    '<div class="notif-item-meta">' + escHtml(item.nim) + ' &bull; ' + escHtml(item.prodi) + '</div>' +
+                '</div>' +
+                '<div class="notif-item-time">' + escHtml(item.submitted_ago) + '</div>' +
+            '</a>';
+        });
+        list.innerHTML = html;
+    }
+
+    // ── Update badge ───────────────────────────────────────────
+    function updateBadge(count) {
+        if (count > 0) {
+            badge.textContent = count > 99 ? '99+' : count;
+            badge.classList.remove('d-none');
+        } else {
+            badge.classList.add('d-none');
+        }
+    }
+
+    // ── Mark all read ──────────────────────────────────────────
+    markAll.addEventListener('click', function () {
+        fetch('{{ route("notif.mark.all.read") }}', {
+            method: 'POST',
+            headers: {
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').content,
+                'X-Requested-With': 'XMLHttpRequest'
+            }
+        }).then(function () {
+            badge.classList.add('d-none');
+        });
+    });
+
+    // ── Escape HTML helper ─────────────────────────────────────
+    function escHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    // ── Auto-load badge count saat halaman load ────────────────
+    fetch('{{ route("notif.unread.count") }}', {
+        headers: { 'X-Requested-With': 'XMLHttpRequest' }
+    })
+    .then(function (r) { return r.json(); })
+    .then(function (res) { updateBadge(res.count); })
+    .catch(function () {});
+})();
+</script>

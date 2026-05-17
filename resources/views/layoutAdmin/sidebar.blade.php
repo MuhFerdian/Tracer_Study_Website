@@ -1,19 +1,42 @@
 <div id="layoutSidenav_nav">
     <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-        <div class="sb-sidenav-header d-flex flex-column align-items-center"
+        {{-- <div class="sb-sidenav-header d-flex flex-column align-items-center"
             style="padding-top: 0.3rem; padding-bottom: 0.3rem;">
-            <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logoTC.png') }}"
-                alt="Logo" style="height: 80px; margin-right: 5px;">
+            <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc2.png') }}"
+                alt="Logo" style="height: 80px; margin-right: 5px;"> --}}
             {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">Admin Panel</div> --}}
+            {{-- @php
+                $role = auth()->user()->role->role_nama ?? '';
+            @endphp --}}
+
+            {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">
+                {{ $role == 'Admin' ? 'Admin Panel' : 'Dosen Panel' }}
+            </div> --}}
+
+            {{-- <div class="text-muted" style="font-size: 0.85rem;">Teknologi Informasi</div>
+        </div> --}}
+        <div class="sidebar-brand">
+
+            <img class="logo-animated"
+                src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc3.png') }}"
+                alt="Logo">
+
+            <div class="sidebar-brand-title">
+                Tracer <span>Study</span>
+            </div>
+
+            <div class="sidebar-brand-subtitle">
+                Teknologi Informasi
+            </div>
+
             @php
                 $role = auth()->user()->role->role_nama ?? '';
             @endphp
 
-            <div class="text-white fw-semibold" style="font-size: 1.1rem;">
+            <div class="sidebar-role">
                 {{ $role == 'Admin' ? 'Admin Panel' : 'Dosen Panel' }}
             </div>
 
-            <div class="text-muted" style="font-size: 0.85rem;">Teknologi Informasi</div>
         </div>
         <div class="sb-sidenav-menu">
             <div class="nav">
@@ -85,15 +108,16 @@
                 {{-- KHUSUS ADMIN --}}
                 @if($role == 'Admin')
 
-                            <a class="nav-link
-                    {{ request()->is('admin/manajemen-dosen') ? 'active' : '' }}" href="{{ url('admin/manajemen-dosen') }}">
+                    <a class="nav-link
+                        {{ request()->is('admin/manajemen-dosen') ? 'active' : '' }}"
+                        href="{{ url('admin/manajemen-dosen') }}">
 
-                                <div class="sb-nav-link-icon">
-                                    <i class="fas fa-chalkboard-user"></i>
-                                </div>
+                        <div class="sb-nav-link-icon">
+                            <i class="fas fa-chalkboard-user"></i>
+                        </div>
 
-                                Manajemen Dosen
-                            </a>
+                        Manajemen Dosen
+                    </a>
 
                 @endif
 
@@ -120,16 +144,16 @@
                 </a>
 
                 {{-- LOWONGAN PEKERJAAN --}}
-<a class="nav-link
-    {{ request()->is('admin/lowongan-pekerjaan*') ? 'active' : '' }}"
-    href="{{ url('admin/lowongan-pekerjaan') }}">
+                <a class="nav-link
+                    {{ request()->is('admin/lowongan-pekerjaan*') ? 'active' : '' }}"
+                    href="{{ url('admin/lowongan-pekerjaan') }}">
 
-    <div class="sb-nav-link-icon">
-        <i class="fas fa-briefcase"></i>
-    </div>
+                    <div class="sb-nav-link-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
 
-    Lowongan Pekerjaan
-</a>
+                    Lowongan Pekerjaan
+                </a>
             </div>
         </div>
         <div class="sb-sidenav-footer">
@@ -152,7 +176,7 @@
     }
 
     .sb-sidenav-header {
-        border-bottom: 1px solid rgba(255,255,255,0.08);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
         margin-bottom: 0.5rem;
         padding-top: 0.5rem;
         padding-bottom: 0.8rem;
@@ -170,7 +194,7 @@
         font-size: 0.72rem;
         font-weight: 700;
         letter-spacing: 1px;
-        color: rgba(255,255,255,0.46);
+        color: rgba(255, 255, 255, 0.46);
         text-transform: uppercase;
         padding: 1rem 1rem 0.5rem;
     }
@@ -179,7 +203,7 @@
         font-family: 'Poppins', sans-serif;
         font-size: 0.92rem;
         font-weight: 600;
-        color: rgba(255,255,255,0.76) !important;
+        color: rgba(255, 255, 255, 0.76) !important;
         border-left: 4px solid transparent;
         transition: all 0.25s ease;
         border-radius: 8px;
@@ -193,7 +217,7 @@
     }
 
     .sb-sidenav .nav-link:hover {
-        background-color: rgba(255,255,255,0.08);
+        background-color: rgba(255, 255, 255, 0.08);
         color: #ffffff !important;
         transform: none;
         border-left-color: transparent;
@@ -221,12 +245,12 @@
         font-size: 0.82rem;
         line-height: 1.3;
         margin: 0.2rem 0.6rem;
-        background-color: rgba(255,255,255,0.04);
+        background-color: rgba(255, 255, 255, 0.04);
     }
 
     .sb-sidenav-collapse-arrow i {
         transition: transform 0.3s ease;
-        color: rgba(255,255,255,0.72);
+        color: rgba(255, 255, 255, 0.72);
     }
 
     .collapsed .sb-sidenav-collapse-arrow i {
@@ -241,10 +265,10 @@
         font-family: 'Poppins', sans-serif;
         font-size: 0.8rem;
         font-weight: 500;
-        color: rgba(255,255,255,0.62);
+        color: rgba(255, 255, 255, 0.62);
         padding: 1rem;
-        border-top: 1px solid rgba(255,255,255,0.08);
-        background-color: rgba(0,0,0,0.2);
+        border-top: 1px solid rgba(255, 255, 255, 0.08);
+        background-color: rgba(0, 0, 0, 0.2);
     }
 
     .sb-sidenav-menu::-webkit-scrollbar {
@@ -256,7 +280,7 @@
     }
 
     .sb-sidenav-menu::-webkit-scrollbar-thumb {
-        background: rgba(255,255,255,0.28);
+        background: rgba(255, 255, 255, 0.28);
         border-radius: 10px;
     }
 </style>

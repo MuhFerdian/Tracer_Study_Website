@@ -7,37 +7,102 @@
     @method('PUT')
 
     <div class="modal-body">
-        <input type="text" name="username" value="{{ $user->username }}" class="form-control mb-2" required>
-        <input type="text" name="name" value="{{ $user->name }}" class="form-control mb-2" required>
-        <input type="email" name="email" value="{{ $user->email }}" class="form-control mb-2">
 
-        <input type="password" name="password" class="form-control mb-2" placeholder="Kosongkan jika tidak diubah">
+        <div class="mb-3">
+            <label class="fw-semibold">Username <span class="text-danger">*</span></label>
+            <input type="text" name="username" id="username" value="{{ $user->username }}" class="form-control"
+                placeholder="Contoh: ulfa.emi">
+            <small class="text-muted">Hanya boleh huruf, angka, titik, dan underscore. Minimal 4 karakter.</small>
+            <small id="error-username" class="text-danger d-block"></small>
+        </div>
 
-        <select name="status" class="form-control mb-2">
-            <option value="pending" {{ $user->status == 'pending' ? 'selected' : '' }}>Pending</option>
-            <option value="active" {{ $user->status == 'active' ? 'selected' : '' }}>Active</option>
-        </select>
+        <div class="mb-3">
+            <label class="fw-semibold">Nama Lengkap <span class="text-danger">*</span></label>
+            <input type="text" name="name" id="name" value="{{ $user->name }}" class="form-control"
+                placeholder="Contoh: Ulfa Emi Rahmawati, S.Kom., M.Kom.">
+            <small class="text-muted">Nama lengkap dosen sesuai identitas.</small>
+            <small id="error-name" class="text-danger d-block"></small>
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-semibold">Email</label>
+            <input type="email" name="email" id="email" value="{{ $user->email }}" class="form-control"
+                placeholder="Contoh: ulfa.emi@polije.ac.id">
+            <small class="text-muted">Email aktif dosen (opsional).</small>
+            <small id="error-email" class="text-danger d-block"></small>
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-semibold">Password Baru</label>
+            <div class="input-group">
+                <input type="password" name="password" id="password" class="form-control"
+                    placeholder="Kosongkan jika tidak diubah">
+                <button type="button" class="btn btn-outline-secondary" id="togglePassword" tabindex="-1">
+                    <i class="fas fa-eye" id="iconPassword"></i>
+                </button>
+            </div>
+            <small class="text-muted">Isi hanya jika ingin mengganti password. Minimal 6 karakter.</small>
+            <small id="error-password" class="text-danger d-block"></small>
+        </div>
+
+        <div class="mb-3">
+            <label class="fw-semibold">Status <span class="text-danger">*</span></label>
+            <select name="status" id="status" class="form-control">
+                <option value="pending" {{ $user->status == 'pending' ? 'selected' : '' }}>Pending</option>
+                <option value="active"  {{ $user->status == 'active'  ? 'selected' : '' }}>Active</option>
+            </select>
+            <small class="text-muted">Active: dosen bisa login. Pending: akun belum aktif.</small>
+            <small id="error-status" class="text-danger d-block"></small>
+        </div>
+
     </div>
 
     <div class="modal-footer">
         <button type="button" class="btn btn-warning" data-bs-dismiss="modal">Batal</button>
-        <button class="btn btn-primary">Update</button>
+        <button type="submit" class="btn btn-primary">Update</button>
     </div>
 </form>
 
 <script>
-$('#formEdit').submit(function(e){
+// Toggle password
+$('#togglePassword').on('click', function () {
+    var inp  = $('#password');
+    var icon = $('#iconPassword');
+    if (inp.attr('type') === 'password') {
+        inp.attr('type', 'text');
+        icon.removeClass('fa-eye').addClass('fa-eye-slash');
+    } else {
+        inp.attr('type', 'password');
+        icon.removeClass('fa-eye-slash').addClass('fa-eye');
+    }
+});
+
+$('#formEdit').submit(function (e) {
     e.preventDefault();
 
-    $.ajax({
-        url: "/admin/manajemen-dosen/{{ $user->id }}/update",
-        type: "PUT",
-        data: $(this).serialize(),
-        success: function(res){
-            $('#myModal').modal('hide');
-            $('#table-dosen').DataTable().ajax.reload();
+    // Reset error
+    $('[id^="error-"]').text('');
 
-            Swal.fire('Berhasil', res.message, 'success');
+    $.ajax({
+        url: '/admin/manajemen-dosen/{{ $user->id }}/update',
+        type: 'PUT',
+        data: $(this).serialize(),
+        success: function (res) {
+            if (res.status) {
+                $('#myModal').modal('hide');
+                $('#table-dosen').DataTable().ajax.reload();
+                Swal.fire('Berhasil', res.message, 'success');
+            } else {
+                if (res.msgField) {
+                    $.each(res.msgField, function (field, messages) {
+                        $('#error-' + field).text(messages[0]);
+                    });
+                }
+                Swal.fire('Gagal', res.message, 'error');
+            }
+        },
+        error: function () {
+            Swal.fire('Error', 'Terjadi kesalahan pada server', 'error');
         }
     });
 });

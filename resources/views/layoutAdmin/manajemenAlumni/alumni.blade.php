@@ -47,22 +47,25 @@
             <p><strong>Daftar alumni</strong></p>
             <p>Berikut adalah daftar alumni yang tersedia. Anda dapat mengimpor, mengekspor, dan menambah alumni baru menggunakan tombol di atas.</p>
 
-            <table class="table table-bordered table-striped" id="table_user">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Nama</th>
-                        <th>NIM</th>
-                        <th>Program Studi</th>
-                        <th>No HP</th>
-                        <th>Email</th>
-                        <th>Angkatan</th>
-                        <th>Tahun Lulus</th>
-                        <th>Status Survey</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-            </table>
+            <div class="table-responsive">
+                <table class="table table-bordered table-striped" id="table_user">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Nama</th>
+                            <th>NIM</th>
+                            <th>Program Studi</th>
+                            <th>No HP</th>
+                            <th>Email</th>
+                            <th>Alamat</th>
+                            <th>Angkatan</th>
+                            <th>Tahun Lulus</th>
+                            <th>Status Survey</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 </div>
@@ -132,6 +135,7 @@
                 { data: "prodi", name: "prodi" },
                 { data: "no_hp", name: "no_hp" },
                 { data: "email", name: "email" },
+                { data: "alamat", name: "alamat" },
                 { data: "angkatan", name: "angkatan" },
                 { data: "tahun_lulus", name: "tahun_lulus" },
                 { data: "status_survey", name: "status_survey", orderable: false, searchable: false },

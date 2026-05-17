@@ -32,6 +32,7 @@ class ManajemenAlumniController extends Controller
                 'prodi',
                 'no_hp',
                 'email',
+                'alamat',
                 'angkatan',
                 'tahun_lulus',
             ])
@@ -371,25 +372,25 @@ class ManajemenAlumniController extends Controller
                  */
                 $rowValidator = Validator::make([
 
-                    'nim' => $nim,
-                    'nama' => $nama,
-                    'prodi' => $prodi,
-                    'email' => $email,
-                    'angkatan' => $angkatan,
+                    'nim'         => $nim,
+                    'nama'        => $nama,
+                    'prodi'       => $prodi,
+                    'email'       => $email,
+                    'angkatan'    => $angkatan,
                     'tahun_lulus' => $tahunLulus,
-                    'no_hp' => $no_hp,
-                    'alamat' => $alamat,
+                    'no_hp'       => $no_hp,
+                    'alamat'      => $alamat,
 
                 ], [
 
                     'nim' =>
-                        'required|min:5|max:20|regex:/^[A-Za-z0-9]+$/',
+                        'required|string|min:5|max:20|regex:/^[A-Za-z0-9]+$/',
 
                     'nama' =>
-                        'required|min:3|max:100|regex:/^[\pL\s\.\-]+$/u',
+                        'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
 
                     'prodi' =>
-                        'nullable|string|max:100',
+                        'nullable|string|max:100|regex:/^[\pL\s\.\-]+$/u',
 
                     'email' =>
                         'nullable|email|max:100',
@@ -401,10 +402,15 @@ class ManajemenAlumniController extends Controller
                         'nullable|integer|min:1900|max:2100',
 
                     'no_hp' =>
-                        'nullable|min:10|max:15|regex:/^[0-9+\-]+$/',
+                        'nullable|string|min:10|max:15|regex:/^[0-9+\-]+$/',
 
                     'alamat' =>
                         'nullable|string|max:255',
+
+                ], [
+                    'nim.regex'   => 'NIM hanya boleh huruf dan angka.',
+                    'nama.regex'  => 'Nama mengandung karakter tidak valid.',
+                    'no_hp.regex' => 'No HP hanya boleh angka, +, dan -.',
                 ]);
 
                 if ($rowValidator->fails()) {
@@ -413,6 +419,15 @@ class ManajemenAlumniController extends Controller
                         "Baris $rowNumber: " .
                         implode(', ', $rowValidator->errors()->all());
 
+                    continue;
+                }
+
+                // Validasi logika: angkatan tidak boleh lebih besar dari tahun lulus
+                if (
+                    !empty($angkatan) && !empty($tahunLulus) &&
+                    (int) $angkatan > (int) $tahunLulus
+                ) {
+                    $failed_rows[] = "Baris $rowNumber: Angkatan ($angkatan) tidak boleh lebih besar dari tahun lulus ($tahunLulus).";
                     continue;
                 }
 
@@ -499,29 +514,39 @@ class ManajemenAlumniController extends Controller
     {
         $validator = Validator::make($request->all(), [
 
-            'prodi' =>
-                'required|string|max:100|regex:/^[a-zA-Z\s\-\.]+$/',
-
             'nim' =>
-                'required|min:5|unique:alumni,nim|regex:/^[A-Za-z0-9]+$/',
+                'required|string|min:5|max:20|unique:alumni,nim|regex:/^[A-Za-z0-9]+$/',
+
+            'prodi' =>
+                'required|string|max:100|regex:/^[\pL\s\.\-]+$/u',
 
             'nama_alumni' =>
-                'required|min:3|max:100|regex:/^[a-zA-Z\s\-\.]+$/',
+                'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
 
             'angkatan' =>
                 'required|integer|min:1900|max:2100',
 
             'tanggal_lulus' =>
-                'required|integer|min:1900|max:2100',
+                'required|integer|min:1900|max:2100|gte:angkatan',
 
             'email' =>
-                'nullable|email|max:100|unique:alumni,email',
+                'nullable|email:rfc,dns|max:100|unique:alumni,email|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
 
-            'no_hp' => 
-                'nullable|min:10|max:15|regex:/^[0-9+\-]+$/',
+            'no_hp' =>
+                'nullable|string|min:10|max:15|regex:/^[0-9+\-]+$/',
 
-            'alamat' => 
+            'alamat' =>
                 'nullable|string|max:255',
+
+        ], [
+            'nim.regex'            => 'NIM hanya boleh huruf dan angka.',
+            'nim.unique'           => 'NIM sudah terdaftar.',
+            'nama_alumni.regex'    => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
+            'prodi.regex'          => 'Program studi hanya boleh huruf, spasi, titik, dan tanda hubung.',
+            'no_hp.regex'          => 'No HP hanya boleh angka, +, dan -.',
+            'tanggal_lulus.gte'    => 'Tahun lulus tidak boleh lebih kecil dari angkatan.',
+            'email.unique'         => 'Email sudah terdaftar.',
+            'email.regex'          => 'Email harus menggunakan domain @gmail.com.',
         ]);
 
         if ($validator->fails()) {
@@ -592,31 +617,44 @@ class ManajemenAlumniController extends Controller
      */
     public function update(Request $request, $id)
     {
+        // Pastikan $id integer untuk mencegah injection di rule unique
+        $id = (int) $id;
+
         $validator = Validator::make($request->all(), [
 
             'prodi' =>
-                'required|string|max:100|regex:/^[a-zA-Z\s\-\.]+$/',
+                'required|string|max:100|regex:/^[\pL\s\.\-]+$/u',
 
             'nim' =>
-                'required|min:5|regex:/^[A-Za-z0-9]+$/|unique:alumni,nim,' . $id . ',id',
+                'required|string|min:5|max:20|regex:/^[A-Za-z0-9]+$/|unique:alumni,nim,' . $id . ',id',
 
             'nama_alumni' =>
-                'required|min:3|max:100|regex:/^[a-zA-Z\s\-\.]+$/',
+                'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
 
             'angkatan' =>
                 'required|integer|min:1900|max:2100',
 
             'tanggal_lulus' =>
-                'required|integer|min:1900|max:2100',
+                'required|integer|min:1900|max:2100|gte:angkatan',
 
             'email' =>
-                'nullable|email|max:100|unique:alumni,email,' . $id . ',id',
+                'nullable|email:rfc,dns|max:100|unique:alumni,email,' . $id . ',id|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
 
             'no_hp' =>
-                'nullable|min:10|max:15|regex:/^[0-9+\-]+$/',
+                'nullable|string|min:10|max:15|regex:/^[0-9+\-]+$/',
 
             'alamat' =>
                 'nullable|string|max:255',
+
+        ], [
+            'nim.regex'            => 'NIM hanya boleh huruf dan angka.',
+            'nim.unique'           => 'NIM sudah digunakan alumni lain.',
+            'nama_alumni.regex'    => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
+            'prodi.regex'          => 'Program studi hanya boleh huruf, spasi, titik, dan tanda hubung.',
+            'no_hp.regex'          => 'No HP hanya boleh angka, +, dan -.',
+            'tanggal_lulus.gte'    => 'Tahun lulus tidak boleh lebih kecil dari angkatan.',
+            'email.unique'         => 'Email sudah digunakan alumni lain.',
+            'email.regex'          => 'Email harus menggunakan domain @gmail.com.',
         ]);
 
         if ($validator->fails()) {
@@ -634,15 +672,15 @@ class ManajemenAlumniController extends Controller
 
             /**
              * UPDATE USER JIKA SUDAH REGISTER
+             * Catatan: password user TIDAK direset saat admin edit data alumni.
+             * Hanya data profil alumni yang diperbarui.
              */
             if ($alumni->user_id) {
-
                 $user = User::find($alumni->user_id);
-
                 if ($user) {
-
+                    // Hanya update nama jika berubah
                     $user->update([
-                        'password' => Hash::make($request->nim),
+                        'name' => $request->nama_alumni,
                     ]);
                 }
             }
@@ -787,18 +825,17 @@ class ManajemenAlumniController extends Controller
     {
         $alumni = alumniModel::findOrFail($id);
 
-        $questions = Question::select(
-                'id',
-                'pertanyaan',
-                'type',
-                'urutan'
-            )
-            ->with(['options' => function($q) { $q->orderBy('urutan'); }, 'details' => function($q) { $q->orderBy('urutan'); }])
+        $questions = Question::select('id', 'pertanyaan', 'type', 'urutan')
+            ->with([
+                'options'  => fn($q) => $q->orderBy('urutan'),
+                'details'  => fn($q) => $q->orderBy('urutan'),
+            ])
             ->orderBy('urutan')
             ->get();
 
+        // Eager load semua jawaban + detail + option sekaligus — hindari N+1
         $answers = Answer::where('alumni_id', $id)
-            ->with(['answerDetails' => function($q) { $q->with('option'); }])
+            ->with(['answerDetails.option'])
             ->get()
             ->keyBy('question_id');
 

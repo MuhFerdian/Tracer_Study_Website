@@ -22,19 +22,21 @@
             </div>
         </div>
         <div class="card-body">
-            <table id="tablePertanyaan" class="table table-bordered table-striped">
-                <thead>
-                    <tr>
-                        <th>No</th>
-                        <th>Kode Soal</th>
-                        <th>Pertanyaan</th>
-                        <th>Tipe</th>
-                        <th>Opsi</th>
-                        <th>Urutan</th>
-                        <th>Aksi</th>
-                    </tr>
-                </thead>
-            </table>
+            <div class="table-responsive">
+                <table id="tablePertanyaan" class="table table-bordered table-striped">
+                    <thead>
+                        <tr>
+                            <th>No</th>
+                            <th>Kode Soal</th>
+                            <th>Pertanyaan</th>
+                            <th>Tipe</th>
+                            <th>Opsi</th>
+                            <th>Urutan</th>
+                            <th>Aksi</th>
+                        </tr>
+                    </thead>
+                </table>
+            </div>
         </div>
     </div>
 </div>

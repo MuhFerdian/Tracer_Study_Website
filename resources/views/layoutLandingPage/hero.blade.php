@@ -1,7 +1,7 @@
 @extends('layoutLandingPage.app')
 
 @section('content')
-<section class="hero-section">
+<section class="hero-section" id="beranda">
     <div class="container hero-content">
         <div class="row align-items-center g-5">
             <div class="col-lg-6 text-white">
@@ -62,7 +62,8 @@
 </section>
 
 @include('layoutLandingPage.about')
-@include('layoutLandingPage.manfaat')
+@include('layoutLandingPage.profil')
+@include('layoutLandingPage.dosen')
 @include('layoutLandingPage.lowongan', ['lowongan' => $lowongan])
 @include('layoutLandingPage.faq')
 @endsection

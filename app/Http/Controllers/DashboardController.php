@@ -15,10 +15,17 @@ class DashboardController extends Controller
     // ==================================================
     // Summary Cards (Total Alumni, Sudah Isi, Belum Isi)
     // ==================================================
-    public function getSummary()
+    public function getSummary(Request $request)
     {
+        $periodId = $request->query('period_id');
+
         $total = DB::table('alumni')->count();
-        $sudah = DB::table('answers')->distinct('alumni_id')->count('alumni_id');
+
+        $sudahQuery = DB::table('answers')->distinct('alumni_id');
+        if ($periodId) {
+            $sudahQuery->where('survey_period_id', $periodId);
+        }
+        $sudah = $sudahQuery->count('alumni_id');
 
         return response()->json([
             'total_alumni' => $total,
@@ -28,17 +35,19 @@ class DashboardController extends Controller
     }
 
     // ==================================================
-    // Grafik Sebaran Jenis Instansi
-    // Diambil dari jawaban questionnaire f1101
+    // Grafik Sebaran Jenis Instansi → f1101
     // ==================================================
-    public function getInstansiChartData()
+    public function getInstansiChartData(Request $request)
     {
+        $periodId = $request->query('period_id');
+        $periodJoin = $periodId ? "AND a.survey_period_id = $periodId" : '';
+
         $data = DB::select("
             SELECT
                 qo.label AS jenis_instansi,
                 COUNT(ad.id) AS total
             FROM answer_details ad
-            JOIN answers a           ON a.id  = ad.answer_id
+            JOIN answers a           ON a.id  = ad.answer_id $periodJoin
             JOIN questions q         ON q.id  = a.question_id
             JOIN question_options qo ON qo.id = ad.option_id
             WHERE q.kode_soal = 'f1101'
@@ -47,20 +56,20 @@ class DashboardController extends Controller
         ");
 
         if (empty($data)) {
-            return response()->json([
-                ['jenis_instansi' => 'Belum Ada Data', 'total' => 0]
-            ]);
+            return response()->json([['jenis_instansi' => 'Belum Ada Data', 'total' => 0]]);
         }
 
         return response()->json($data);
     }
 
     // ==================================================
-    // Grafik Sebaran Profesi Lulusan
-    // Diambil dari jawaban f8 (status saat ini)
+    // Grafik Sebaran Profesi Lulusan → f8
     // ==================================================
-    public function getProfesiChart()
+    public function getProfesiChart(Request $request)
     {
+        $periodId = $request->query('period_id');
+        $periodJoin = $periodId ? "AND a.survey_period_id = $periodId" : '';
+
         $data = DB::select("
             SELECT
                 qo.label AS profesi,
@@ -69,15 +78,13 @@ class DashboardController extends Controller
             JOIN answer_details ad   ON ad.answer_id  = a.id
             JOIN questions q         ON q.id           = a.question_id
             JOIN question_options qo ON qo.id          = ad.option_id
-            WHERE q.kode_soal = 'f8'
+            WHERE q.kode_soal = 'f8' $periodJoin
             GROUP BY qo.id, qo.label
             ORDER BY total DESC
         ");
 
         if (empty($data)) {
-            return response()->json([
-                ['profesi' => 'Belum Ada Data', 'total' => 0]
-            ]);
+            return response()->json([['profesi' => 'Belum Ada Data', 'total' => 0]]);
         }
 
         return response()->json($data);
@@ -85,22 +92,46 @@ class DashboardController extends Controller
 
     // ==================================================
     // Tabel Rekap Alumni per Tahun Lulus
-    // terlacaklulusan = alumni yang sudah ada jawaban
+    //
+    //   infokom       → f14: 'Sangat Erat' atau 'Erat'
+    //   noninfokom    → f14: 'Cukup Erat', 'Kurang Erat', 'Tidak Sama Sekali'
+    //   multinasional → f5d: label mengandung 'Multinasional'
+    //   nasional      → f5d: label = 'Nasional'
+    //   wirausaha     → f8:  label mengandung 'Wiraswasta'
     // ==================================================
-    public function getRekapAlumni()
+    public function getRekapAlumni(Request $request)
     {
+        $periodId   = $request->query('period_id');
+        $periodCond = $periodId ? "AND ans_any.survey_period_id = $periodId" : '';
+        $periodF14  = $periodId ? "AND a_f14.survey_period_id = $periodId" : '';
+        $periodF5d  = $periodId ? "AND a_f5d.survey_period_id = $periodId" : '';
+        $periodF8   = $periodId ? "AND a_f8.survey_period_id = $periodId" : '';
+
         $data = DB::select("
             SELECT
                 al.tahun_lulus AS tahunlulus,
                 COUNT(DISTINCT al.id) AS jumlahlulusan,
-                COUNT(DISTINCT CASE WHEN ans.id IS NOT NULL THEN al.id END) AS terlacaklulusan,
-                0 AS infokom,
-                0 AS noninfokom,
-                0 AS nasional,
-                0 AS wirausaha,
-                0 AS multinasional
+                COUNT(DISTINCT CASE WHEN ans_any.alumni_id IS NOT NULL THEN al.id END) AS terlacaklulusan,
+                COUNT(DISTINCT CASE WHEN q_f14.kode_soal = 'f14' AND qo_f14.label IN ('Sangat Erat', 'Erat') THEN al.id END) AS infokom,
+                COUNT(DISTINCT CASE WHEN q_f14.kode_soal = 'f14' AND qo_f14.label IN ('Cukup Erat', 'Kurang Erat', 'Tidak Sama Sekali') THEN al.id END) AS noninfokom,
+                COUNT(DISTINCT CASE WHEN q_f5d.kode_soal = 'f5d' AND qo_f5d.label LIKE '%Multinasional%' THEN al.id END) AS multinasional,
+                COUNT(DISTINCT CASE WHEN q_f5d.kode_soal = 'f5d' AND qo_f5d.label = 'Nasional' THEN al.id END) AS nasional,
+                COUNT(DISTINCT CASE WHEN q_f8.kode_soal  = 'f8'  AND qo_f8.label  LIKE '%Wiraswasta%' THEN al.id END) AS wirausaha
             FROM alumni al
-            LEFT JOIN answers ans ON ans.alumni_id = al.id
+            LEFT JOIN (SELECT DISTINCT alumni_id, survey_period_id FROM answers) ans_any
+                ON ans_any.alumni_id = al.id $periodCond
+            LEFT JOIN answers a_f14 ON a_f14.alumni_id = al.id $periodF14
+            LEFT JOIN questions q_f14 ON q_f14.id = a_f14.question_id AND q_f14.kode_soal = 'f14'
+            LEFT JOIN answer_details ad_f14 ON ad_f14.answer_id = a_f14.id
+            LEFT JOIN question_options qo_f14 ON qo_f14.id = ad_f14.option_id
+            LEFT JOIN answers a_f5d ON a_f5d.alumni_id = al.id $periodF5d
+            LEFT JOIN questions q_f5d ON q_f5d.id = a_f5d.question_id AND q_f5d.kode_soal = 'f5d'
+            LEFT JOIN answer_details ad_f5d ON ad_f5d.answer_id = a_f5d.id
+            LEFT JOIN question_options qo_f5d ON qo_f5d.id = ad_f5d.option_id
+            LEFT JOIN answers a_f8 ON a_f8.alumni_id = al.id $periodF8
+            LEFT JOIN questions q_f8 ON q_f8.id = a_f8.question_id AND q_f8.kode_soal = 'f8'
+            LEFT JOIN answer_details ad_f8 ON ad_f8.answer_id = a_f8.id
+            LEFT JOIN question_options qo_f8 ON qo_f8.id = ad_f8.option_id
             GROUP BY al.tahun_lulus
             ORDER BY al.tahun_lulus
         ");
@@ -109,41 +140,88 @@ class DashboardController extends Controller
     }
 
     // ==================================================
-    // Tabel Rata-rata Masa Tunggu
-    // Diambil dari jawaban f502 (bulan dapat kerja pertama)
+    // Tabel Rata-rata Masa Tunggu → f502
+    // Menggunakan CASE WHEN agar COALESCE bekerja benar
+    // ketika AVG menghasilkan NULL (tidak ada data)
     // ==================================================
-    public function getAverageWaitingTime()
+    public function getAverageWaitingTime(Request $request)
     {
-        $results = DB::select("
+        $periodId   = $request->query('period_id');
+        $periodCond = $periodId ? "AND ans.survey_period_id = $periodId" : '';
+
+        $results = DB::select('
             SELECT
                 COALESCE(al.tahun_lulus, 0) AS tahunlulus,
                 COUNT(DISTINCT al.id) AS jumlahlulusan,
                 COUNT(DISTINCT CASE WHEN ans.id IS NOT NULL THEN al.id END) AS terlacaklulusan,
-                COALESCE(
-                    CONCAT(
-                        ROUND(AVG(CASE
-                            WHEN q.kode_soal = 'f502' AND ad.value REGEXP '^[0-9]+\$'
-                            THEN CAST(ad.value AS UNSIGNED)
-                        END), 1),
-                        ' bulan'
-                    ),
-                    'N/A'
-                ) AS rata_rata_waktu_tunggu_bulan
+                CASE
+                    WHEN AVG(CASE WHEN q.kode_soal = \'f502\' AND ad.value REGEXP \'^[0-9]+$\' THEN CAST(ad.value AS UNSIGNED) END) IS NOT NULL
+                    THEN CONCAT(ROUND(AVG(CASE WHEN q.kode_soal = \'f502\' AND ad.value REGEXP \'^[0-9]+$\' THEN CAST(ad.value AS UNSIGNED) END), 1), \' bulan\')
+                    ELSE \'N/A\'
+                END AS rata_rata_waktu_tunggu_bulan
             FROM alumni al
-            LEFT JOIN answers ans       ON ans.alumni_id = al.id
+            LEFT JOIN answers ans       ON ans.alumni_id = al.id ' . $periodCond . '
             LEFT JOIN answer_details ad ON ad.answer_id  = ans.id
             LEFT JOIN questions q       ON q.id          = ans.question_id
             GROUP BY al.tahun_lulus
             ORDER BY tahunlulus
-        ");
+        ');
 
         return response()->json($results);
     }
 
     // ==================================================
+    // Rata-rata Penghasilan Alumni → f505
+    // Mengembalikan summary global + breakdown per tahun lulus
+    // ==================================================
+    public function getPenghasilan(Request $request)
+    {
+        $periodId   = $request->query('period_id');
+        $periodCond = $periodId ? "AND a.survey_period_id = $periodId" : '';
+
+        // Summary global
+        $summary = DB::selectOne("
+            SELECT
+                AVG(CAST(ad.value AS UNSIGNED)) AS rata_rata,
+                MAX(CAST(ad.value AS UNSIGNED)) AS tertinggi,
+                MIN(CAST(ad.value AS UNSIGNED)) AS terendah,
+                COUNT(ad.id)                    AS total_responden
+            FROM answer_details ad
+            JOIN answers a   ON a.id  = ad.answer_id $periodCond
+            JOIN questions q ON q.id  = a.question_id
+            WHERE q.kode_soal = 'f505'
+              AND ad.value REGEXP '^[0-9]+\$'
+              AND CAST(ad.value AS UNSIGNED) > 0
+        ");
+
+        // Breakdown per tahun lulus
+        $perTahun = DB::select("
+            SELECT
+                al.tahun_lulus,
+                COUNT(ad.id)                                AS total_responden,
+                ROUND(AVG(CAST(ad.value AS UNSIGNED)), 0)   AS rata_rata,
+                MAX(CAST(ad.value AS UNSIGNED))             AS tertinggi,
+                MIN(CAST(ad.value AS UNSIGNED))             AS terendah
+            FROM answer_details ad
+            JOIN answers a   ON a.id  = ad.answer_id $periodCond
+            JOIN questions q ON q.id  = a.question_id
+            JOIN alumni al   ON al.id = a.alumni_id
+            WHERE q.kode_soal = 'f505'
+              AND ad.value REGEXP '^[0-9]+\$'
+              AND CAST(ad.value AS UNSIGNED) > 0
+            GROUP BY al.tahun_lulus
+            ORDER BY al.tahun_lulus
+        ");
+
+        return response()->json([
+            'summary'   => $summary,
+            'per_tahun' => $perTahun,
+        ]);
+    }
+
+    // ==================================================
     // Tabel Penilaian Kepuasan Pengguna Lulusan
-    // Hanya untuk pertanyaan kompetensi (f1761-f1774)
-    // Scale: Sangat Tinggi→Sangat Baik, Tinggi→Baik, Sedang→Cukup, Rendah/SangatRendah→Kurang
+    // Kode soal kompetensi: f1761–f1774
     // ==================================================
     public function getAlumniSatisfaction()
     {
@@ -189,9 +267,13 @@ class DashboardController extends Controller
 
     // ==================================================
     // PRIVATE HELPER: Distribusi Jawaban per Kode Soal
+    // Dipakai oleh semua grafik kompetensi
     // ==================================================
     private function getSkillChartData(string $kodeSoal): \Illuminate\Http\JsonResponse
     {
+        $periodId   = request()->query('period_id');
+        $periodCond = $periodId ? "AND a.survey_period_id = $periodId" : '';
+
         $results = DB::select("
             SELECT
                 CASE qo.label
@@ -204,7 +286,7 @@ class DashboardController extends Controller
                 END AS tingkat_kepuasan,
                 COUNT(ad.id) AS jumlah_responden_per_tingkat
             FROM answer_details ad
-            JOIN answers a           ON a.id  = ad.answer_id
+            JOIN answers a           ON a.id  = ad.answer_id $periodCond
             JOIN questions q         ON q.id  = a.question_id
             JOIN question_options qo ON qo.id = ad.option_id
             WHERE q.kode_soal = ?
@@ -216,48 +298,36 @@ class DashboardController extends Controller
     }
 
     // ==================================================
-    // Chart Functions
+    // Grafik Kompetensi
     // ==================================================
 
-    /** Grafik Kerjasama Tim → f1771 */
+    /** Kerjasama Tim → f1771 */
     public function getKerjaSama()
     {
         return $this->getSkillChartData('f1771');
     }
 
-    /** Grafik Keahlian Bidang Ilmu → f1763 */
+    /** Keahlian Bidang Ilmu → f1763 */
     public function keahlianChart()
     {
         return $this->getSkillChartData('f1763');
     }
 
-    /** Grafik Kemampuan Bahasa Inggris → f1765 */
+    /** Kemampuan Bahasa Inggris → f1765 */
     public function kemampuanBahasaChart()
     {
         return $this->getSkillChartData('f1765');
     }
 
-    /** Grafik Kemampuan Komunikasi → f1769 */
+    /** Kemampuan Komunikasi → f1769 */
     public function kemampuanKomunikasiChart()
     {
         return $this->getSkillChartData('f1769');
     }
 
-    /** Grafik Pengembangan Diri → f1773 */
+    /** Pengembangan Diri → f1773 */
     public function pengembanganDiriChart()
     {
         return $this->getSkillChartData('f1773');
-    }
-
-    /** Grafik Kepemimpinan — belum ada kode soal di seeder */
-    public function kepemimpinanChart()
-    {
-        return response()->json([]);
-    }
-
-    /** Grafik Etos Kerja — belum ada kode soal di seeder */
-    public function etosKerjaChart()
-    {
-        return response()->json([]);
     }
 }

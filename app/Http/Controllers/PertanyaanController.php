@@ -66,14 +66,19 @@ class PertanyaanController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
-                'kode_soal'     => 'nullable|string|max:50',
-                'question_text' => 'required|string|min:5|max:255',
+                'kode_soal'     => 'nullable|string|max:50|unique:questions,kode_soal',
+                'question_text' => 'required|string|min:5|max:500|unique:questions,pertanyaan',
                 'hint'          => 'nullable|string|max:500',
                 'type'          => 'required|in:text,single,multiple,scale,matrix',
                 'tipe_data'     => 'nullable|in:text,number,date,year',
                 'urutan'        => 'nullable|integer|min:1',
-                'options'       => 'nullable|string',
-                'matrix_items'  => 'nullable|string',
+                'options'       => 'nullable|string|max:2000',
+                'matrix_items'  => 'nullable|string|max:2000',
+            ], [
+                'kode_soal.unique'     => 'Kode soal sudah digunakan.',
+                'question_text.unique' => 'Pertanyaan yang sama sudah ada.',
+                'question_text.min'    => 'Pertanyaan minimal 5 karakter.',
+                'type.in'              => 'Tipe tidak valid.',
             ]);
 
             if ($validator->fails()) {
@@ -202,14 +207,19 @@ class PertanyaanController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $validator = Validator::make($request->all(), [
-                'kode_soal'     => 'nullable|string|max:50',
-                'question_text' => 'required|string|min:5|max:255',
+                'kode_soal'     => 'nullable|string|max:50|unique:questions,kode_soal,' . $id,
+                'question_text' => 'required|string|min:5|max:500|unique:questions,pertanyaan,' . $id,
                 'hint'          => 'nullable|string|max:500',
                 'type'          => 'required|in:text,single,multiple,scale,matrix',
                 'tipe_data'     => 'nullable|in:text,number,date,year',
                 'urutan'        => 'nullable|integer|min:1',
-                'options'       => 'nullable|string',
-                'matrix_items'  => 'nullable|string',
+                'options'       => 'nullable|string|max:2000',
+                'matrix_items'  => 'nullable|string|max:2000',
+            ], [
+                'kode_soal.unique'     => 'Kode soal sudah digunakan pertanyaan lain.',
+                'question_text.unique' => 'Pertanyaan yang sama sudah ada.',
+                'question_text.min'    => 'Pertanyaan minimal 5 karakter.',
+                'type.in'              => 'Tipe tidak valid.',
             ]);
 
             if ($validator->fails()) {

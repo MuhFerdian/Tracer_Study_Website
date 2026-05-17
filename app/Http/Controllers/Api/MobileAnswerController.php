@@ -28,6 +28,9 @@ class MobileAnswerController extends Controller
             ], 404);
         }
 
+        // Ambil periode survei yang sedang aktif
+        $activePeriod = \App\Models\SurveyPeriod::getAktif();
+
         // Group & merge answers by question_id, with special handling for matrix
         $answersByQuestion = [];
         
@@ -132,8 +135,9 @@ class MobileAnswerController extends Controller
             // Simpan / update header jawaban
             $answer = Answer::updateOrCreate(
                 [
-                    'alumni_id'   => $alumni->id,
-                    'question_id' => $qId,
+                    'alumni_id'        => $alumni->id,
+                    'question_id'      => $qId,
+                    'survey_period_id' => $activePeriod?->id,
                 ],
                 []
             );
@@ -187,10 +191,6 @@ class MobileAnswerController extends Controller
         return response()->json([
             'status'  => true,
             'message' => 'Jawaban berhasil disimpan',
-            'debug'   => [ // Remove this in production
-                'answers_grouped' => count($answersByQuestion),
-                'timestamp' => now(),
-            ]
         ]);
     }
 }

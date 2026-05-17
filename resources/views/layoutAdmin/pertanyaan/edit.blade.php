@@ -31,7 +31,7 @@
             <label class="form-label">Keterangan / Petunjuk <span class="text-muted">(opsional)</span></label>
             <textarea name="hint" id="hint" class="form-control" rows="2"
                       placeholder="Keterangan untuk membantu alumni memahami soal">{{ $data->hint ?? '' }}</textarea>
-            <small class="form-text text-muted">Ditampilkan di bawah pertanyaan pada aplikasi mobile.</small>
+            <small class="form-text text-muted">Keterangan ini akan ditampilkan di bawah pertanyaan pada aplikasi mobile untuk membantu alumni memahami soal.</small>
             <small id="error-hint" class="text-danger"></small>
           </div>
 
@@ -110,7 +110,7 @@
             <label class="form-label">Urutan Pertanyaan</label>
             <input type="number" name="urutan" id="urutan" class="form-control" min="1"
                    value="{{ $data->urutan ?: '' }}" placeholder="Kosongkan untuk otomatis">
-            <small class="form-text text-muted">Angka unik. Kosongkan untuk otomatis.</small>
+            <small class="form-text text-muted">Isi dengan angka unik. Kosongkan untuk otomatis sesuai urutan terakhir.</small>
             <small id="error-urutan" class="text-danger"></small>
             <small id="warning-urutan" class="text-warning" style="display:none;"></small>
           </div>

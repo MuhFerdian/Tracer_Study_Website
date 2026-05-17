@@ -31,8 +31,9 @@ class User extends Authenticatable
     protected $hidden = ['password', 'remember_token'];
 
     protected $casts = [
-        'password' => 'hashed',
-        'tanggal_lahir' => 'date'
+        'password'         => 'hashed',
+        'tanggal_lahir'    => 'date',
+        'is_verified'      => 'boolean',
     ];
 
     // =========================

@@ -37,7 +37,7 @@ class AlumniController extends Controller
             'nama' => 'required|string|max:255',
             'prodi' => 'nullable|string|max:255',
             'no_hp' => 'nullable|string|max:255',
-            'email' => 'nullable|email|max:255',
+            'email' => 'nullable|email|max:255|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
             'tahun_lulus' => 'nullable|integer|min:1900|max:2100',
             'status_pekerjaan' => 'nullable|string|max:255',
             'nama_instansi' => 'nullable|string|max:255',

@@ -43,11 +43,13 @@ class MobileAuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'nim' => 'required|string|unique:users,nim',
-            'email' => 'required|email|unique:users,email',
+            'nim'      => 'required|string|unique:users,nim',
+            'email'    => 'required|email|unique:users,email|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
             'username' => 'required|regex:/^[a-z0-9]+$/|unique:users,username',
-            'no_hp' => 'required|string|unique:users,no_hp',
+            'no_hp'    => 'required|string|unique:users,no_hp',
             'password' => 'required|min:6',
+        ], [
+            'email.regex' => 'Email harus menggunakan domain @gmail.com.',
         ]);
 
         $alumni = alumniModel::where('nim', $request->nim)->first();
@@ -89,7 +91,9 @@ class MobileAuthController extends Controller
     public function forgotPassword(Request $request)
     {
         $request->validate([
-            'email' => 'required|email'
+            'email' => 'required|email|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
+        ], [
+            'email.regex' => 'Email harus menggunakan domain @gmail.com.',
         ]);
 
         $user = DB::table('users')->where('email', $request->email)->first();
@@ -186,6 +190,11 @@ class MobileAuthController extends Controller
 
         Cache::forget($key);
 
+        // Untuk forgot password: simpan token sesi agar resetPasswordOtp bisa dieksekusi
+        if ($request->type == 'forgot') {
+            Cache::put('reset_verified_' . $request->email, true, now()->addMinutes(10));
+        }
+
         return response()->json([
             'status' => true,
             'message' => 'OTP valid'
@@ -194,23 +203,43 @@ class MobileAuthController extends Controller
 
     // =========================
     // RESET PASSWORD 
+    // Hanya boleh dipanggil setelah OTP forgot password diverifikasi.
+    // Token sementara disimpan di Cache setelah verifyOtp berhasil.
     // =========================
     public function resetPasswordOtp(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
-            'password' => 'required|min:6'
+            'email'    => 'required|email',
+            'password' => 'required|min:6',
         ]);
+
+        // Cek apakah OTP sudah diverifikasi sebelumnya
+        $resetKey = 'reset_verified_' . $request->email;
+        if (!Cache::has($resetKey)) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Sesi reset password tidak valid atau sudah kadaluarsa. Silakan ulangi proses lupa password.',
+            ], 403);
+        }
+
+        $user = DB::table('users')->where('email', $request->email)->first();
+        if (!$user) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Email tidak ditemukan',
+            ], 404);
+        }
 
         DB::table('users')
             ->where('email', $request->email)
-            ->update([
-                'password' => Hash::make($request->password)
-            ]);
+            ->update(['password' => Hash::make($request->password)]);
+
+        // Hapus token sesi reset setelah digunakan
+        Cache::forget($resetKey);
 
         return response()->json([
-            'status' => true,
-            'message' => 'Password berhasil diubah'
+            'status'  => true,
+            'message' => 'Password berhasil diubah',
         ]);
     }
 
@@ -260,43 +289,54 @@ class MobileAuthController extends Controller
     public function login(Request $request)
     {
         $request->validate([
-            'email' => 'required|email',
+            'email'    => 'required|email|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
             'password' => 'required',
+        ], [
+            'email.regex' => 'Email harus menggunakan domain @gmail.com.',
         ]);
 
-        $alumni = alumniModel::with('user')
-            ->where('email', $request->email)
-            ->first();
+        // Cari user dari tabel users berdasarkan email
+        $user = \App\Models\User::where('email', $request->email)->first();
 
-        if (!$alumni || !$alumni->user || !Hash::check($request->password, $alumni->user->password)) {
+        if (!$user || !Hash::check($request->password, $user->password)) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Email atau password salah',
             ], 401);
         }
 
-        if (!$alumni->user->is_verified) {
+        if (!$user->is_verified) {
             return response()->json([
-                'status' => false,
-                'message' => 'Akun belum verifikasi OTP'
+                'status'  => false,
+                'message' => 'Akun belum verifikasi OTP',
             ], 403);
         }
 
+        // Ambil data alumni yang terhubung ke user ini
+        $alumni = $user->alumni;
+
+        if (!$alumni) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Data alumni tidak ditemukan',
+            ], 404);
+        }
+
         // Hapus token lama, buat token baru
-        $alumni->user->tokens()->delete();
-        $token = $alumni->user->createToken('alumni-token')->plainTextToken;
+        $user->tokens()->delete();
+        $token = $user->createToken('alumni-token')->plainTextToken;
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Login berhasil',
-            'token' => $token,
-            'user' => [
-                'user_id' => $alumni->user->id,
+            'token'   => $token,
+            'user'    => [
+                'user_id'   => $user->id,
                 'alumni_id' => $alumni->id,
-                'nim' => $alumni->nim,
-                'name' => $alumni->nama_alumni,
-                'email' => $alumni->email,
-                'no_hp' => $alumni->no_hp,
+                'nim'       => $alumni->nim,
+                'name'      => $alumni->nama,
+                'email'     => $user->email,
+                'no_hp'     => $user->no_hp,
             ],
         ]);
     }

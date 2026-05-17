@@ -12,11 +12,17 @@ class Answer extends Model
     protected $fillable = [
         'alumni_id',
         'question_id',
+        'survey_period_id',
     ];
 
     public function question()
     {
         return $this->belongsTo(Question::class);
+    }
+
+    public function surveyPeriod()
+    {
+        return $this->belongsTo(SurveyPeriod::class, 'survey_period_id');
     }
 
     public function answerDetails()

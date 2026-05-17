@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Question;
 use App\Models\QuestionOption;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Validator;
 use PhpOffice\PhpSpreadsheet\Spreadsheet;
 use PhpOffice\PhpSpreadsheet\Writer\Xlsx;
 use PhpOffice\PhpSpreadsheet\Style\Font;
@@ -23,7 +24,7 @@ class PertanyaanReferenceController extends Controller
                 'no' => 1,
                 'kategori' => 'Identitas',
                 'kode' => '-',
-                'pertanyaan' => 'Biodata Alumni (NIM, Nama, Email, dll)',
+                'pertanyaan' => 'Biodata Alumni (Nama, NIM, Email, Tahun Lulus, Prodi, Jurusan, Alamat, NIK, NPWP)',
                 'tipe' => 'Text / Identitas',
                 'deskripsi' => 'Data personal alumni sebagai identitas'
             ],
@@ -294,9 +295,20 @@ class PertanyaanReferenceController extends Controller
      */
     public function importQuestions(Request $request)
     {
-        $request->validate([
-            'file' => 'required|file|mimes:xlsx,xls'
+        $validator = Validator::make($request->all(), [
+            'file' => 'required|file|mimes:xlsx,xls|max:5120',
+        ], [
+            'file.required' => 'File wajib diunggah.',
+            'file.mimes'    => 'File harus berformat xlsx atau xls.',
+            'file.max'      => 'Ukuran file maksimal 5MB.',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'success' => false,
+                'message' => $validator->errors()->first(),
+            ], 422);
+        }
 
         try {
             $file = $request->file('file');

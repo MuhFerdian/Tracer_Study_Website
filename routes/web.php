@@ -9,6 +9,7 @@ use App\Http\Controllers\ExportController;
 use App\Http\Controllers\ManajemenDosenController;
 use App\Http\Controllers\LowonganPekerjaanController;
 use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\SurveyPeriodController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\LandingPageController;
 
@@ -69,6 +70,7 @@ Route::group([
         Route::get('/instansi-chart', [DashboardController::class, 'getInstansiChartData']);
         Route::get('/profesi-chart', [DashboardController::class, 'getProfesiChart']);
         Route::get('/rekap-alumni', [DashboardController::class, 'getRekapAlumni']);
+        Route::get('/penghasilan-alumni',    [DashboardController::class, 'getPenghasilan']);
         Route::get('/average-waiting-time', [DashboardController::class, 'getAverageWaitingTime']);
         Route::get('/alumni-satisfaction', [DashboardController::class, 'getAlumniSatisfaction']);
 
@@ -77,8 +79,8 @@ Route::group([
         Route::get('/kemampuan-bahasa-chart', [DashboardController::class, 'kemampuanBahasaChart']);
         Route::get('/kemampuan-komunikasi-chart', [DashboardController::class, 'kemampuanKomunikasiChart']);
         Route::get('/pengembangan-diri-chart', [DashboardController::class, 'pengembanganDiriChart']);
-        Route::get('/kepemimpinan-chart', [DashboardController::class, 'kepemimpinanChart']);
-        Route::get('/etos-kerja-chart', [DashboardController::class, 'etosKerjaChart']);
+        // Route::get('/kepemimpinan-chart', [DashboardController::class, 'kepemimpinanChart']);
+        // Route::get('/etos-kerja-chart', [DashboardController::class, 'etosKerjaChart']);
     });
 
     // =======================
@@ -164,8 +166,31 @@ Route::group([
     Route::get('/admin/export/alumni-belum', [ExportController::class, 'exportExcelBelumMengisi'])->name('export.alumni.belum');
 
     // =======================
+    // PERIODE SURVEI
+    // =======================
+    Route::prefix('survey-period')->group(function () {
+        Route::get('/',              [SurveyPeriodController::class, 'index']);
+        Route::get('/aktif',         [SurveyPeriodController::class, 'getAktif']);
+        Route::post('/store',        [SurveyPeriodController::class, 'store']);
+        Route::put('/{id}/update',   [SurveyPeriodController::class, 'update']);
+        Route::post('/{id}/aktifkan',[SurveyPeriodController::class, 'aktifkan']);
+        Route::post('/{id}/tutup',   [SurveyPeriodController::class, 'tutup']);
+        Route::delete('/{id}/delete',[SurveyPeriodController::class, 'destroy']);
+    });
+
+    // =======================
     // PROFILE / GANTI PASSWORD
     // =======================
     Route::get('/profile/change-password', [ProfileController::class, 'changePasswordForm'])->name('profile.change-password.form');
     Route::post('/profile/change-password', [ProfileController::class, 'changePassword'])->name('profile.change-password');
+
+    // =======================
+    // NOTIFIKASI ALUMNI
+    // =======================
+    Route::prefix('notifikasi')->group(function () {
+        Route::get('/alumni-mengisi',    [\App\Http\Controllers\NotificationController::class, 'getAlumniMengisi'])->name('notif.alumni.mengisi');
+        Route::post('/mark-read/{id}',   [\App\Http\Controllers\NotificationController::class, 'markRead'])->name('notif.mark.read');
+        Route::post('/mark-all-read',    [\App\Http\Controllers\NotificationController::class, 'markAllRead'])->name('notif.mark.all.read');
+        Route::get('/unread-count',      [\App\Http\Controllers\NotificationController::class, 'unreadCount'])->name('notif.unread.count');
+    });
 });

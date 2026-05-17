@@ -19,8 +19,8 @@
 
             <div class="row gy-4 text-white pb-4">
                 <div class="col-md-3">
-                    <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije.png') }}"
-                        alt="Logo Polije" width="82" class="mb-3">
+                    <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo-jti-alt.png') }}"
+                        alt="Logo Polije" width="300" class="mb-3">
                     <h5 class="fw-bold mb-3">Tracer Study</h5>
                     <p class="text-white-50 mb-4">
                         Portal pelacakan alumni Jurusan Teknologi Informasi Politeknik Negeri Jember.
@@ -87,6 +87,14 @@
                 <span>Jurusan Teknologi Informasi</span>
             </div>
         </div>
+
+        <a href="https://wa.me/6289603902466?text=Halo%20Admin%20Prodi%20TIF%20Nganjuk%2C%20saya%20ingin%20bertanya%20mengenai%20Tracer%20Study."
+            class="wa-float"
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Chat WhatsApp Admin Prodi">
+            <i class="fab fa-whatsapp"></i>
+        </a>
 
         <a href="#" class="scroll-top" aria-label="Kembali ke atas">
             <i class="fas fa-arrow-up"></i>

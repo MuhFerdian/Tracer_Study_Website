@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\User;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
+use Illuminate\Support\Facades\Validator;
 use Yajra\DataTables\Facades\DataTables;
 
 class ManajemenDosenController extends Controller
@@ -81,34 +82,48 @@ class ManajemenDosenController extends Controller
     // ======================
     public function store(Request $request)
     {
-        $request->validate([
-            'username' => 'required|unique:users,username',
-            'name' => 'required|min:3',
-            'email' => 'nullable|email|unique:users,email',
-            'password' => 'required|min:6',
-            'status' => 'required|in:pending,active',
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|min:4|max:50|unique:users,username|regex:/^[A-Za-z0-9._]+$/',
+            'name'     => 'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
+            'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email',
+            'password' => 'required|string|min:6|max:50',
+            'status'   => 'required|in:pending,active',
+        ], [
+            'username.regex'   => 'Username hanya boleh huruf, angka, titik, dan underscore.',
+            'username.unique'  => 'Username sudah digunakan.',
+            'name.regex'       => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
+            'email.unique'     => 'Email sudah digunakan.',
+            'password.min'     => 'Password minimal 6 karakter.',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'   => false,
+                'message'  => 'Validasi gagal',
+                'msgField' => $validator->errors(),
+            ]);
+        }
 
         $roleId = $this->getDosenRoleId();
 
         if (!$roleId) {
             return response()->json([
-                'status' => false,
+                'status'  => false,
                 'message' => 'Role dosen tidak ditemukan'
             ]);
         }
 
         User::create([
-            'role_id' => $roleId,
+            'role_id'  => $roleId,
             'username' => $request->username,
-            'name' => $request->name,
-            'email' => $request->email,
+            'name'     => $request->name,
+            'email'    => $request->email ?: null,
             'password' => Hash::make($request->password),
-            'status' => $request->status,
+            'status'   => $request->status,
         ]);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Dosen berhasil ditambahkan'
         ]);
     }
@@ -127,21 +142,36 @@ class ManajemenDosenController extends Controller
     // ======================
     public function update(Request $request, $id)
     {
+        $id   = (int) $id;
         $user = User::findOrFail($id);
 
-        $request->validate([
-            'username' => 'required|unique:users,username,' . $user->id,
-            'name' => 'required|min:3',
-            'email' => 'nullable|email|unique:users,email,' . $user->id,
-            'password' => 'nullable|min:6',
-            'status' => 'required|in:pending,active',
+        $validator = Validator::make($request->all(), [
+            'username' => 'required|string|min:4|max:50|unique:users,username,' . $id . '|regex:/^[A-Za-z0-9._]+$/',
+            'name'     => 'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
+            'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email,' . $id,
+            'password' => 'nullable|string|min:6|max:50',
+            'status'   => 'required|in:pending,active',
+        ], [
+            'username.regex'  => 'Username hanya boleh huruf, angka, titik, dan underscore.',
+            'username.unique' => 'Username sudah digunakan dosen lain.',
+            'name.regex'      => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
+            'email.unique'    => 'Email sudah digunakan dosen lain.',
+            'password.min'    => 'Password minimal 6 karakter.',
         ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'   => false,
+                'message'  => 'Validasi gagal',
+                'msgField' => $validator->errors(),
+            ]);
+        }
 
         $data = [
             'username' => $request->username,
-            'name' => $request->name,
-            'email' => $request->email,
-            'status' => $request->status,
+            'name'     => $request->name,
+            'email'    => $request->email ?: null,
+            'status'   => $request->status,
         ];
 
         if ($request->filled('password')) {
@@ -151,7 +181,7 @@ class ManajemenDosenController extends Controller
         $user->update($data);
 
         return response()->json([
-            'status' => true,
+            'status'  => true,
             'message' => 'Data dosen berhasil diupdate'
         ]);
     }
