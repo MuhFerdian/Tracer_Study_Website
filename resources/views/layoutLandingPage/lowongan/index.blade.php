@@ -1,440 +1,745 @@
+{{-- resources/views/layoutLandingPage/lowongan/index.blade.php --}}
 <!DOCTYPE html>
-<html lang="en">
-
+<html lang="id">
 <head>
-
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-    <title>Lowongan Pekerjaan</title>
-
+    
+    <title>Lowongan Pekerjaan - Tracer Study</title>
+    
     {{-- Bootstrap --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
-
-    {{-- Font Awesome --}}
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
-
-    {{-- Google Font --}}
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
-
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.2/css/all.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
     <style>
-
-        *{
-            font-family: 'Poppins', sans-serif;
+        :root {
+            /* 🎨 BLUE THEME PALETTE */
+            --primary: #1e40af;           /* Biru Tua - Primary */
+            --primary-dark: #1e3a8a;      /* Biru Lebih Tua - Hover */
+            --primary-darker: #172554;    /* Biru Navy - Accent */
+            --primary-light: #bfdbfe;     /* Biru Muda - Background */
+            --primary-lighter: #eff6ff;   /* Biru Sangat Muda - Highlight */
+            
+            --success: #059669;           /* Emerald - Success */
+            --success-light: #d1fae5;
+            
+            --text-primary: #1e293b;      /* Dark Blue-Gray - Heading */
+            --text-secondary: #475569;    /* Medium Gray - Body */
+            --text-muted: #94a3b8;        /* Light Gray - Muted */
+            --text-white: #ffffff;        /* White Text */
+            
+            --bg-card: #ffffff;           /* White - Card Background */
+            --bg-page: #f8fafc;           /* Very Light Blue - Page Background */
+            --bg-section: #eff6ff;        /* Light Blue - Section Background */
+            
+            --border: #cbd5e1;            /* Light Blue-Gray - Border */
+            --border-light: #e2e8f0;      /* Lighter Border */
+            
+            --shadow-sm: 0 1px 2px rgba(30, 64, 175, 0.08);
+            --shadow-md: 0 4px 12px rgba(30, 64, 175, 0.12);
+            --shadow-lg: 0 8px 30px rgba(30, 64, 175, 0.18);
+            --shadow-hover: 0 20px 48px rgba(30, 64, 175, 0.25);
+            
+            --radius: 20px;
+            --radius-sm: 12px;
+            --transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
-        body{
-            background: #f4f7fb;
-            overflow-x: hidden;
-            position: relative;
+        * {
+            font-family: 'Inter', sans-serif;
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--bg-page) 0%, var(--primary-lighter) 100%);
             min-height: 100vh;
+            position: relative;
+            overflow-x: hidden;
+            color: var(--text-secondary);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | BACKGROUND ORNAMEN
-        |--------------------------------------------------------------------------
-        */
-
-        body::before{
+        /* Decorative Background Blobs */
+        body::before,
+        body::after {
             content: '';
             position: fixed;
-            width: 500px;
-            height: 500px;
-            background: rgba(37,99,235,.10);
             border-radius: 50%;
-            top: -180px;
-            right: -120px;
-            filter: blur(90px);
-            z-index: -1;
+            filter: blur(80px);
+            z-index: 0;
+            opacity: 0.5;
+            pointer-events: none;
+        }
+        body::before {
+            width: 600px;
+            height: 600px;
+            background: radial-gradient(circle, var(--primary-light) 0%, transparent 70%);
+            top: -250px;
+            right: -200px;
+        }
+        body::after {
+            width: 450px;
+            height: 450px;
+            background: radial-gradient(circle, rgba(96, 165, 250, 0.25) 0%, transparent 70%);
+            bottom: -200px;
+            left: -150px;
         }
 
-        body::after{
-            content: '';
-            position: fixed;
-            width: 420px;
-            height: 420px;
-            background: rgba(59,130,246,.08);
-            border-radius: 50%;
-            bottom: -180px;
-            left: -120px;
-            filter: blur(90px);
-            z-index: -1;
+        .custom-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 24px 20px;
+            position: relative;
+            z-index: 1;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | HERO HEADER
-        |--------------------------------------------------------------------------
-        */
-
-        .hero-header{
-            background: linear-gradient(135deg,#2563eb,#1e40af);
-            border-radius: 32px;
-            padding: 38px 30px;
+        /* ========== HEADER ========== */
+        .page-header {
+            text-align: center;
+            padding: 48px 24px 36px;
+            margin-bottom: 24px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow-lg);
             position: relative;
             overflow: hidden;
-            margin-bottom: 45px;
-            box-shadow: 0 20px 50px rgba(37,99,235,.20);
         }
 
-        .hero-header::before{
+        .page-header::before {
             content: '';
             position: absolute;
-            width: 260px;
-            height: 260px;
-            background: rgba(255,255,255,.08);
-            border-radius: 50%;
-            top: -120px;
-            right: -70px;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.08'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+            opacity: 0.3;
         }
 
-        .hero-header::after{
-            content: '';
-            position: absolute;
-            width: 180px;
-            height: 180px;
-            background: rgba(255,255,255,.06);
-            border-radius: 50%;
-            bottom: -80px;
-            left: -40px;
-        }
-
-        .hero-content{
+        .page-header > * {
             position: relative;
-            z-index: 2;
+            z-index: 1;
         }
 
-        .hero-title{
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 12px;
-        }
-
-        .hero-subtitle{
-            color: rgba(255,255,255,.82);
-            font-size: 1rem;
-            margin-bottom: 0;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | BUTTON KEMBALI
-        |--------------------------------------------------------------------------
-        */
-
-        .btn-kembali{
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.25);
-            backdrop-filter: blur(10px);
-            color: white;
-            border-radius: 999px;
-            padding: 12px 24px;
-            text-decoration: none;
-            font-weight: 600;
+        .badge-new {
             display: inline-flex;
             align-items: center;
-            gap: 10px;
-            transition: .3s;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.15);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            padding: 6px 16px;
+            border-radius: 999px;
+            margin-bottom: 20px;
+            backdrop-filter: blur(4px);
         }
 
-        .btn-kembali:hover{
-            background: white;
-            color: #2563eb;
-            transform: translateY(-3px);
+        .badge-dot {
+            width: 8px;
+            height: 8px;
+            background: #60a5fa;
+            border-radius: 50%;
+            animation: pulse 2s infinite;
+            box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.6);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | CARD LOWONGAN
-        |--------------------------------------------------------------------------
-        */
+        @keyframes pulse {
+            0%, 100% { opacity: 1; transform: scale(1); box-shadow: 0 0 0 0 rgba(96, 165, 250, 0.6); }
+            50% { opacity: 0.8; transform: scale(0.95); box-shadow: 0 0 0 10px rgba(96, 165, 250, 0); }
+        }
 
-        .card-lowongan{
-            background: rgba(255,255,255,.82);
-            backdrop-filter: blur(16px);
-            border-radius: 28px;
+        .badge-text {
+            font-size: 11px;
+            font-weight: 700;
+            color: var(--text-white);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .page-title {
+            font-size: 2.1rem;
+            font-weight: 800;
+            color: var(--text-white);
+            margin: 0 0 12px;
+            text-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+        }
+
+        .page-subtitle {
+            color: rgba(255, 255, 255, 0.9);
+            font-size: 1.05rem;
+            max-width: 580px;
+            margin: 0 auto;
+            font-weight: 400;
+        }
+
+        /* Tombol Kembali - White Style */
+        .btn-back {
+            background: rgba(255, 255, 255, 0.95);
+            color: var(--primary);
+            border: none;
+            font-weight: 600;
+            transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(0, 0, 0, 0.12);
+        }
+
+        .btn-back:hover {
+            background: #ffffff;
+            color: var(--primary-dark);
+            transform: translateX(-4px);
+            box-shadow: 0 6px 20px rgba(0, 0, 0, 0.18);
+        }
+
+        /* ========== SEARCH BOX ========== */
+        .search-box {
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            padding: 24px;
+            margin-bottom: 32px;
+            box-shadow: var(--shadow-md);
+            border: 1px solid var(--border-light);
+        }
+
+        .search-form {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 200px;
+            padding: 14px 18px;
+            border: 2px solid var(--border);
+            border-radius: var(--radius-sm);
+            font-size: 0.95rem;
+            background: var(--bg-page);
+            color: var(--text-primary);
+            transition: var(--transition);
+        }
+
+        .search-input::placeholder {
+            color: var(--text-muted);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            background: var(--text-white);
+            box-shadow: 0 0 0 4px var(--primary-light);
+        }
+
+        .search-btn {
+            background: var(--primary);
+            color: var(--text-white);
+            border: none;
+            padding: 14px 28px;
+            border-radius: var(--radius-sm);
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            transition: var(--transition);
+            box-shadow: 0 4px 14px rgba(30, 64, 175, 0.25);
+        }
+
+        .search-btn:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(30, 64, 175, 0.35);
+        }
+
+        .search-btn:active {
+            transform: translateY(0);
+        }
+
+        /* Tombol Reset */
+        .btn-reset {
+            border-color: var(--border);
+            color: var(--text-secondary);
+            transition: var(--transition);
+        }
+
+        .btn-reset:hover {
+            background: var(--bg-section);
+            border-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* ========== JOB CARD ========== */
+        .job-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-light);
+            border-radius: var(--radius);
             padding: 28px;
-            transition: .35s ease;
+            transition: var(--transition);
             height: 100%;
-            border: 1px solid rgba(255,255,255,.5);
-            box-shadow: 0 15px 35px rgba(0,0,0,.05);
+            display: flex;
+            flex-direction: column;
             position: relative;
             overflow: hidden;
         }
 
-        .card-lowongan::before{
+        .job-card::before {
             content: '';
             position: absolute;
-            width: 140px;
-            height: 140px;
-            background: rgba(37,99,235,.07);
-            border-radius: 50%;
-            top: -50px;
-            right: -50px;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--primary), var(--primary-light));
+            opacity: 0;
+            transition: var(--transition);
         }
 
-        .card-lowongan:hover{
-            transform: translateY(-10px);
-            box-shadow: 0 25px 55px rgba(37,99,235,.14);
+        .job-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary-light);
         }
 
-        .card-content{
-            position: relative;
-            z-index: 2;
+        .job-card:hover::before {
+            opacity: 1;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | ICON BOX
-        |--------------------------------------------------------------------------
-        */
+        .card-header {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+            margin-bottom: 20px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--border-light);
+        }
 
-        .icon-box{
-            width: 52px;
-            height: 52px;
-            border-radius: 18px;
-            background: linear-gradient(135deg,#2563eb,#3b82f6);
+        .logo-wrapper {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            background: linear-gradient(135deg, var(--primary-lighter), var(--primary-light));
+            border: 2px solid var(--border-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            color: white;
-            font-size: 20px;
-            box-shadow: 0 10px 25px rgba(37,99,235,.25);
+            overflow: hidden;
+            flex-shrink: 0;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | TEXT
-        |--------------------------------------------------------------------------
-        */
-
-        .company-name{
-            color: #2563eb;
-            font-weight: 600;
-            margin-bottom: 0;
+        .logo-wrapper img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+            padding: 8px;
         }
 
-        .job-title{
-            font-size: 1.25rem;
+        .logo-wrapper i {
+            font-size: 24px;
+            color: var(--primary);
+        }
+
+        .job-title {
+            font-size: 1.15rem;
             font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 6px;
+            color: var(--text-primary);
+            margin: 0 0 6px;
+            line-height: 1.35;
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
         }
 
-        .info-item{
-            font-size: .92rem;
-            color: #64748b;
-            margin-bottom: 10px;
+        .job-title:hover {
+            color: var(--primary);
         }
 
-        .job-desc{
-            color: #475569;
-            line-height: 1.7;
-            margin-bottom: 28px;
+        .company-name {
+            font-size: 0.92rem;
+            color: var(--primary);
+            font-weight: 600;
+            margin: 0;
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | BUTTON DETAIL
-        |--------------------------------------------------------------------------
-        */
-
-        .btn-detail{
-            background: linear-gradient(135deg,#2563eb,#1d4ed8);
-            color: white;
-            border: none;
-            padding: 12px 24px;
+        .status-badge {
+            margin-left: auto;
+            padding: 6px 16px;
             border-radius: 999px;
-            text-decoration: none;
+            font-size: 11px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.3px;
+            background: var(--success-light);
+            color: var(--success);
+            border: 1px solid rgba(5, 150, 105, 0.2);
+        }
+
+        /* ========== INFO LIST ========== */
+        .info-list {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-bottom: 20px;
+        }
+
+        .info-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--text-secondary);
+            font-size: 0.92rem;
+        }
+
+        .info-item i {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+            font-size: 14px;
+            flex-shrink: 0;
+            transition: var(--transition);
+        }
+
+        .job-card:hover .info-item i {
+            transform: scale(1.05);
+        }
+
+        .info-item.location i { 
+            color: #dc2626; 
+            background: rgba(220, 38, 38, 0.1); 
+        }
+        .info-item.salary i { 
+            color: var(--success); 
+            background: rgba(5, 150, 105, 0.12); 
+        }
+        .info-item.deadline i { 
+            color: var(--primary); 
+            background: var(--primary-light); 
+        }
+
+        /* ========== DESCRIPTION ========== */
+        .job-description {
+            color: var(--text-secondary);
+            font-size: 0.93rem;
+            line-height: 1.65;
+            margin: 0;
+            display: -webkit-box;
+            -webkit-line-clamp: 3;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        /* ========== EMPTY STATE ========== */
+        .empty-state {
+            text-align: center;
+            padding: 72px 32px;
+            background: var(--bg-card);
+            border-radius: var(--radius);
+            border: 2px dashed var(--border);
+        }
+
+        .empty-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 24px;
+            background: linear-gradient(135deg, var(--primary-light), var(--primary-lighter));
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 32px;
+            border: 3px solid var(--border-light);
+        }
+
+        .empty-title {
+            color: var(--text-primary);
+            font-size: 1.3rem;
+            font-weight: 700;
+            margin: 0 0 10px;
+        }
+
+        .empty-text {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin: 0;
+        }
+
+        /* ========== PAGINATION ========== */
+        .pagination-wrapper {
+            margin-top: 48px;
+            display: flex;
+            justify-content: center;
+        }
+
+        .pagination { 
+            gap: 8px; 
+            flex-wrap: wrap;
+        }
+        
+        .page-item .page-link {
+            border: 2px solid var(--border);
+            color: var(--text-secondary);
+            padding: 10px 18px;
+            border-radius: 12px;
+            background: var(--bg-card);
+            font-weight: 500;
+            transition: var(--transition);
+        }
+        
+        .page-item .page-link:hover {
+            border-color: var(--primary);
+            color: var(--primary);
+            background: var(--primary-lighter);
+        }
+        
+        .page-item.active .page-link {
+            background: var(--primary);
+            border-color: var(--primary);
+            color: var(--text-white);
+            box-shadow: 0 4px 14px rgba(30, 64, 175, 0.3);
+        }
+        
+        .page-item.disabled .page-link {
+            color: var(--text-muted);
+            background: var(--bg-page);
+            cursor: not-allowed;
+        }
+
+        /* ========== VIEW ALL BUTTON ========== */
+        .view-all-wrapper {
+            text-align: center;
+            margin-top: 48px;
+            padding-top: 24px;
+            border-top: 1px solid var(--border-light);
+        }
+
+        .btn-view-all {
             display: inline-flex;
             align-items: center;
             gap: 10px;
-            transition: .3s;
+            background: var(--bg-card);
+            color: var(--primary);
+            padding: 14px 36px;
+            border-radius: 999px;
+            text-decoration: none;
             font-weight: 600;
-            box-shadow: 0 12px 24px rgba(37,99,235,.22);
+            font-size: 1rem;
+            border: 2px solid var(--primary);
+            transition: var(--transition);
+            box-shadow: 0 4px 16px rgba(30, 64, 175, 0.15);
         }
 
-        .btn-detail:hover{
+        .btn-view-all:hover {
+            background: var(--primary);
+            color: var(--text-white);
             transform: translateY(-3px);
-            color: white;
-            box-shadow: 0 18px 35px rgba(37,99,235,.35);
+            box-shadow: 0 12px 36px rgba(30, 64, 175, 0.3);
         }
 
-        /*
-        |--------------------------------------------------------------------------
-        | PAGINATION
-        |--------------------------------------------------------------------------
-        */
-
-        .pagination{
-            gap: 8px;
+        .btn-view-all i {
+            transition: transform 0.2s ease;
         }
 
-        .page-link{
-            border: none;
-            border-radius: 14px !important;
-            padding: 10px 16px;
-            color: #2563eb;
+        .btn-view-all:hover i {
+            transform: translateX(4px);
+        }
+
+        /* ========== RESPONSIVE ========== */
+        @media (max-width: 768px) {
+            .page-title { font-size: 1.7rem; }
+            .page-subtitle { font-size: 1rem; }
+            .search-form { flex-direction: column; }
+            .search-btn { width: 100%; justify-content: center; }
+            .job-card { padding: 22px; }
+            .card-header { gap: 12px; }
+            .logo-wrapper { width: 52px; height: 52px; }
+        }
+
+        @media (max-width: 480px) {
+            .custom-container { padding: 16px 12px; }
+            .page-header { padding: 36px 20px 28px; border-radius: 16px; }
+            .page-title { font-size: 1.5rem; }
+            .search-box { padding: 18px; }
+            .job-card { padding: 20px; border-radius: 16px; }
+        }
+
+        /* ========== UTILITIES ========== */
+        .text-truncate-2 {
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+        
+        /* Highlight keyword search */
+        mark {
+            background: linear-gradient(120deg, rgba(96, 165, 250, 0.3), rgba(96, 165, 250, 0.15));
+            color: var(--primary-dark);
+            padding: 2px 6px;
+            border-radius: 4px;
             font-weight: 600;
-            box-shadow: 0 6px 18px rgba(0,0,0,.05);
         }
-
-        .page-item.active .page-link{
-            background: linear-gradient(135deg,#2563eb,#1d4ed8);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | RESPONSIVE
-        |--------------------------------------------------------------------------
-        */
-
-        @media(max-width:768px){
-
-            .hero-title{
-                font-size: 2rem;
-            }
-
-            .hero-header{
-                padding: 32px 24px;
-            }
-
-            .card-lowongan{
-                padding: 24px;
-            }
-
-        }
-
     </style>
-
 </head>
-
 <body>
 
-<section class="py-5">
+<div class="custom-container">
 
-    <div class="container">
-
-        {{-- HERO --}}
-        <div class="hero-header text-center">
-
-            <div class="hero-content">
-
-                <a href="{{ url('/') }}"
-                   class="btn-kembali mb-4">
-
-                    <i class="fas fa-arrow-left"></i>
-                    Kembali ke Landing Page
-
-                </a>
-
-                <h1 class="hero-title">
-                    Lowongan Pekerjaan
-                </h1>
-
-                <p class="hero-subtitle">
-                    Temukan peluang karir terbaik untuk alumni dan mahasiswa
-                </p>
-
-            </div>
-
+    {{-- PAGE HEADER --}}
+    <header class="page-header">
+        {{-- Tombol Kembali --}}
+        <div class="mb-3 text-start">
+            <a href="{{ url('/') }}" class="btn btn-back btn-sm rounded-pill px-4 d-inline-flex align-items-center gap-2">
+                <i class="fas fa-arrow-left"></i>
+                Kembali ke Landing Page
+            </a>
         </div>
+        
+    
+        
+        <h1 class="page-title">Lowongan Pekerjaan</h1>
+        <p class="page-subtitle">Temukan peluang karir terbaik untuk alumni dan mahasiswa</p>
+    </header>
 
-        {{-- LIST LOWONGAN --}}
-        <div class="row">
-
-            @forelse($lowongan as $item)
-
-            <div class="col-lg-4 col-md-6 mb-4">
-
-                <div class="card-lowongan">
-
-                    <div class="card-content">
-
-                        <div class="d-flex align-items-start gap-3 mb-4">
-
-                            <div class="icon-box">
-                                <i class="fas fa-briefcase"></i>
-                            </div>
-
-                            <div>
-
-                                <h4 class="job-title">
-                                    {{ $item->posisi }}
-                                </h4>
-
-                                <p class="company-name">
-                                    <i class="fas fa-building me-1"></i>
-                                    {{ $item->nama_perusahaan }}
-                                </p>
-
-                            </div>
-
-                        </div>
-
-                        <div class="mb-3">
-
-                            <div class="info-item">
-                                <i class="fas fa-location-dot text-danger me-2"></i>
-                                {{ $item->lokasi ?? '-' }}
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fas fa-wallet text-success me-2"></i>
-                                {{ $item->gaji ?? '-' }}
-                            </div>
-
-                        </div>
-
-                        <p class="job-desc">
-                            {{ \Illuminate\Support\Str::limit($item->deskripsi, 120) }}
-                        </p>
-
-                        <a href="{{ url('/lowongan/'.$item->id) }}"
-                           class="btn-detail">
-
-                            Detail Lowongan
-                            <i class="fas fa-arrow-right"></i>
-
-                        </a>
-
-                    </div>
-
-                </div>
-
-            </div>
-
-            @empty
-
-            <div class="col-12">
-
-                <div class="alert alert-light rounded-4 shadow-sm border-0 p-4 text-center">
-
-                    Belum ada lowongan pekerjaan tersedia.
-
-                </div>
-
-            </div>
-
-            @endforelse
-
-        </div>
-
-        {{-- PAGINATION --}}
-        <div class="mt-5 d-flex justify-content-center">
-
-            {{ $lowongan->links() }}
-
-        </div>
-
+    {{-- SEARCH BOX --}}
+    <div class="search-box">
+        <form class="search-form" action="{{ url('/lowongan') }}" method="GET">
+            <input type="text" 
+                   name="search" 
+                   class="search-input" 
+                   placeholder="Cari posisi, perusahaan, atau lokasi..." 
+                   value="{{ old('search', request('search')) }}">
+            <button type="submit" class="search-btn">
+                <i class="fas fa-search"></i> Cari Lowongan
+            </button>
+            {{-- Tombol Reset --}}
+            @if(request('search'))
+            <a href="{{ url('/lowongan') }}" class="btn btn-reset px-4 rounded-3 d-flex align-items-center" title="Reset Pencarian">
+                <i class="fas fa-times"></i>
+            </a>
+            @endif
+        </form>
     </div>
 
-</section>
+    {{-- JOB CARDS GRID --}}
+    <div class="row g-4">
+        @forelse($lowongan as $item)
+        <div class="col-lg-4 col-md-6">
+            <article class="job-card">
+                
+                {{-- Card Header --}}
+                <div class="card-header">
+                    {{-- Logo --}}
+                    <div class="logo-wrapper">
+                        @if($item->logo)
+                            <img src="{{ asset('storage/' . $item->logo) }}" 
+                                 alt="{{ $item->nama_perusahaan }}"
+                                 loading="lazy"
+                                 onerror="this.onerror=null; this.closest('.logo-wrapper').innerHTML='<i class=\'fas fa-building\'></i>'">
+                        @else
+                            <i class="fas fa-building"></i>
+                        @endif
+                    </div>
+                    
+                    {{-- Title & Company --}}
+                    <div class="flex-grow-1 min-width-0">
+                        <h3 class="job-title text-truncate-2" title="{{ $item->posisi }}">
+                            {{-- Highlight keyword jika ada search --}}
+                            @if(request('search'))
+                                {!! str_ireplace(
+                                    request('search'), 
+                                    '<mark>'.request('search').'</mark>', 
+                                    e($item->posisi)
+                                ) !!}
+                            @else
+                                {{ $item->posisi }}
+                            @endif
+                        </h3>
+                        <p class="company-name text-truncate" title="{{ $item->nama_perusahaan }}">
+                            {{ $item->nama_perusahaan }}
+                        </p>
+                    </div>
+                    
+                    {{-- Status --}}
+                    <span class="status-badge">
+                        <i class="fas fa-circle" style="font-size:6px;vertical-align:middle;margin-right:4px"></i>
+                        Aktif
+                    </span>
+                </div>
+
+                {{-- Info List --}}
+                <div class="info-list">
+                    <div class="info-item location">
+                        <i class="fas fa-location-dot"></i>
+                        <span>{{ $item->lokasi ?? 'Tidak disebutkan' }}</span>
+                    </div>
+                    <div class="info-item salary">
+                        <i class="fas fa-wallet"></i>
+                        <span>{{ $item->gaji ?? 'Negosiasi' }}</span>
+                    </div>
+                    <div class="info-item deadline">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>Batas: {{ $item->batas_lamaran ? \Carbon\Carbon::parse($item->batas_lamaran)->format('d M Y') : '-' }}</span>
+                    </div>
+                </div>
+
+                {{-- Description --}}
+                <p class="job-description">
+                    {{ \Illuminate\Support\Str::limit(strip_tags($item->deskripsi), 120) }}
+                </p>
+
+            </article>
+        </div>
+        @empty
+        <div class="col-12">
+            <div class="empty-state">
+                <div class="empty-icon">
+                    <i class="fas fa-briefcase"></i>
+                </div>
+                <h4 class="empty-title">Belum Ada Lowongan</h4>
+                <p class="empty-text">Silakan cek kembali nanti untuk peluang karir terbaru.</p>
+                <a href="{{ url('/lowongan') }}" class="btn btn-outline-primary mt-3 rounded-pill px-4">
+                    <i class="fas fa-sync-alt me-2"></i>Refresh Halaman
+                </a>
+            </div>
+        </div>
+        @endforelse
+    </div>
+
+    {{-- PAGINATION --}}
+    @if($lowongan->hasPages())
+    <div class="pagination-wrapper">
+        {{ $lowongan->links() }}
+    </div>
+    @endif
+
+    {{-- VIEW ALL BUTTON --}}
+    <div class="view-all-wrapper">
+        <a href="{{ url('/lowongan') }}" class="btn-view-all">
+            <i class="fas fa-list-ul"></i>
+            Lihat Semua Lowongan
+        </a>
+    </div>
+
+</div>
+
+{{-- Bootstrap JS --}}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+{{-- Optional: Smooth scroll untuk anchor links --}}
+<script>
+    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+        anchor.addEventListener('click', function (e) {
+            e.preventDefault();
+            document.querySelector(this.getAttribute('href'))?.scrollIntoView({
+                behavior: 'smooth'
+            });
+        });
+    });
+</script>
 
 </body>
 </html>
