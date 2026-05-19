@@ -329,15 +329,20 @@ class MobileAuthController extends Controller
         return response()->json([
             'status'  => true,
             'message' => 'Login berhasil',
-            'token'   => $token,
-            'user'    => [
-                'user_id'   => $user->id,
-                'alumni_id' => $alumni->id,
-                'nim'       => $alumni->nim,
-                'name'      => $alumni->nama,
-                'email'     => $user->email,
-                'no_hp'     => $user->no_hp,
-            ],
+            'token' => $token,
+            'user' => [
+    'user_id' => $alumni->user->id,
+    'alumni_id' => $alumni->id,
+    'nim' => $alumni->nim,
+    'name' => $alumni->nama,
+    'email' => $alumni->email,
+    'no_hp' => $alumni->no_hp,
+    'prodi' => $alumni->prodi,
+    'angkatan' => $alumni->angkatan,
+    'tahunLulus' => $alumni->tahun_lulus,
+    'alamat' => $alumni->alamat,
+    'image' => $alumni->image,
+],
         ]);
     }
 }
