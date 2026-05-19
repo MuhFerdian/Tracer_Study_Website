@@ -47,15 +47,20 @@ class AlumniController extends Controller
 
         $alumni = alumniModel::findOrFail($id);
 
+        // =========================
         // UPLOAD FOTO
+        // =========================
         if ($request->hasFile('image')) {
 
-            // hapus foto lama jika ada
-            if ($alumni->image && Storage::disk('public')->exists($alumni->image)) {
+            // hapus foto lama
+            if (
+                $alumni->image &&
+                Storage::disk('public')->exists($alumni->image)
+            ) {
                 Storage::disk('public')->delete($alumni->image);
             }
 
-            // simpan foto baru
+            // upload foto baru
             $path = $request->file('image')->store('alumni', 'public');
 
             $validated['image'] = $path;
@@ -65,44 +70,80 @@ class AlumniController extends Controller
         $alumni->save();
 
         Auth::guard('alumni')->logout();
+
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return response()->json(['message' => 'Data alumni berhasil diperbarui']);
+        return response()->json([
+            'message' => 'Data alumni berhasil diperbarui'
+        ]);
     }
 
-    public function updateProfile(Request $request)
-    {
-        $request->validate([
-            'nim' => 'required',
-            'nama' => 'required',
-            'prodi' => 'required',
-            'angkatan' => 'required',
-            'tahun_lulus' => 'required',
-            'alamat' => 'required',
+    // ======================================================
+    // UPDATE PROFILE FLUTTER
+    // ======================================================
+   public function updateProfile(Request $request)
+{
+    $request->validate([
+        'nim' => 'required',
+        'nama' => 'required',
+        'prodi' => 'required',
+        'angkatan' => 'required',
+        'tahun_lulus' => 'required',
+        'alamat' => 'required',
+        'image' => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+    ]);
+
+    $alumni = alumniModel::where('nim', $request->nim)->first();
+
+    if (!$alumni) {
+        return response()->json([
+            'status' => false,
+            'message' => 'Data tidak ditemukan'
         ]);
+    }
 
-        $alumni = alumniModel::where('nim', $request->nim)->first();
+    // ==============================
+    // HAPUS FOTO PROFIL
+    // ==============================
+    if ($request->remove_image == '1') {
+        if ($alumni->image && Storage::disk('public')->exists($alumni->image)) {
+            Storage::disk('public')->delete($alumni->image);
+        }
+        $alumni->image = null;
+    }
 
-        if (!$alumni) {
-            return response()->json([
-                'status' => false,
-                'message' => 'Data tidak ditemukan'
-            ]);
+    // ==============================
+    // UPLOAD FOTO BARU
+    // ==============================
+    if ($request->hasFile('image')) {
+
+        // hapus lama (kalau belum dihapus via remove_image)
+        if ($alumni->image && Storage::disk('public')->exists($alumni->image)) {
+            Storage::disk('public')->delete($alumni->image);
         }
 
-        $alumni->update([
-            'nama' => $request->nama,
-            'prodi' => $request->prodi,
-            'angkatan' => $request->angkatan,
-            'tahun_lulus' => $request->tahun_lulus,
-            'alamat' => $request->alamat,
-        ]);
-
-        return response()->json([
-            'status' => true,
-            'message' => 'Profile berhasil diupdate',
-            'data' => $alumni
-        ]);
+        $path = $request->file('image')->store('profile', 'public');
+        $alumni->image = $path;
     }
+
+    // ==============================
+    // UPDATE DATA
+    // ==============================
+    $alumni->nama = $request->nama;
+    $alumni->prodi = $request->prodi;
+    $alumni->angkatan = $request->angkatan;
+    $alumni->tahun_lulus = $request->tahun_lulus;
+    $alumni->alamat = $request->alamat;
+    $alumni->tempat_lahir = $request->tempat_lahir;
+$alumni->tanggal_lahir = $request->tanggal_lahir;
+
+    $alumni->save();
+
+    return response()->json([
+        'status' => true,
+        'message' => 'Profile berhasil diupdate',
+        'data' => $alumni
+    ]);
+}
 }

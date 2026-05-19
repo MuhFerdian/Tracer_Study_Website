@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\LowonganPekerjaan;
-use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use App\Services\FcmService;
 
 class LowonganPekerjaanController extends Controller
 {
@@ -65,41 +66,49 @@ class LowonganPekerjaanController extends Controller
         return view('layoutAdmin.lowongan.create');
     }
 
-    public function store(Request $request)
-    {
-        $request->validate(
-            $this->validationRules(false),
-            $this->validationMessages()
-        );
+    public function store(Request $request, FcmService $fcm)
+{
+    $request->validate([
+        'posisi' => 'required',
+        'nama_perusahaan' => 'required',
+    ]);
 
-        $foto = null;
-        if ($request->hasFile('foto')) {
-            $file     = $request->file('foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('startbootstrap-sb-admin-gh-pages/assets/foto_loker'), $filename);
-            $foto = 'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $filename;
-        }
+    $lowongan = LowonganPekerjaan::create([
+        'posisi' => $request->posisi,
+        'nama_perusahaan' => $request->nama_perusahaan,
+        'lokasi' => $request->lokasi,
+        'gaji' => $request->gaji,
+        'deskripsi' => $request->deskripsi,
+        'batas_lamaran' => $request->batas_lamaran,
+        'kontak' => $request->kontak,
+        'link_lamaran' => $request->link_lamaran,
+        'dibuat_oleh' => auth()->id(),
+        'role' => auth()->user()->role->role_nama ?? 'Dosen',
+        'aktif' => true,
+    ]);
 
-        LowonganPekerjaan::create([
-            'posisi'          => $request->posisi,
-            'nama_perusahaan' => $request->nama_perusahaan,
-            'lokasi'          => $request->lokasi,
-            'gaji'            => $request->gaji,
-            'deskripsi'       => $request->deskripsi,
-            'batas_lamaran'   => $request->batas_lamaran,
-            'kontak'          => $request->kontak,
-            'link_lamaran'    => $request->link_lamaran,
-            'dibuat_oleh'     => auth()->id(),
-            'role'            => auth()->user()->role->role_nama ?? 'Dosen',
-            'aktif'           => true,
-            'foto'            => $foto,
-        ]);
+    // ambil semua alumni
+    $users = User::whereHas('role', function ($q) {
+        $q->where('role_nama', 'Alumni');
+    })->get();
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Lowongan berhasil ditambahkan',
-        ]);
-    }
+    // kirim notif
+    foreach ($users as $user) {
+
+        $fcm->sendToUser(
+    $user->id,
+    "Lowongan Baru 🎉",
+    "Lowongan {$lowongan->posisi} telah tersedia",
+       [
+        'type' => 'lowongan',
+        'lowongan_id' => $lowongan->id
+       ]
+     );
+}
+
+    return redirect('/admin/lowongan-pekerjaan')
+        ->with('success', 'Lowongan berhasil ditambahkan');
+}
 
     public function edit($id)
     {
