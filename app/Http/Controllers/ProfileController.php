@@ -43,10 +43,11 @@ class ProfileController extends Controller
     public function changePassword(Request $request)
     {
         $request->validate([
-            'password_baru'  => 'required|min:6|confirmed',
+            'password_baru'  => 'required|min:8|max:16|confirmed',
         ], [
             'password_baru.required'  => 'Password baru wajib diisi.',
-            'password_baru.min'       => 'Password baru minimal 6 karakter.',
+            'password_baru.min'       => 'Password baru minimal 8 karakter.',
+            'password_baru.max'       => 'Password baru maksimal 16 karakter.',
             'password_baru.confirmed' => 'Konfirmasi password tidak cocok.',
         ]);
 

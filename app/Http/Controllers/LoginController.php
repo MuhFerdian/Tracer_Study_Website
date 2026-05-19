@@ -29,12 +29,12 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'username' => ['required', 'string', 'min:6', 'max:25', 'regex:/^[a-z0-9._]+$/'],
+            'username' => ['required', 'string', 'min:5', 'max:25', 'regex:/^[a-z0-9._]+$/'],
             'password' => ['required', 'string', 'min:8', 'max:16'],
             'role'     => ['required', 'in:admin,dosen'],
         ], [
             'username.required' => 'Username wajib diisi.',
-            'username.min'      => 'Username minimal 6 karakter.',
+            'username.min'      => 'Username minimal 5 karakter.',
             'username.max'      => 'Username terlalu panjang.',
             'username.regex'    => 'Username hanya boleh huruf kecil, angka, titik, dan underscore.',
             'password.required' => 'Password wajib diisi.',

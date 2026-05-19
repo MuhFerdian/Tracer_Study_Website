@@ -160,6 +160,28 @@ class PertanyaanController extends Controller
                 'is_required' => true,
             ]);
 
+            // ===============================
+            // 🔔 NOTIFIKASI PERTANYAAN BARU
+            // ===============================
+            try {
+                $fcm = app(FcmService::class);
+
+                $users = User::whereNotNull('fcm_token')
+                    ->whereHas('alumni') // hanya alumni (hapus jika semua user)
+                    ->get();
+
+                foreach ($users as $user) {
+                    $fcm->sendToUser(
+                        $user->id,
+                        "Pertanyaan Baru 📢",
+                        "Ada pertanyaan baru di survey tracer study, segera isi!"
+                    );
+                }
+            } catch (\Throwable $e) {
+                Log::warning('FCM gagal kirim notif pertanyaan baru: ' . $e->getMessage());
+            }
+
+
             // Jika ada options, simpan ke question_options
             if ($request->filled('options') && in_array($request->type, ['single', 'multiple'])) {
                 $options = $this->parseOptions($request->options);
@@ -403,7 +425,7 @@ class PertanyaanController extends Controller
         $excludeId = $request->input('excludeId');
 
         $query = Question::where('urutan', $urutan);
-        
+
         if ($excludeId) {
             $query->where('id', '!=', $excludeId);
         }
@@ -450,26 +472,56 @@ class PertanyaanController extends Controller
     {
         if ($request->ajax() || $request->wantsJson()) {
             $data = Question::find($id);
+
             if (!$data) {
-                return response()->json(['status' => false, 'message' => 'Data tidak ditemukan.']);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak ditemukan.'
+                ]);
             }
-            $data->update(['is_archived' => true]);
-            return response()->json(['status' => true, 'message' => 'Pertanyaan berhasil diarsip.']);
+
+            $data->update([
+                'is_archived' => true
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Pertanyaan berhasil diarsip.'
+            ]);
         }
-        return response()->json(['status' => false, 'message' => 'Invalid request'], 400);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid request'
+        ], 400);
     }
 
     public function restore_ajax(Request $request, string $id)
     {
         if ($request->ajax() || $request->wantsJson()) {
             $data = Question::find($id);
+
             if (!$data) {
-                return response()->json(['status' => false, 'message' => 'Data tidak ditemukan.']);
+                return response()->json([
+                    'status' => false,
+                    'message' => 'Data tidak ditemukan.'
+                ]);
             }
-            $data->update(['is_archived' => false]);
-            return response()->json(['status' => true, 'message' => 'Pertanyaan berhasil dipulihkan.']);
+
+            $data->update([
+                'is_archived' => false
+            ]);
+
+            return response()->json([
+                'status' => true,
+                'message' => 'Pertanyaan berhasil dipulihkan.'
+            ]);
         }
-        return response()->json(['status' => false, 'message' => 'Invalid request'], 400);
+
+        return response()->json([
+            'status' => false,
+            'message' => 'Invalid request'
+        ], 400);
     }
 
     public function arsip_index()
@@ -480,23 +532,42 @@ class PertanyaanController extends Controller
     public function arsip_list(Request $request)
     {
         if ($request->ajax()) {
+
             $data = Question::with('options', 'details')
                 ->where('is_archived', true)
-                ->orderBy('urutan')->orderBy('id')->get();
+                ->orderBy('urutan')
+                ->orderBy('id')
+                ->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
+
                 ->addColumn('question_display', function ($row) {
                     return $row->pertanyaan;
                 })
+
                 ->addColumn('options_display', function ($row) {
+
                     if ($row->type === 'matrix') {
-                        if ($row->details->isEmpty()) return '-';
-                        return $row->details->pluck('item_label')->implode(', ');
+
+                        if ($row->details->isEmpty()) {
+                            return '-';
+                        }
+
+                        return $row->details
+                            ->pluck('item_label')
+                            ->implode(', ');
                     }
-                    if ($row->options->isEmpty()) return '-';
-                    return $row->options->pluck('label')->implode(', ');
+
+                    if ($row->options->isEmpty()) {
+                        return '-';
+                    }
+
+                    return $row->options
+                        ->pluck('label')
+                        ->implode(', ');
                 })
+
                 ->addColumn('aksi', function ($row) {
                     $btn  = '<div class="d-flex gap-1 justify-content-center">';
                     $btn .= '<button onclick="restorePertanyaan(' . $row->id . ')" class="btn btn-success btn-sm"><i class="fas fa-undo me-1"></i>Pulihkan</button>';
@@ -504,12 +575,13 @@ class PertanyaanController extends Controller
                     $btn .= '</div>';
                     return $btn;
                 })
+
                 ->rawColumns(['aksi'])
                 ->make(true);
         }
-        return response()->json(['message' => 'Bukan permintaan AJAX'], 400);
+
+        return response()->json([
+            'message' => 'Bukan permintaan AJAX'
+        ], 400);
     }
-
 }
-
-

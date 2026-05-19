@@ -4,7 +4,8 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\LowonganPekerjaan;
-use Illuminate\Support\Facades\Storage;
+use App\Models\User;
+use App\Services\FcmService;
 
 class LowonganPekerjaanController extends Controller
 {
@@ -35,7 +36,7 @@ class LowonganPekerjaanController extends Controller
             'batas_lamaran.date'       => 'Format tanggal batas lamaran tidak valid.',
             'batas_lamaran.after_or_equal' => 'Batas lamaran tidak boleh kurang dari hari ini.',
             'kontak.required'          => 'Nomor kontak wajib diisi.',
-            'kontak.regex'             => 'Nomor kontak harus diawali 08 dan terdiri dari 10–14 digit.',
+            'kontak.regex'             => 'Nomor kontak harus diawali 08 dan terdiri dari 10-14 digit.',
             'link_lamaran.url'         => 'Link lamaran harus berupa URL yang valid (contoh: https://...).',
             'foto.image'               => 'File foto harus berupa gambar.',
             'foto.mimes'               => 'Format foto harus JPG, JPEG, atau PNG.',
@@ -65,40 +66,48 @@ class LowonganPekerjaanController extends Controller
         return view('layoutAdmin.lowongan.create');
     }
 
-    public function store(Request $request)
+    public function store(Request $request, FcmService $fcm)
     {
-        $request->validate(
-            $this->validationRules(false),
-            $this->validationMessages()
-        );
+        $request->validate([
+            'posisi' => 'required',
+            'nama_perusahaan' => 'required',
+        ]);
 
-        $foto = null;
-        if ($request->hasFile('foto')) {
-            $file     = $request->file('foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('startbootstrap-sb-admin-gh-pages/assets/foto_loker'), $filename);
-            $foto = 'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $filename;
+        $lowongan = LowonganPekerjaan::create([
+            'posisi' => $request->posisi,
+            'nama_perusahaan' => $request->nama_perusahaan,
+            'lokasi' => $request->lokasi,
+            'gaji' => $request->gaji,
+            'deskripsi' => $request->deskripsi,
+            'batas_lamaran' => $request->batas_lamaran,
+            'kontak' => $request->kontak,
+            'link_lamaran' => $request->link_lamaran,
+            'dibuat_oleh' => auth()->id(),
+            'role' => auth()->user()->role->role_nama ?? 'Dosen',
+            'aktif' => true,
+        ]);
+
+        // ambil semua alumni
+        $users = User::whereHas('role', function ($q) {
+            $q->where('role_nama', 'Alumni');
+        })->get();
+
+        // kirim notif
+        foreach ($users as $user) {
+
+            $fcm->sendToUser(
+                $user->id,
+                "Lowongan Baru 🎉",
+                "Lowongan {$lowongan->posisi} telah tersedia",
+                // [
+                //     'type' => 'lowongan',
+                //     'lowongan_id' => $lowongan->id
+                // ]
+            );
         }
 
-        LowonganPekerjaan::create([
-            'posisi'          => $request->posisi,
-            'nama_perusahaan' => $request->nama_perusahaan,
-            'lokasi'          => $request->lokasi,
-            'gaji'            => $request->gaji,
-            'deskripsi'       => $request->deskripsi,
-            'batas_lamaran'   => $request->batas_lamaran,
-            'kontak'          => $request->kontak,
-            'link_lamaran'    => $request->link_lamaran,
-            'dibuat_oleh'     => auth()->id(),
-            'role'            => auth()->user()->role->role_nama ?? 'Dosen',
-            'aktif'           => true,
-            'foto'            => $foto,
-        ]);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lowongan berhasil ditambahkan',
-        ]);
+        return redirect('/admin/lowongan-pekerjaan')
+            ->with('success', 'Lowongan berhasil ditambahkan');
     }
 
     public function edit($id)
@@ -188,6 +197,3 @@ class LowonganPekerjaanController extends Controller
         return view('layoutLandingPage.lowongan.detail', compact('lowongan'));
     }
 }
-
-
-
