@@ -171,8 +171,8 @@ class LowonganPekerjaanController extends Controller
             $keyword = $request->search;
             $query->where(function ($q) use ($keyword) {
                 $q->where('posisi', 'like', "%{$keyword}%")
-                  ->orWhere('nama_perusahaan', 'like', "%{$keyword}%")
-                  ->orWhere('lokasi', 'like', "%{$keyword}%");
+                    ->orWhere('nama_perusahaan', 'like', "%{$keyword}%")
+                    ->orWhere('lokasi', 'like', "%{$keyword}%");
             });
         }
 
@@ -188,3 +188,6 @@ class LowonganPekerjaanController extends Controller
         return view('layoutLandingPage.lowongan.detail', compact('lowongan'));
     }
 }
+
+
+

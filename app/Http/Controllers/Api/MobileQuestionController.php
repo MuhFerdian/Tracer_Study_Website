@@ -12,8 +12,8 @@ class MobileQuestionController extends Controller
     {
         // ambil semua pertanyaan + options
         $questions = Question::with(['options' => function ($query) {
-                $query->orderBy('urutan');
-            }, 'details'])
+            $query->orderBy('urutan');
+        }, 'details'])
             ->orderBy('urutan')
             ->get();
 
@@ -52,3 +52,5 @@ class MobileQuestionController extends Controller
         ]);
     }
 }
+
+
