@@ -72,6 +72,7 @@ Route::get('/profile', [ProfileController::class, 'show']);
 Route::post('/update-profile', [AlumniController::class, 'updateProfile']);
 
 Route::get('/lowongan', [LowonganController::class, 'index']);
+Route::get('/lowongan/{id}', [LowonganController::class, 'show']);
 Route::post('/lowongan', [LowonganController::class, 'store']);
 
 Route::get(

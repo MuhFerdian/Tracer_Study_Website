@@ -41,12 +41,12 @@
                     </div>
                     <div class="d-flex mb-3">
                         <i class="fas fa-map-marker-alt mt-1 me-3"></i>
-                        <p class="mb-0 text-white-50">Jl. Gatot Subroto No 02, Nganjuk, Jawa Timur</p>
+                        <p class="mb-0 text-white-50">Jl. Gatot Subroto No 02, Kauman, Kecamatan Nganjuk, Kabupaten Nganjuk, Jawa Timur</p>
                     </div>
                     <div class="d-flex">
                         <i class="fas fa-envelope mt-1 me-3"></i>
                         <p class="mb-0 text-white-50">
-                            <a href="mailto:tracer.study@polije.ac.id" class="footer-link">tracer.study@polije.ac.id</a>
+                            <a href="mailto:tracer.study@polije.ac.id" class="footer-link">tracerstudy.ts@gmail.com</a>
                         </p>
                     </div>
                 </div>
@@ -55,28 +55,47 @@
                     <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Tautan</h6>
                     <ul class="list-unstyled d-grid gap-2">
                         <li>
-                            <a href="{{ url('/login') }}" class="footer-link d-inline-flex align-items-center">
-                                <i class="fas fa-sign-in-alt me-2"></i>Login
+                            <a href="{{ url('/landingpage') }}#beranda" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-home me-2"></i>Beranda
                             </a>
                         </li>
                         <li>
-                            <a href="#about-tracer" class="footer-link d-inline-flex align-items-center">
+                            <a href="{{ url('/landingpage') }}#about-tracer" class="footer-link d-inline-flex align-items-center">
                                 <i class="fas fa-circle-info me-2"></i>Tentang
                             </a>
                         </li>
                         <li>
-                            <a href="#manfaat" class="footer-link d-inline-flex align-items-center">
-                                <i class="fas fa-chart-line me-2"></i>Manfaat
+                            <a href="{{ url('/landingpage') }}#profil" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-university me-2"></i>Profil
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url('/landingpage') }}#dosen" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-chalkboard-teacher me-2"></i>Dosen
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url('/landingpage') }}#lowongan" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-briefcase me-2"></i>Lowongan
+                            </a>
+                        </li>
+                        <li>
+                            <a href="{{ url('/landingpage') }}#faq" class="footer-link d-inline-flex align-items-center">
+                                <i class="fas fa-question-circle me-2"></i>FAQ
                             </a>
                         </li>
                     </ul>
                 </div>
 
                 <div class="col-md-3">
-                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Info Terbaru</h6>
-                    <a href="#" class="footer-link d-flex gap-3">
-                        <i class="fas fa-newspaper mt-1"></i>
-                        <span>Hasil Tracer Study Tahun 2026</span>
+                    <h6 class="fw-bold mb-3 pb-2 border-bottom border-white border-opacity-25">Tautan Lainnya</h6>
+                    <a href="https://polije.ac.id" target="_blank" rel="noopener noreferrer" class="footer-link d-flex gap-3 mb-3">
+                        <i class="fas fa-globe mt-1"></i>
+                        <span>Politeknik Negeri Jember</span>
+                    </a>
+                    <a href="https://jti.polije.ac.id" target="_blank" rel="noopener noreferrer" class="footer-link d-flex gap-3">
+                        <i class="fas fa-laptop-code mt-1"></i>
+                        <span>Jurusan Teknologi Informasi</span>
                     </a>
                 </div>
             </div>
@@ -93,6 +112,7 @@
             target="_blank"
             rel="noopener noreferrer"
             aria-label="Chat WhatsApp Admin Prodi">
+            <span class="wa-tooltip">Hubungi Admin!</span>
             <i class="fab fa-whatsapp"></i>
         </a>
 

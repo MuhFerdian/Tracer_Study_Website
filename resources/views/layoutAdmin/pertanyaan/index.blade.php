@@ -16,6 +16,9 @@
                 <a href="{{ url('/admin/pertanyaan/reference') }}" class="btn btn-info btn-sm" title="Lihat panduan pertanyaan wajib Kemendikbud">
                     <i class="fas fa-book me-1"></i>Panduan Kemendikbud
                 </a>
+                <a href="{{ route('pertanyaan.arsip') }}" class="btn btn-secondary btn-sm" title="Lihat pertanyaan yang diarsip">
+                    <i class="fas fa-archive me-1"></i>Arsip Pertanyaan
+                </a>
                 <button class="btn btn-success btn-sm" onclick="createPertanyaan()">
                     <i class="fas fa-plus-circle me-1"></i>Tambah Pertanyaan
                 </button>
@@ -169,6 +172,38 @@ function deletePertanyaan(id) {
         },
         error: function (xhr) {
             Swal.fire('Gagal', 'Data gagal dihapus.', 'error');
+        }
+    });
+}
+
+function arsipPertanyaan(id) {
+    Swal.fire({
+        title: 'Arsip Pertanyaan?',
+        text: 'Pertanyaan akan dipindahkan ke arsip dan tidak tampil di survei.',
+        icon: 'warning',
+        showCancelButton: true,
+        confirmButtonColor: '#6c757d',
+        cancelButtonColor: '#aaa',
+        confirmButtonText: '<i class="fas fa-archive me-1"></i>Ya, Arsip',
+        cancelButtonText: 'Batal'
+    }).then((result) => {
+        if (result.isConfirmed) {
+            $.ajax({
+                url: '/admin/pertanyaan/' + id + '/arsip',
+                type: 'PATCH',
+                data: { _token: '{{ csrf_token() }}' },
+                success: function (res) {
+                    if (res.status) {
+                        Swal.fire({ icon: 'success', title: 'Berhasil', text: res.message, timer: 1500, showConfirmButton: false });
+                        $('#tablePertanyaan').DataTable().ajax.reload(null, false);
+                    } else {
+                        Swal.fire('Gagal', res.message, 'error');
+                    }
+                },
+                error: function () {
+                    Swal.fire('Error', 'Terjadi kesalahan.', 'error');
+                }
+            });
         }
     });
 }

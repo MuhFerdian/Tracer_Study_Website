@@ -1,4 +1,4 @@
-<section class="benefit-section section-pad" id="dosen" style="background: #f8faff;">
+<section class="benefit-section section-pad" id="dosen">
     <div class="container">
 
         {{-- Section Header --}}
@@ -68,6 +68,22 @@
             </div>
 
             {{-- Dosen 4 --}}
+            <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
+                <div class="benefit-card text-center h-100">
+                    <img
+                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/qonitatul-hasanah-sst-mtrt.jpg') }}"
+                        alt="Qonitatul Hasanah, S.ST., M.Tr.T"
+                        class="rounded-circle mb-3 border border-3"
+                        style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
+                        onerror="this.src='https://ui-avatars.com/api/?name=Qonitatul+Hasanah&background=2563eb&color=fff&size=110'"
+                    >
+                    <h6 class="fw-semibold mb-1">Qonitatul Hasanah, S.ST., M.Tr.T</h6>
+                    <span class="badge rounded-pill mb-1" style="background:#dbeafe; color:#1d4ed8; font-size:0.75rem;">Asisten Ahli</span>
+                    <p class="mb-0 text-muted" style="font-size: 0.8rem;">NIDN: 0009059403</p>
+                </div>
+            </div>
+
+            {{-- Dosen 5 --}}
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-1s">
                 <div class="benefit-card text-center h-100">
                     <img
@@ -83,7 +99,7 @@
                 </div>
             </div>
 
-            {{-- Dosen 5 --}}
+            {{-- Dosen 6 --}}
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
                 <div class="benefit-card text-center h-100">
                     <img
@@ -99,7 +115,7 @@
                 </div>
             </div>
 
-            {{-- Dosen 6 --}}
+            <!-- {{-- Dosen 6 --}}
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
                 <div class="benefit-card text-center h-100">
                     <img
@@ -113,7 +129,7 @@
                     <span class="badge rounded-pill mb-1" style="background:#dbeafe; color:#1d4ed8; font-size:0.75rem;">Asisten Ahli</span>
                     <p class="mb-0 text-muted" style="font-size: 0.8rem;">NIDN: 0009059403</p>
                 </div>
-            </div>
+            </div> -->
 
             {{-- Dosen 7 --}}
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">

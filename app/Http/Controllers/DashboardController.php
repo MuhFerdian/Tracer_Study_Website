@@ -40,20 +40,26 @@ class DashboardController extends Controller
     public function getInstansiChartData(Request $request)
     {
         $periodId = $request->query('period_id');
-        $periodJoin = $periodId ? "AND a.survey_period_id = $periodId" : '';
+        $periodCond = $periodId ? "AND a.survey_period_id = ?" : '';
+
+        // Urutan ?: period_id dulu (di JOIN), lalu kode_soal (di WHERE)
+        $params = [];
+        if ($periodId) $params[] = $periodId;
+        $params[] = 'f1101';
 
         $data = DB::select("
             SELECT
-                qo.label AS jenis_instansi,
+                ad.value AS jenis_instansi,
                 COUNT(ad.id) AS total
             FROM answer_details ad
-            JOIN answers a           ON a.id  = ad.answer_id $periodJoin
-            JOIN questions q         ON q.id  = a.question_id
-            JOIN question_options qo ON qo.id = ad.option_id
-            WHERE q.kode_soal = 'f1101'
-            GROUP BY qo.id, qo.label
+            JOIN answers a   ON a.id = ad.answer_id $periodCond
+            JOIN questions q ON q.id = a.question_id
+            WHERE q.kode_soal = ?
+              AND ad.value IS NOT NULL
+              AND ad.value != ''
+            GROUP BY ad.value
             ORDER BY total DESC
-        ");
+        ", $params);
 
         if (empty($data)) {
             return response()->json([['jenis_instansi' => 'Belum Ada Data', 'total' => 0]]);
@@ -68,20 +74,26 @@ class DashboardController extends Controller
     public function getProfesiChart(Request $request)
     {
         $periodId = $request->query('period_id');
-        $periodJoin = $periodId ? "AND a.survey_period_id = $periodId" : '';
+        $periodCond = $periodId ? "AND a.survey_period_id = ?" : '';
+
+        // Urutan ?: period_id dulu (di JOIN), lalu kode_soal (di WHERE)
+        $params = [];
+        if ($periodId) $params[] = $periodId;
+        $params[] = 'f8';
 
         $data = DB::select("
             SELECT
-                qo.label AS profesi,
+                ad.value AS profesi,
                 COUNT(DISTINCT a.alumni_id) AS total
-            FROM answers a
-            JOIN answer_details ad   ON ad.answer_id  = a.id
-            JOIN questions q         ON q.id           = a.question_id
-            JOIN question_options qo ON qo.id          = ad.option_id
-            WHERE q.kode_soal = 'f8' $periodJoin
-            GROUP BY qo.id, qo.label
+            FROM answer_details ad
+            JOIN answers a   ON a.id = ad.answer_id $periodCond
+            JOIN questions q ON q.id = a.question_id
+            WHERE q.kode_soal = ?
+              AND ad.value IS NOT NULL
+              AND ad.value != ''
+            GROUP BY ad.value
             ORDER BY total DESC
-        ");
+        ", $params);
 
         if (empty($data)) {
             return response()->json([['profesi' => 'Belum Ada Data', 'total' => 0]]);
@@ -93,48 +105,55 @@ class DashboardController extends Controller
     // ==================================================
     // Tabel Rekap Alumni per Tahun Lulus
     //
-    //   infokom       → f14: 'Sangat Erat' atau 'Erat'
-    //   noninfokom    → f14: 'Cukup Erat', 'Kurang Erat', 'Tidak Sama Sekali'
-    //   multinasional → f5d: label mengandung 'Multinasional'
-    //   nasional      → f5d: label = 'Nasional'
-    //   wirausaha     → f8:  label mengandung 'Wiraswasta'
+    //   infokom       → f14: value IN ('Sangat Erat', 'Erat')
+    //   noninfokom    → f14: value IN ('Cukup Erat', 'Kurang Erat', 'Tidak Sama Sekali')
+    //   multinasional → f5d: value LIKE '%Multinasional%' OR LIKE '%Internasional%'
+    //   nasional      → f5d: value LIKE '%Nasional%' (exclude multinasional)
+    //   wirausaha     → f8:  value LIKE '%Wiraswasta%' OR f5d LIKE '%wiraswasta%'
     // ==================================================
     public function getRekapAlumni(Request $request)
     {
         $periodId   = $request->query('period_id');
-        $periodCond = $periodId ? "AND ans_any.survey_period_id = $periodId" : '';
-        $periodF14  = $periodId ? "AND a_f14.survey_period_id = $periodId" : '';
-        $periodF5d  = $periodId ? "AND a_f5d.survey_period_id = $periodId" : '';
-        $periodF8   = $periodId ? "AND a_f8.survey_period_id = $periodId" : '';
+        $periodCond = $periodId ? "AND ans_any.survey_period_id = ?" : '';
+        $periodF14  = $periodId ? "AND a_f14.survey_period_id = ?" : '';
+        $periodF5d  = $periodId ? "AND a_f5d.survey_period_id = ?" : '';
+        $periodF8   = $periodId ? "AND a_f8.survey_period_id = ?" : '';
+
+        $params = [];
+        if ($periodId) { $params[] = $periodId; $params[] = $periodId; $params[] = $periodId; $params[] = $periodId; }
 
         $data = DB::select("
             SELECT
                 al.tahun_lulus AS tahunlulus,
                 COUNT(DISTINCT al.id) AS jumlahlulusan,
                 COUNT(DISTINCT CASE WHEN ans_any.alumni_id IS NOT NULL THEN al.id END) AS terlacaklulusan,
-                COUNT(DISTINCT CASE WHEN q_f14.kode_soal = 'f14' AND qo_f14.label IN ('Sangat Erat', 'Erat') THEN al.id END) AS infokom,
-                COUNT(DISTINCT CASE WHEN q_f14.kode_soal = 'f14' AND qo_f14.label IN ('Cukup Erat', 'Kurang Erat', 'Tidak Sama Sekali') THEN al.id END) AS noninfokom,
-                COUNT(DISTINCT CASE WHEN q_f5d.kode_soal = 'f5d' AND qo_f5d.label LIKE '%Multinasional%' THEN al.id END) AS multinasional,
-                COUNT(DISTINCT CASE WHEN q_f5d.kode_soal = 'f5d' AND qo_f5d.label = 'Nasional' THEN al.id END) AS nasional,
-                COUNT(DISTINCT CASE WHEN q_f8.kode_soal  = 'f8'  AND qo_f8.label  LIKE '%Wiraswasta%' THEN al.id END) AS wirausaha
+                COUNT(DISTINCT CASE WHEN q_f14.kode_soal = 'f14'
+                    AND ad_f14.value IN ('Sangat Erat', 'Erat') THEN al.id END) AS infokom,
+                COUNT(DISTINCT CASE WHEN q_f14.kode_soal = 'f14'
+                    AND ad_f14.value IN ('Cukup Erat', 'Kurang Erat', 'Tidak Sama Sekali') THEN al.id END) AS noninfokom,
+                COUNT(DISTINCT CASE WHEN q_f5d.kode_soal = 'f5d'
+                    AND (ad_f5d.value LIKE '%Multinasional%' OR ad_f5d.value LIKE '%Internasional%') THEN al.id END) AS multinasional,
+                COUNT(DISTINCT CASE WHEN q_f5d.kode_soal = 'f5d'
+                    AND ad_f5d.value LIKE '%Nasional%'
+                    AND ad_f5d.value NOT LIKE '%Multinasional%'
+                    AND ad_f5d.value NOT LIKE '%Internasional%' THEN al.id END) AS nasional,
+                COUNT(DISTINCT CASE WHEN q_f8.kode_soal = 'f8'
+                    AND ad_f8.value LIKE '%Wiraswasta%' THEN al.id END) AS wirausaha
             FROM alumni al
             LEFT JOIN (SELECT DISTINCT alumni_id, survey_period_id FROM answers) ans_any
                 ON ans_any.alumni_id = al.id $periodCond
             LEFT JOIN answers a_f14 ON a_f14.alumni_id = al.id $periodF14
             LEFT JOIN questions q_f14 ON q_f14.id = a_f14.question_id AND q_f14.kode_soal = 'f14'
             LEFT JOIN answer_details ad_f14 ON ad_f14.answer_id = a_f14.id
-            LEFT JOIN question_options qo_f14 ON qo_f14.id = ad_f14.option_id
             LEFT JOIN answers a_f5d ON a_f5d.alumni_id = al.id $periodF5d
             LEFT JOIN questions q_f5d ON q_f5d.id = a_f5d.question_id AND q_f5d.kode_soal = 'f5d'
             LEFT JOIN answer_details ad_f5d ON ad_f5d.answer_id = a_f5d.id
-            LEFT JOIN question_options qo_f5d ON qo_f5d.id = ad_f5d.option_id
             LEFT JOIN answers a_f8 ON a_f8.alumni_id = al.id $periodF8
             LEFT JOIN questions q_f8 ON q_f8.id = a_f8.question_id AND q_f8.kode_soal = 'f8'
             LEFT JOIN answer_details ad_f8 ON ad_f8.answer_id = a_f8.id
-            LEFT JOIN question_options qo_f8 ON qo_f8.id = ad_f8.option_id
             GROUP BY al.tahun_lulus
             ORDER BY al.tahun_lulus
-        ");
+        ", $params);
 
         return response()->json($data);
     }
@@ -236,15 +255,14 @@ class DashboardController extends Controller
         $results = DB::select("
             SELECT
                 q.pertanyaan AS jenis_kemampuan,
-                SUM(CASE WHEN qo.label = 'Sangat Tinggi' THEN 1 ELSE 0 END) AS sangat_baik,
-                SUM(CASE WHEN qo.label = 'Tinggi'        THEN 1 ELSE 0 END) AS baik,
-                SUM(CASE WHEN qo.label = 'Sedang'        THEN 1 ELSE 0 END) AS cukup,
-                SUM(CASE WHEN qo.label IN ('Rendah', 'Sangat Rendah') THEN 1 ELSE 0 END) AS kurang,
+                SUM(CASE WHEN ad.value = 'Sangat Tinggi' THEN 1 ELSE 0 END) AS sangat_baik,
+                SUM(CASE WHEN ad.value = 'Tinggi'        THEN 1 ELSE 0 END) AS baik,
+                SUM(CASE WHEN ad.value = 'Sedang'        THEN 1 ELSE 0 END) AS cukup,
+                SUM(CASE WHEN ad.value IN ('Rendah', 'Sangat Rendah') THEN 1 ELSE 0 END) AS kurang,
                 COUNT(ad.id) AS total
             FROM answer_details ad
-            JOIN answers a           ON a.id  = ad.answer_id
-            JOIN questions q         ON q.id  = a.question_id
-            JOIN question_options qo ON qo.id = ad.option_id
+            JOIN answers a   ON a.id  = ad.answer_id
+            JOIN questions q ON q.id  = a.question_id
             WHERE q.kode_soal IN ($placeholders)
             GROUP BY q.id, q.pertanyaan
             ORDER BY q.urutan
@@ -272,27 +290,33 @@ class DashboardController extends Controller
     private function getSkillChartData(string $kodeSoal): \Illuminate\Http\JsonResponse
     {
         $periodId   = request()->query('period_id');
-        $periodCond = $periodId ? "AND a.survey_period_id = $periodId" : '';
+        $periodCond = $periodId ? "AND a.survey_period_id = ?" : '';
+
+        // Parameter order harus sesuai urutan ? di SQL:
+        // 1. period_id (di JOIN/WHERE atas), 2. kode_soal (di WHERE bawah)
+        $params = [];
+        if ($periodId) $params[] = $periodId;
+        $params[] = $kodeSoal;
 
         $results = DB::select("
             SELECT
-                CASE qo.label
+                CASE ad.value
                     WHEN 'Sangat Tinggi' THEN 'Sangat Baik'
                     WHEN 'Tinggi'        THEN 'Baik'
                     WHEN 'Sedang'        THEN 'Cukup'
                     WHEN 'Rendah'        THEN 'Kurang'
                     WHEN 'Sangat Rendah' THEN 'Kurang'
-                    ELSE qo.label
+                    ELSE ad.value
                 END AS tingkat_kepuasan,
                 COUNT(ad.id) AS jumlah_responden_per_tingkat
             FROM answer_details ad
-            JOIN answers a           ON a.id  = ad.answer_id $periodCond
-            JOIN questions q         ON q.id  = a.question_id
-            JOIN question_options qo ON qo.id = ad.option_id
+            JOIN answers a   ON a.id = ad.answer_id $periodCond
+            JOIN questions q ON q.id = a.question_id
             WHERE q.kode_soal = ?
+              AND ad.value IS NOT NULL
             GROUP BY tingkat_kepuasan
             ORDER BY jumlah_responden_per_tingkat DESC
-        ", [$kodeSoal]);
+        ", $params);
 
         return response()->json($results);
     }

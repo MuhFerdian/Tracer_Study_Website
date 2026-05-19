@@ -1,440 +1,444 @@
-<!DOCTYPE html>
-<html lang="en">
+@php use Illuminate\Support\Facades\Storage; use Carbon\Carbon;
 
-<head>
+// Helper: format gaji → Rp 60.000.000
+function formatGajiLoker(string $gaji): string {
+    $clean = preg_replace('/[^0-9]/', '', $gaji);
+    if ($clean !== '' && is_numeric($clean)) {
+        return 'Rp ' . number_format((int)$clean, 0, ',', '.');
+    }
+    return $gaji;
+}
+@endphp
 
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+@extends('layoutLandingPage.app')
 
-    <title>Lowongan Pekerjaan</title>
+@push('styles')
+<style>
+    /* Offset fixed navbar */
+    .loker-page-wrap { padding-top: 80px; }
 
-    {{-- Bootstrap --}}
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
-          rel="stylesheet">
+    /* ── HERO (sama pola dengan hero section lain) ── */
+    .loker-hero {
+        background: linear-gradient(135deg, #071a42 0%, #1557c0 60%, #17a4df 100%);
+        border-radius: var(--tracer-radius);
+        padding: 48px 36px;
+        position: relative;
+        overflow: hidden;
+        margin-bottom: 56px;
+        box-shadow: 0 20px 55px rgba(8,34,79,.22);
+    }
+    .loker-hero::before {
+        content: '';
+        position: absolute;
+        width: 280px; height: 280px;
+        background: rgba(255,255,255,.06);
+        border-radius: 50%;
+        top: -130px; right: -80px;
+    }
+    .loker-hero::after {
+        content: '';
+        position: absolute;
+        width: 190px; height: 190px;
+        background: rgba(255,255,255,.04);
+        border-radius: 50%;
+        bottom: -90px; left: -50px;
+    }
+    .loker-hero-inner { position: relative; z-index: 2; }
 
-    {{-- Font Awesome --}}
-    <link rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css"/>
+    /* ── SEARCH ── */
+    .loker-search {
+        max-width: 440px;
+        margin: 0 auto;
+    }
+    .loker-search input {
+        border-radius: 999px;
+        border: none;
+        padding: 12px 22px;
+        font-size: .93rem;
+        font-family: 'Poppins', sans-serif;
+        box-shadow: 0 8px 24px rgba(0,0,0,.14);
+        outline: none;
+        width: 100%;
+    }
+    .loker-search input:focus {
+        box-shadow: 0 8px 28px rgba(37,130,243,.28);
+    }
 
-    {{-- Google Font --}}
-    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap"
-          rel="stylesheet">
+    /* ── CARD LOWONGAN — override benefit-card agar visible di bg terang ── */
+    .loker-card {
+        height: 100%;
+        padding: 0;
+        overflow: hidden;
+        display: flex;
+        flex-direction: column;
+        background: #ffffff !important;
+        border: 1px solid #e2e8f0 !important;
+        box-shadow: 0 4px 24px rgba(8,34,79,.10) !important;
+    }
+    .loker-card:hover {
+        transform: translateY(-6px) !important;
+        border-color: rgba(37,130,243,.28) !important;
+        box-shadow: 0 20px 50px rgba(8,34,79,.16) !important;
+    }
 
-    <style>
+    /* Foto thumbnail */
+    .loker-card-foto-wrap { overflow: hidden; flex-shrink: 0; }
+    .loker-card-foto {
+        width: 100%;
+        height: 170px;
+        object-fit: cover;
+        display: block;
+        cursor: pointer;
+        transition: transform .35s ease;
+    }
+    .loker-card-foto:hover { transform: scale(1.05); }
+    .loker-card-placeholder {
+        width: 100%;
+        height: 170px;
+        background: linear-gradient(135deg, #eff6ff, #dbeafe);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #93c5fd;
+        font-size: 2.6rem;
+    }
 
-        *{
-            font-family: 'Poppins', sans-serif;
-        }
+    /* Body */
+    .loker-card-body {
+        padding: 1.35rem;
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+    }
 
-        body{
-            background: #f4f7fb;
-            overflow-x: hidden;
-            position: relative;
-            min-height: 100vh;
-        }
+    /* Company badge */
+    .loker-company-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 6px;
+        background: rgba(37,130,243,.1);
+        border: 1px solid rgba(37,130,243,.12);
+        color: var(--tracer-blue);
+        border-radius: 999px;
+        padding: 3px 12px;
+        font-size: .75rem;
+        font-weight: 700;
+        margin-bottom: 8px;
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | BACKGROUND ORNAMEN
-        |--------------------------------------------------------------------------
-        */
+    /* Chips info */
+    .loker-chip {
+        display: inline-flex;
+        align-items: center;
+        gap: 5px;
+        background: rgba(255,255,255,.72);
+        border: 1px solid var(--tracer-line);
+        border-radius: 999px;
+        padding: 3px 10px;
+        font-size: .74rem;
+        color: var(--tracer-muted);
+        margin-right: 4px;
+        margin-bottom: 4px;
+    }
+    .loker-chip.salary { color: var(--tracer-blue); background: #eff6ff; border-color: #bfdbfe; }
+    .loker-chip.deadline { color: #dc2626; background: #fef2f2; border-color: #fecaca; }
+    .loker-chip.open { color: #16a34a; background: #f0fdf4; border-color: #bbf7d0; }
 
-        body::before{
-            content: '';
-            position: fixed;
-            width: 500px;
-            height: 500px;
-            background: rgba(37,99,235,.10);
-            border-radius: 50%;
-            top: -180px;
-            right: -120px;
-            filter: blur(90px);
-            z-index: -1;
-        }
+    /* Desc */
+    .loker-desc {
+        color: var(--tracer-muted);
+        font-size: .86rem;
+        line-height: 1.65;
+        margin-top: 10px;
+        margin-bottom: 20px;
+        flex: 1;
+    }
 
-        body::after{
-            content: '';
-            position: fixed;
-            width: 420px;
-            height: 420px;
-            background: rgba(59,130,246,.08);
-            border-radius: 50%;
-            bottom: -180px;
-            left: -120px;
-            filter: blur(90px);
-            z-index: -1;
-        }
+    /* Button detail */
+    .btn-loker {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        background: linear-gradient(135deg, var(--tracer-blue), var(--tracer-blue-2));
+        color: white;
+        border: none;
+        border-radius: 999px;
+        padding: 9px 20px;
+        font-size: .84rem;
+        font-weight: 700;
+        text-decoration: none;
+        box-shadow: 0 8px 20px rgba(37,130,243,.22);
+        transition: .25s;
+        align-self: flex-start;
+    }
+    .btn-loker:hover {
+        transform: translateY(-2px);
+        color: white;
+        box-shadow: 0 14px 30px rgba(37,130,243,.35);
+    }
 
-        /*
-        |--------------------------------------------------------------------------
-        | HERO HEADER
-        |--------------------------------------------------------------------------
-        */
+    /* Empty state */
+    .loker-empty {
+        text-align: center;
+        padding: 56px 24px;
+    }
+    .loker-empty .benefit-icon { margin: 0 auto 18px; }
 
-        .hero-header{
-            background: linear-gradient(135deg,#2563eb,#1e40af);
-            border-radius: 32px;
-            padding: 38px 30px;
-            position: relative;
-            overflow: hidden;
-            margin-bottom: 45px;
-            box-shadow: 0 20px 50px rgba(37,99,235,.20);
-        }
+    /* Pagination */
+    .loker-pager { gap: 6px; }
+    .loker-pager .page-link {
+        border: 1px solid var(--tracer-line);
+        border-radius: 12px !important;
+        padding: 8px 14px;
+        color: var(--tracer-blue);
+        font-weight: 700;
+        font-size: .84rem;
+        background: rgba(255,255,255,.82);
+        backdrop-filter: blur(10px);
+        transition: .2s;
+    }
+    .loker-pager .page-link:hover { background: rgba(37,130,243,.08); border-color: rgba(37,130,243,.2); }
+    .loker-pager .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--tracer-blue), var(--tracer-blue-2));
+        border-color: transparent;
+        color: white;
+        box-shadow: 0 6px 18px rgba(37,130,243,.3);
+    }
+    .loker-pager .page-item.disabled .page-link { opacity: .45; }
 
-        .hero-header::before{
-            content: '';
-            position: absolute;
-            width: 260px;
-            height: 260px;
-            background: rgba(255,255,255,.08);
-            border-radius: 50%;
-            top: -120px;
-            right: -70px;
-        }
+    /* Lightbox */
+    .lb-overlay {
+        display: none;
+        position: fixed;
+        inset: 0;
+        background: rgba(0,0,0,.82);
+        backdrop-filter: blur(6px);
+        z-index: 9999;
+        align-items: center;
+        justify-content: center;
+    }
+    .lb-overlay.show { display: flex; animation: lbIn .2s ease; }
+    .lb-img {
+        max-width: 88vw;
+        max-height: 85vh;
+        border-radius: 16px;
+        box-shadow: 0 0 60px rgba(0,0,0,.5);
+        animation: lbZoom .2s ease;
+    }
+    .lb-close {
+        position: absolute;
+        top: 20px; right: 28px;
+        color: white;
+        font-size: 2.2rem;
+        cursor: pointer;
+        opacity: .85;
+        line-height: 1;
+        transition: opacity .2s;
+    }
+    .lb-close:hover { opacity: 1; }
+    @keyframes lbIn   { from { opacity: 0; } to { opacity: 1; } }
+    @keyframes lbZoom { from { transform: scale(.9); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+</style>
+@endpush
 
-        .hero-header::after{
-            content: '';
-            position: absolute;
-            width: 180px;
-            height: 180px;
-            background: rgba(255,255,255,.06);
-            border-radius: 50%;
-            bottom: -80px;
-            left: -40px;
-        }
+@section('content')
+<div class="loker-page-wrap">
 
-        .hero-content{
-            position: relative;
-            z-index: 2;
-        }
-
-        .hero-title{
-            font-size: 2.5rem;
-            font-weight: 700;
-            color: white;
-            margin-bottom: 12px;
-        }
-
-        .hero-subtitle{
-            color: rgba(255,255,255,.82);
-            font-size: 1rem;
-            margin-bottom: 0;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | BUTTON KEMBALI
-        |--------------------------------------------------------------------------
-        */
-
-        .btn-kembali{
-            background: rgba(255,255,255,.18);
-            border: 1px solid rgba(255,255,255,.25);
-            backdrop-filter: blur(10px);
-            color: white;
-            border-radius: 999px;
-            padding: 12px 24px;
-            text-decoration: none;
-            font-weight: 600;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: .3s;
-        }
-
-        .btn-kembali:hover{
-            background: white;
-            color: #2563eb;
-            transform: translateY(-3px);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | CARD LOWONGAN
-        |--------------------------------------------------------------------------
-        */
-
-        .card-lowongan{
-            background: rgba(255,255,255,.82);
-            backdrop-filter: blur(16px);
-            border-radius: 28px;
-            padding: 28px;
-            transition: .35s ease;
-            height: 100%;
-            border: 1px solid rgba(255,255,255,.5);
-            box-shadow: 0 15px 35px rgba(0,0,0,.05);
-            position: relative;
-            overflow: hidden;
-        }
-
-        .card-lowongan::before{
-            content: '';
-            position: absolute;
-            width: 140px;
-            height: 140px;
-            background: rgba(37,99,235,.07);
-            border-radius: 50%;
-            top: -50px;
-            right: -50px;
-        }
-
-        .card-lowongan:hover{
-            transform: translateY(-10px);
-            box-shadow: 0 25px 55px rgba(37,99,235,.14);
-        }
-
-        .card-content{
-            position: relative;
-            z-index: 2;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | ICON BOX
-        |--------------------------------------------------------------------------
-        */
-
-        .icon-box{
-            width: 52px;
-            height: 52px;
-            border-radius: 18px;
-            background: linear-gradient(135deg,#2563eb,#3b82f6);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 20px;
-            box-shadow: 0 10px 25px rgba(37,99,235,.25);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | TEXT
-        |--------------------------------------------------------------------------
-        */
-
-        .company-name{
-            color: #2563eb;
-            font-weight: 600;
-            margin-bottom: 0;
-        }
-
-        .job-title{
-            font-size: 1.25rem;
-            font-weight: 700;
-            color: #0f172a;
-            margin-bottom: 6px;
-        }
-
-        .info-item{
-            font-size: .92rem;
-            color: #64748b;
-            margin-bottom: 10px;
-        }
-
-        .job-desc{
-            color: #475569;
-            line-height: 1.7;
-            margin-bottom: 28px;
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | BUTTON DETAIL
-        |--------------------------------------------------------------------------
-        */
-
-        .btn-detail{
-            background: linear-gradient(135deg,#2563eb,#1d4ed8);
-            color: white;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 999px;
-            text-decoration: none;
-            display: inline-flex;
-            align-items: center;
-            gap: 10px;
-            transition: .3s;
-            font-weight: 600;
-            box-shadow: 0 12px 24px rgba(37,99,235,.22);
-        }
-
-        .btn-detail:hover{
-            transform: translateY(-3px);
-            color: white;
-            box-shadow: 0 18px 35px rgba(37,99,235,.35);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | PAGINATION
-        |--------------------------------------------------------------------------
-        */
-
-        .pagination{
-            gap: 8px;
-        }
-
-        .page-link{
-            border: none;
-            border-radius: 14px !important;
-            padding: 10px 16px;
-            color: #2563eb;
-            font-weight: 600;
-            box-shadow: 0 6px 18px rgba(0,0,0,.05);
-        }
-
-        .page-item.active .page-link{
-            background: linear-gradient(135deg,#2563eb,#1d4ed8);
-        }
-
-        /*
-        |--------------------------------------------------------------------------
-        | RESPONSIVE
-        |--------------------------------------------------------------------------
-        */
-
-        @media(max-width:768px){
-
-            .hero-title{
-                font-size: 2rem;
-            }
-
-            .hero-header{
-                padding: 32px 24px;
-            }
-
-            .card-lowongan{
-                padding: 24px;
-            }
-
-        }
-
-    </style>
-
-</head>
-
-<body>
-
-<section class="py-5">
-
+{{-- ── HERO ── --}}
+<section class="section-pad" style="padding-top: 0; padding-bottom: 0;">
     <div class="container">
+        <div class="loker-hero animate__animated animate__fadeInDown">
+            <div class="loker-hero-inner">
 
-        {{-- HERO --}}
-        <div class="hero-header text-center">
+                {{-- Baris atas: tombol kiri, badge tengah --}}
+                <div style="position:relative; display:flex; align-items:center; justify-content:center; margin-bottom:28px;">
+                    <a href="{{ url('/landingpage') }}"
+                       class="btn btn-outline-glass rounded-pill px-4 py-2 d-inline-flex align-items-center gap-2"
+                       style="position:absolute; left:0;">
+                        <i class="fas fa-arrow-left"></i>
+                        Kembali ke Beranda
+                    </a>
+                    <div class="section-kicker" style="display:inline-flex; color:#dff7ff; background:rgba(255,255,255,.12); border-color:rgba(255,255,255,.18);">
+                        <i class="fas fa-briefcase"></i>
+                        Karir & Lowongan
+                    </div>
+                </div>
 
-            <div class="hero-content">
-
-                <a href="{{ url('/') }}"
-                   class="btn-kembali mb-4">
-
-                    <i class="fas fa-arrow-left"></i>
-                    Kembali ke Landing Page
-
-                </a>
-
-                <h1 class="hero-title">
-                    Lowongan Pekerjaan
-                </h1>
-
-                <p class="hero-subtitle">
-                    Temukan peluang karir terbaik untuk alumni dan mahasiswa
-                </p>
+                {{-- Konten tengah --}}
+                <div class="text-center">
+                    <h1 class="section-title text-white mb-3">Lowongan Pekerjaan</h1>
+                    <p class="mb-4" style="color:rgba(255,255,255,.82);">
+                        Temukan peluang karir terbaik untuk alumni JTI Polije
+                    </p>
+                    <div class="loker-search">
+                        <form method="GET" action="{{ url('/lowongan') }}">
+                            <input
+                                type="text"
+                                name="search"
+                                placeholder="Cari posisi atau perusahaan..."
+                                value="{{ request('search') }}"
+                            >
+                        </form>
+                    </div>
+                </div>
 
             </div>
-
         </div>
+    </div>
+</section>
 
-        {{-- LIST LOWONGAN --}}
-        <div class="row">
+{{-- ── LIST LOWONGAN ── --}}
+<section class="benefit-section section-pad">
+    <div class="container">
+
+        {{-- Filter info --}}
+        @if(request('search'))
+        <div class="mb-4 d-flex align-items-center gap-2 flex-wrap">
+            <span class="section-copy small">Hasil pencarian untuk:</span>
+            <span class="section-kicker" style="font-size:.78rem;">{{ request('search') }}</span>
+            <a href="{{ url('/lowongan') }}" class="btn btn-sm btn-outline-secondary rounded-pill">
+                <i class="fas fa-times me-1"></i>Reset
+            </a>
+        </div>
+        @endif
+
+        <div class="row g-4 justify-content-center">
 
             @forelse($lowongan as $item)
+            <div class="col-lg-4 col-md-6 animate__animated animate__fadeInUp">
+                <div class="benefit-card loker-card">
 
-            <div class="col-lg-4 col-md-6 mb-4">
+                    {{-- Foto --}}
+                    @if($item->foto)
+                    @php
+                        $fotoUrl = str_starts_with($item->foto, 'startbootstrap') || str_starts_with($item->foto, 'foto_loker')
+                            ? asset($item->foto)
+                            : \Illuminate\Support\Facades\Storage::url($item->foto);
+                    @endphp
+                    <div class="loker-card-foto-wrap">
+                        <img
+                            src="{{ $fotoUrl }}"
+                            alt="{{ $item->posisi }}"
+                            class="loker-card-foto"
+                            onclick="openLb(this.src)"
+                        >
+                    </div>
+                    @else
+                    <div class="loker-card-placeholder">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    @endif
 
-                <div class="card-lowongan">
+                    <div class="loker-card-body">
 
-                    <div class="card-content">
+                        <span class="loker-company-tag">
+                            <i class="fas fa-building"></i>
+                            {{ $item->nama_perusahaan }}
+                        </span>
 
-                        <div class="d-flex align-items-start gap-3 mb-4">
+                        <h4 style="font-size:1.05rem; font-weight:800; color:var(--tracer-ink); margin-bottom:10px; line-height:1.35;">
+                            {{ $item->posisi }}
+                        </h4>
 
-                            <div class="icon-box">
-                                <i class="fas fa-briefcase"></i>
-                            </div>
-
-                            <div>
-
-                                <h4 class="job-title">
-                                    {{ $item->posisi }}
-                                </h4>
-
-                                <p class="company-name">
-                                    <i class="fas fa-building me-1"></i>
-                                    {{ $item->nama_perusahaan }}
-                                </p>
-
-                            </div>
-
+                        <div>
+                            @if($item->lokasi)
+                            <span class="loker-chip">
+                                <i class="fas fa-location-dot text-danger"></i>
+                                {{ $item->lokasi }}
+                            </span>
+                            @endif
+                            @if($item->gaji)
+                            <span class="loker-chip salary">
+                                <i class="fas fa-wallet"></i>
+                                {{ formatGajiLoker($item->gaji) }}
+                            </span>
+                            @endif
+                            @if($item->batas_lamaran)
+                            @php
+                                $batas      = Carbon::parse($item->batas_lamaran);
+                                $sudahLewat = $batas->isPast();
+                            @endphp
+                            <span class="loker-chip {{ $sudahLewat ? 'deadline' : 'open' }}">
+                                <i class="fas {{ $sudahLewat ? 'fa-calendar-xmark' : 'fa-calendar-check' }}"></i>
+                                {{ $batas->format('d M Y') }}
+                            </span>
+                            @endif
                         </div>
 
-                        <div class="mb-3">
-
-                            <div class="info-item">
-                                <i class="fas fa-location-dot text-danger me-2"></i>
-                                {{ $item->lokasi ?? '-' }}
-                            </div>
-
-                            <div class="info-item">
-                                <i class="fas fa-wallet text-success me-2"></i>
-                                {{ $item->gaji ?? '-' }}
-                            </div>
-
-                        </div>
-
-                        <p class="job-desc">
-                            {{ \Illuminate\Support\Str::limit($item->deskripsi, 120) }}
+                        @if($item->deskripsi)
+                        <p class="loker-desc">
+                            {{ \Illuminate\Support\Str::limit($item->deskripsi, 110) }}
                         </p>
+                        @endif
 
-                        <a href="{{ url('/lowongan/'.$item->id) }}"
-                           class="btn-detail">
-
-                            Detail Lowongan
+                        <a href="{{ url('/lowongan/'.$item->id) }}" class="btn-loker mt-auto" style="margin-top:16px !important;">
+                            Lihat Detail
                             <i class="fas fa-arrow-right"></i>
-
                         </a>
 
                     </div>
-
                 </div>
-
             </div>
 
             @empty
-
             <div class="col-12">
-
-                <div class="alert alert-light rounded-4 shadow-sm border-0 p-4 text-center">
-
-                    Belum ada lowongan pekerjaan tersedia.
-
+                <div class="benefit-card loker-empty">
+                    <div class="benefit-icon">
+                        <i class="fas fa-briefcase"></i>
+                    </div>
+                    <h4>
+                        @if(request('search'))
+                            Lowongan tidak ditemukan
+                        @else
+                            Belum ada lowongan tersedia
+                        @endif
+                    </h4>
+                    <p class="section-copy mb-0">
+                        @if(request('search'))
+                            Coba kata kunci lain atau
+                            <a href="{{ url('/lowongan') }}" class="text-primary fw-semibold">lihat semua lowongan</a>
+                        @else
+                            Pantau terus halaman ini untuk info lowongan terbaru
+                        @endif
+                    </p>
                 </div>
-
             </div>
-
             @endforelse
 
         </div>
 
-        {{-- PAGINATION --}}
+        {{-- Pagination --}}
+        @if($lowongan->hasPages())
         <div class="mt-5 d-flex justify-content-center">
-
-            {{ $lowongan->links() }}
-
+            <ul class="pagination loker-pager">
+                {{ $lowongan->appends(request()->query())->links() }}
+            </ul>
         </div>
+        @endif
 
     </div>
-
 </section>
 
-</body>
-</html>
+</div>
+
+{{-- Lightbox --}}
+<div class="lb-overlay" id="lbOverlay" onclick="closeLb()">
+    <span class="lb-close" onclick="closeLb()">&times;</span>
+    <img id="lbImg" class="lb-img" src="" alt="Preview" onclick="event.stopPropagation()">
+</div>
+@endsection
+
+@push('scripts')
+<script>
+function openLb(src) {
+    document.getElementById('lbImg').src = src;
+    document.getElementById('lbOverlay').classList.add('show');
+    document.body.style.overflow = 'hidden';
+}
+function closeLb() {
+    document.getElementById('lbOverlay').classList.remove('show');
+    document.body.style.overflow = '';
+}
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeLb(); });
+</script>
+@endpush

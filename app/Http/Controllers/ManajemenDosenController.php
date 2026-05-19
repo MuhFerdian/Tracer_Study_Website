@@ -86,14 +86,15 @@ class ManajemenDosenController extends Controller
             'username' => 'required|string|min:4|max:50|unique:users,username|regex:/^[A-Za-z0-9._]+$/',
             'name'     => 'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
             'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email',
-            'password' => 'required|string|min:6|max:50',
+            'password' => 'required|string|min:8|max:16',
             'status'   => 'required|in:pending,active',
         ], [
             'username.regex'   => 'Username hanya boleh huruf, angka, titik, dan underscore.',
             'username.unique'  => 'Username sudah digunakan.',
             'name.regex'       => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
             'email.unique'     => 'Email sudah digunakan.',
-            'password.min'     => 'Password minimal 6 karakter.',
+            'password.min'     => 'Password minimal 8 karakter.',
+            'password.max'     => 'Password maximal 16 karakter.',
         ]);
 
         if ($validator->fails()) {
@@ -146,17 +147,18 @@ class ManajemenDosenController extends Controller
         $user = User::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|min:4|max:50|unique:users,username,' . $id . '|regex:/^[A-Za-z0-9._]+$/',
+            'username' => 'required|string|min:6|max:25|unique:users,username,' . $id . '|regex:/^[a-z0-9._]+$/',
             'name'     => 'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
             'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email,' . $id,
-            'password' => 'nullable|string|min:6|max:50',
+            'password' => 'required|string|min:8|max:16',
             'status'   => 'required|in:pending,active',
         ], [
             'username.regex'  => 'Username hanya boleh huruf, angka, titik, dan underscore.',
             'username.unique' => 'Username sudah digunakan dosen lain.',
             'name.regex'      => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
             'email.unique'    => 'Email sudah digunakan dosen lain.',
-            'password.min'    => 'Password minimal 6 karakter.',
+            'password.min'     => 'Password minimal 8 karakter.',
+            'password.max'     => 'Password terlalu panjang.',
         ]);
 
         if ($validator->fails()) {

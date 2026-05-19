@@ -1,157 +1,157 @@
 @extends('layoutAdmin.app')
 
 @section('content')
-<div class="container-fluid px-4">
-    <h1 class="mt-4">Lowongan Pekerjaan</h1>
+    <div class="container-fluid px-4">
+        <h1 class="mt-4">Lowongan Pekerjaan</h1>
 
-    <div class="card mb-4">
-        <div class="card-header d-flex justify-content-between align-items-center">
-            <span>Daftar Lowongan</span>
-            <button type="button" class="btn btn-success btn-sm" onclick="addModal()">
-                <i class="fas fa-plus-circle me-1"></i>Tambah Lowongan
-            </button>
-        </div>
+        <div class="card mb-4">
+            <div class="card-header d-flex justify-content-between align-items-center">
+                <span>Daftar Lowongan</span>
+                <button type="button" class="btn btn-success btn-sm" onclick="addModal()">
+                    <i class="fas fa-plus-circle me-1"></i>Tambah Lowongan
+                </button>
+            </div>
 
-        <div class="card-body">
-            <div class="table-responsive">
-                <table class="table table-bordered table-striped" id="table-loker">
-                    <thead>
-                        <tr>
-                            <th>No</th>
-                            <th>Posisi</th>
-                            <th>Perusahaan</th>
-                            <th>Lokasi</th>
-                            <th>Gaji</th>
-                            <th>Batas Lamaran</th>
-                            <th>Status</th>
-                            <th width="150px">Aksi</th>
-                        </tr>
-                    </thead>
-                </table>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-striped" id="table-loker">
+                        <thead>
+                            <tr>
+                                <th>No</th>
+                                <th>Posisi</th>
+                                <th>Perusahaan</th>
+                                <th>Lokasi</th>
+                                <th>Gaji</th>
+                                <th>Batas Lamaran</th>
+                                <th>Status</th>
+                                <th width="150px">Aksi</th>
+                            </tr>
+                        </thead>
+                    </table>
+                </div>
             </div>
         </div>
     </div>
-</div>
 
-<!-- Modal Form (Tambah & Edit) -->
-<div class="modal fade" id="modalLoker" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered" style="max-width: 850px;">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title" id="modalTitle">Tambah Lowongan Pekerjaan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+    <!-- Modal Form (Tambah & Edit) -->
+    <div class="modal fade" id="modalLoker" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered" style="max-width: 850px;">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Tambah Lowongan Pekerjaan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form id="formLoker" enctype="multipart/form-data">
+                    @csrf
+                    <input type="hidden" name="id" id="loker_id">
+                    <div class="modal-body">
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Foto Lowongan</label>
+                            <input type="file" name="foto" id="foto" class="form-control">
+                            <small class="text-muted">
+                                Format: JPG, JPEG, PNG • Maksimal ukuran 5 MB
+                            </small>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Posisi</label>
+                                <input type="text" name="posisi" id="posisi" class="form-control" placeholder="Contoh: Web Developer" required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Nama Perusahaan</label>
+                                <input type="text" name="nama_perusahaan" id="nama_perusahaan" class="form-control" placeholder="Nama perusahaan" required>
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Lokasi</label>
+                                <input type="text" name="lokasi" id="lokasi" class="form-control" placeholder="Surabaya / Remote">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Gaji</label>
+                                <input type="text" name="gaji" id="gaji" class="form-control" placeholder="Rp 5.000.000">
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Batas Lamaran</label>
+                                <input type="date" name="batas_lamaran" id="batas_lamaran" class="form-control">
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label fw-bold">Kontak</label>
+                                <input type="text" name="kontak" id="kontak" class="form-control" placeholder="08123456789">
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Link Lamaran</label>
+                            <input type="url" name="link_lamaran" id="link_lamaran" class="form-control" placeholder="https://">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label fw-bold">Deskripsi</label>
+                            <textarea name="deskripsi" id="deskripsi" class="form-control" rows="3" placeholder="Tulis deskripsi lowongan..."></textarea>
+                        </div>
+                        <div class="mb-3" id="statusGroup" style="display:none;">
+                            <label class="form-label fw-bold">Status Aktif</label>
+                            <select name="aktif" id="aktif" class="form-select">
+                                <option value="1">Aktif</option>
+                                <option value="0">Nonaktif</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-primary">Simpan</button>
+                    </div>
+                </form>
             </div>
-            <form id="formLoker" enctype="multipart/form-data">
-                @csrf
-                <input type="hidden" name="id" id="loker_id">
+        </div>
+    </div>
+
+    <!-- Modal Detail -->
+    <div class="modal fade" id="modalDetail" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-md">
+            <div class="modal-content">
+                <div class="modal-header bg-info text-white">
+                    <h5 class="modal-title">Detail Lowongan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body" id="detailContent">
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal Konfirmasi Hapus -->
+    <div class="modal fade" id="modalHapus" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header border-0">
+                    <h5 class="modal-title fw-bold">Hapus Data Lowongan</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
                 <div class="modal-body">
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Foto Lowongan</label>
-                        <input type="file" name="foto" id="foto" class="form-control">
-                        <small class="text-muted">
-                            Format: JPG, JPEG, PNG • Maksimal ukuran 5 MB
-                        </small>
+                    <div class="alert alert-warning border-0" style="background-color: #FFF3CD;">
+                        <i class="fas fa-exclamation-circle me-2"></i><strong>Konfirmasi !!!</strong><br>
+                        Apakah Anda ingin menghapus data lowongan seperti di bawah ini?
                     </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Posisi</label>
-                            <input type="text" name="posisi" id="posisi" class="form-control" placeholder="Contoh: Web Developer" required>
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Nama Perusahaan</label>
-                            <input type="text" name="nama_perusahaan" id="nama_perusahaan" class="form-control" placeholder="Nama perusahaan" required>
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Lokasi</label>
-                            <input type="text" name="lokasi" id="lokasi" class="form-control" placeholder="Surabaya / Remote">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Gaji</label>
-                            <input type="text" name="gaji" id="gaji" class="form-control" placeholder="Rp 5.000.000">
-                        </div>
-                    </div>
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Batas Lamaran</label>
-                            <input type="date" name="batas_lamaran" id="batas_lamaran" class="form-control">
-                        </div>
-                        <div class="col-md-6">
-                            <label class="form-label fw-bold">Kontak</label>
-                            <input type="text" name="kontak" id="kontak" class="form-control" placeholder="08123456789">
-                        </div>
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Link Lamaran</label>
-                        <input type="url" name="link_lamaran" id="link_lamaran" class="form-control" placeholder="https://">
-                    </div>
-                    <div class="mb-3">
-                        <label class="form-label fw-bold">Deskripsi</label>
-                        <textarea name="deskripsi" id="deskripsi" class="form-control" rows="3" placeholder="Tulis deskripsi lowongan..."></textarea>
-                    </div>
-                    <div class="mb-3" id="statusGroup" style="display:none;">
-                        <label class="form-label fw-bold">Status Aktif</label>
-                        <select name="aktif" id="aktif" class="form-select">
-                            <option value="1">Aktif</option>
-                            <option value="0">Nonaktif</option>
-                        </select>
-                    </div>
+                    <table class="table table-bordered">
+                        <tr>
+                            <th class="bg-light" width="40%">Posisi :</th>
+                            <td id="hapus_posisi"></td>
+                        </tr>
+                        <tr>
+                            <th class="bg-light">Perusahaan :</th>
+                            <td id="hapus_perusahaan"></td>
+                        </tr>
+                    </table>
                 </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Batal</button>
-                    <button type="submit" class="btn btn-primary">Simpan</button>
+                <div class="modal-footer border-0">
+                    <button type="button" class="btn btn-secondary fw-bold" data-bs-dismiss="modal">Batal</button>
+                    <button type="button" id="btnConfirmHapus" class="btn btn-danger fw-bold">Ya, Hapus</button>
                 </div>
-            </form>
-        </div>
-    </div>
-</div>
-
-<!-- Modal Detail -->
-<div class="modal fade" id="modalDetail" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-md">
-        <div class="modal-content">
-            <div class="modal-header bg-info text-white">
-                <h5 class="modal-title">Detail Lowongan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body" id="detailContent">
             </div>
         </div>
     </div>
-</div>
-
-<!-- Modal Konfirmasi Hapus -->
-<div class="modal fade" id="modalHapus" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog">
-        <div class="modal-content">
-            <div class="modal-header border-0">
-                <h5 class="modal-title fw-bold">Hapus Data Lowongan</h5>
-                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-            </div>
-            <div class="modal-body">
-                <div class="alert alert-warning border-0" style="background-color: #FFF3CD;">
-                    <i class="fas fa-exclamation-circle me-2"></i><strong>Konfirmasi !!!</strong><br>
-                    Apakah Anda ingin menghapus data lowongan seperti di bawah ini?
-                </div>
-                <table class="table table-bordered">
-                    <tr>
-                        <th class="bg-light" width="40%">Posisi :</th>
-                        <td id="hapus_posisi"></td>
-                    </tr>
-                    <tr>
-                        <th class="bg-light">Perusahaan :</th>
-                        <td id="hapus_perusahaan"></td>
-                    </tr>
-                </table>
-            </div>
-            <div class="modal-footer border-0">
-                <button type="button" class="btn btn-warning text-dark fw-bold" data-bs-dismiss="modal">Batal</button>
-                <button type="button" id="btnConfirmHapus" class="btn btn-danger fw-bold">Ya, Hapus</button>
-            </div>
-        </div>
-    </div>
-</div>
 @endsection
 
 @push('js')

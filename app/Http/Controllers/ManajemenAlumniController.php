@@ -18,6 +18,63 @@ class ManajemenAlumniController extends Controller
 {
     /**
      * =========================================
+     * HITUNG TOTAL PERTANYAAN RELEVAN PER ALUMNI
+     * (sama dengan logika filter di showAnswers)
+     * =========================================
+     */
+    private function countRelevantQuestions(alumniModel $alumni): int
+    {
+        $allQuestions = Question::select('id', 'kode_soal', 'pertanyaan', 'type', 'urutan')
+            ->where('is_archived', false)
+            ->orderBy('urutan')
+            ->get();
+
+        // Ambil jawaban alumni untuk keperluan filter kondisional
+        $answers = Answer::where('alumni_id', $alumni->id)
+            ->with('answerDetails')
+            ->get()
+            ->keyBy('question_id');
+
+        $getAnswerByKode = function (string $kode) use ($allQuestions, $answers): string {
+            $q = $allQuestions->firstWhere('kode_soal', $kode);
+            if (!$q) return '';
+            $answer = $answers->get($q->id);
+            if (!$answer) return '';
+            $detail = $answer->answerDetails->first();
+            return $detail ? ($detail->value ?? '') : '';
+        };
+
+        $status = $getAnswerByKode('f8');
+
+        return $allQuestions->filter(function ($q) use ($status, $getAnswerByKode) {
+            $kode = $q->kode_soal ?? '';
+
+            if (in_array($kode, ['f502', 'f5a1', 'f5a2', 'f1101', 'f5b', 'f5d', 'f6', 'f7', 'f7a'])) {
+                return str_contains($status, 'Bekerja');
+            }
+            if ($kode === 'f505') {
+                return str_contains($status, 'Bekerja') || str_contains($status, 'Wiraswasta');
+            }
+            if (in_array($kode, ['f503', 'f5c'])) {
+                return str_contains($status, 'Wiraswasta');
+            }
+            if (in_array($kode, ['f18a', 'f18b', 'f18c', 'f18d'])) {
+                return str_contains($status, 'Melanjutkan Pendidikan');
+            }
+            if ($kode === 'f1102') return str_contains($getAnswerByKode('f1101'), 'Lainnya');
+            if ($kode === 'f1202') return str_contains($getAnswerByKode('f1201'), 'Lainnya');
+            if ($kode === 'f302')  return str_contains($getAnswerByKode('f301'), 'sebelum lulus');
+            if ($kode === 'f303')  return str_contains($getAnswerByKode('f301'), 'sesudah lulus');
+            if ($kode === 'f416')  return str_contains($getAnswerByKode('f401-f416'), 'Lainnya');
+            if ($kode === 'f1002') return str_contains($getAnswerByKode('f1001'), 'Lainnya');
+            if ($kode === 'f1614') return str_contains($getAnswerByKode('f1601-f1614'), 'Lainnya');
+
+            return true;
+        })->count();
+    }
+
+    /**
+     * =========================================
      * LIST DATATABLE
      * =========================================
      */
@@ -46,15 +103,19 @@ class ManajemenAlumniController extends Controller
             })
 
             ->addColumn('status_survey', function ($alumni) {
-                $totalQuestions = \App\Models\Question::count();
                 $answered = $alumni->answers_count;
 
                 if ($answered === 0) {
                     return '<span class="badge bg-danger">Belum Mengisi</span>';
-                } elseif ($answered < $totalQuestions) {
-                    return '<span class="badge bg-warning text-dark">Sebagian (' . $answered . '/' . $totalQuestions . ')</span>';
-                } else {
+                }
+
+                // Hitung total pertanyaan relevan untuk alumni ini
+                $totalRelevant = $this->countRelevantQuestions($alumni);
+
+                if ($answered >= $totalRelevant) {
                     return '<span class="badge bg-success">Sudah Mengisi</span>';
+                } else {
+                    return '<span class="badge bg-warning text-dark">Sebagian (' . $answered . '/' . $totalRelevant . ')</span>';
                 }
             })
 
@@ -825,7 +886,8 @@ class ManajemenAlumniController extends Controller
     {
         $alumni = alumniModel::findOrFail($id);
 
-        $questions = Question::select('id', 'pertanyaan', 'type', 'urutan')
+        $allQuestions = Question::select('id', 'kode_soal', 'pertanyaan', 'type', 'urutan')
+            ->where('is_archived', false)
             ->with([
                 'options'  => fn($q) => $q->orderBy('urutan'),
                 'details'  => fn($q) => $q->orderBy('urutan'),
@@ -838,6 +900,54 @@ class ManajemenAlumniController extends Controller
             ->with(['answerDetails.option'])
             ->get()
             ->keyBy('question_id');
+
+        // Helper: ambil nilai jawaban berdasarkan kode soal
+        $getAnswerByKode = function (string $kode) use ($allQuestions, $answers): string {
+            $q = $allQuestions->firstWhere('kode_soal', $kode);
+            if (!$q) return '';
+            $answer = $answers->get($q->id);
+            if (!$answer) return '';
+            $detail = $answer->answerDetails->first();
+            return $detail ? ($detail->value ?? '') : '';
+        };
+
+        // Filter pertanyaan berdasarkan logika kondisional Kemendikbud
+        $status = $getAnswerByKode('f8');
+
+        $questions = $allQuestions->filter(function ($q) use ($status, $getAnswerByKode) {
+            $kode = $q->kode_soal ?? '';
+
+            // Hanya tampil jika Bekerja
+            if (in_array($kode, ['f502', 'f5a1', 'f5a2', 'f1101', 'f5b', 'f5d', 'f6', 'f7', 'f7a'])) {
+                return str_contains($status, 'Bekerja');
+            }
+
+            // f505 tampil untuk Bekerja DAN Wiraswasta
+            if ($kode === 'f505') {
+                return str_contains($status, 'Bekerja') || str_contains($status, 'Wiraswasta');
+            }
+
+            // Hanya tampil jika Wiraswasta
+            if (in_array($kode, ['f503', 'f5c'])) {
+                return str_contains($status, 'Wiraswasta');
+            }
+
+            // Hanya tampil jika Melanjutkan Pendidikan
+            if (in_array($kode, ['f18a', 'f18b', 'f18c', 'f18d'])) {
+                return str_contains($status, 'Melanjutkan Pendidikan');
+            }
+
+            // Kondisional lainnya
+            if ($kode === 'f1102') return str_contains($getAnswerByKode('f1101'), 'Lainnya');
+            if ($kode === 'f1202') return str_contains($getAnswerByKode('f1201'), 'Lainnya');
+            if ($kode === 'f302')  return str_contains($getAnswerByKode('f301'), 'sebelum lulus');
+            if ($kode === 'f303')  return str_contains($getAnswerByKode('f301'), 'sesudah lulus');
+            if ($kode === 'f416')  return str_contains($getAnswerByKode('f401-f416'), 'Lainnya');
+            if ($kode === 'f1002') return str_contains($getAnswerByKode('f1001'), 'Lainnya');
+            if ($kode === 'f1614') return str_contains($getAnswerByKode('f1601-f1614'), 'Lainnya');
+
+            return true;
+        })->values();
 
         return view(
             'layoutAdmin.manajemenAlumni.detail_answers',

@@ -22,7 +22,10 @@ class PertanyaanController extends Controller
     public function list(Request $request)
     {
         if ($request->ajax()) {
-            $data = Question::with('options', 'details')->orderBy('urutan')->orderBy('id')->get();
+            // Hanya tampilkan pertanyaan yang TIDAK diarsip
+            $data = Question::with('options', 'details')
+                ->where('is_archived', false)
+                ->orderBy('urutan')->orderBy('id')->get();
 
             return DataTables::of($data)
                 ->addIndexColumn()
@@ -31,22 +34,16 @@ class PertanyaanController extends Controller
                 })
                 ->addColumn('options_display', function ($row) {
                     if ($row->type === 'matrix') {
-                        if ($row->details->isEmpty()) {
-                            return '-';
-                        }
-
+                        if ($row->details->isEmpty()) return '-';
                         return $row->details->pluck('item_label')->implode(', ');
                     }
-
-                    if ($row->options->isEmpty()) {
-                        return '-';
-                    }
-
+                    if ($row->options->isEmpty()) return '-';
                     return $row->options->pluck('label')->implode(', ');
                 })
                 ->addColumn('aksi', function ($row) {
                     $btn  = '<div class="d-flex gap-1 justify-content-center">';
                     $btn .= '<button onclick="modalEdit(\'' . url('/admin/pertanyaan/' . $row->id . '/edit_ajax') . '\')" class="btn btn-warning btn-sm">Edit</button>';
+                    $btn .= '<button onclick="arsipPertanyaan(' . $row->id . ')" class="btn btn-secondary btn-sm"><i class="fas fa-archive me-1"></i>Arsip</button>';
                     $btn .= '<button onclick="modalDelete(\'' . url('/admin/pertanyaan/' . $row->id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
                     $btn .= '</div>';
                     return $btn;
@@ -443,6 +440,74 @@ class PertanyaanController extends Controller
         }
 
         return [];
+    }
+
+    // =============================================
+    // ARSIP
+    // =============================================
+
+    public function arsip_ajax(Request $request, string $id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $data = Question::find($id);
+            if (!$data) {
+                return response()->json(['status' => false, 'message' => 'Data tidak ditemukan.']);
+            }
+            $data->update(['is_archived' => true]);
+            return response()->json(['status' => true, 'message' => 'Pertanyaan berhasil diarsip.']);
+        }
+        return response()->json(['status' => false, 'message' => 'Invalid request'], 400);
+    }
+
+    public function restore_ajax(Request $request, string $id)
+    {
+        if ($request->ajax() || $request->wantsJson()) {
+            $data = Question::find($id);
+            if (!$data) {
+                return response()->json(['status' => false, 'message' => 'Data tidak ditemukan.']);
+            }
+            $data->update(['is_archived' => false]);
+            return response()->json(['status' => true, 'message' => 'Pertanyaan berhasil dipulihkan.']);
+        }
+        return response()->json(['status' => false, 'message' => 'Invalid request'], 400);
+    }
+
+    public function arsip_index()
+    {
+        return view('layoutAdmin.pertanyaan.arsip');
+    }
+
+    public function arsip_list(Request $request)
+    {
+        if ($request->ajax()) {
+            $data = Question::with('options', 'details')
+                ->where('is_archived', true)
+                ->orderBy('urutan')->orderBy('id')->get();
+
+            return DataTables::of($data)
+                ->addIndexColumn()
+                ->addColumn('question_display', function ($row) {
+                    return $row->pertanyaan;
+                })
+                ->addColumn('options_display', function ($row) {
+                    if ($row->type === 'matrix') {
+                        if ($row->details->isEmpty()) return '-';
+                        return $row->details->pluck('item_label')->implode(', ');
+                    }
+                    if ($row->options->isEmpty()) return '-';
+                    return $row->options->pluck('label')->implode(', ');
+                })
+                ->addColumn('aksi', function ($row) {
+                    $btn  = '<div class="d-flex gap-1 justify-content-center">';
+                    $btn .= '<button onclick="restorePertanyaan(' . $row->id . ')" class="btn btn-success btn-sm"><i class="fas fa-undo me-1"></i>Pulihkan</button>';
+                    $btn .= '<button onclick="modalDelete(\'' . url('/admin/pertanyaan/' . $row->id . '/delete_ajax') . '\')" class="btn btn-danger btn-sm">Hapus</button>';
+                    $btn .= '</div>';
+                    return $btn;
+                })
+                ->rawColumns(['aksi'])
+                ->make(true);
+        }
+        return response()->json(['message' => 'Bukan permintaan AJAX'], 400);
     }
 
 }

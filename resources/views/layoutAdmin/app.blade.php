@@ -1,6 +1,5 @@
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
     <meta charset="utf-8" />
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
@@ -12,8 +11,10 @@
     
     <meta name="description" content="" />
     <meta name="author" content="" />
-    <title>Dashboard - SB Admin</title>
+    <title>Dashboard - Tracer Study JTI Polije Nganjuk</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
+    <link rel="icon" type="image/png" href="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}">
 
     {{-- Core CSS --}}
     <link href="{{ asset('/startbootstrap-sb-admin-gh-pages/css/styles.css') }}" rel="stylesheet" />

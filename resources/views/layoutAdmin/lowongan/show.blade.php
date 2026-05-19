@@ -5,15 +5,21 @@ use Illuminate\Support\Facades\Storage;
 @extends('layoutAdmin.app')
 
 @section('content')
-<div class="container-fluid px-4 mb-5">
+<div class="container-fluid px-4">
     <h1 class="mt-4 fw-bold">Detail Lowongan Pekerjaan</h1>
 
-    <div class="card shadow border-0 rounded-4 mt-4">
-        <div class="card-body p-5">
+    <div class="card shadow border-0 rounded-4 mt-3" style="width:100%;">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <span><i class="fas fa-briefcase me-1"></i> Informasi Lowongan</span>
+            <a href="{{ url('admin/lowongan-pekerjaan') }}" class="btn btn-secondary btn-sm">
+                <i class="fas fa-arrow-left me-1"></i> Kembali
+            </a>
+        </div>
+        <div class="card-body p-4 p-md-5">
             <div class="row mb-5 align-items-center">
                 <div class="col-md-4">
                     @if($lowongan->foto)
-                    <img src="{{ Storage::url($lowongan->foto) }}"
+                    <img src="{{ asset($lowongan->foto) }}"
                     class="img-fluid rounded-4 shadow-sm"
                     onclick="openImageModal(this.src)"
                     style="
@@ -95,16 +101,11 @@ use Illuminate\Support\Facades\Storage;
                         {!! nl2br(e($lowongan->deskripsi)) !!}
                     </div>
                 </div>
-            </div>
+            </div>{{-- end row g-4 --}}
 
-            <div class="d-flex justify-content-end mt-5">
-                <a href="{{ url('admin/lowongan-pekerjaan') }}" class="btn btn-secondary px-5 py-2 rounded-3 shadow-sm">
-                    <i class="fas fa-arrow-left me-2"></i> Kembali
-                </a>
-            </div>
-        </div>
-    </div>
-</div>
+        </div>{{-- end card-body --}}
+    </div>{{-- end card --}}
+</div>{{-- end container-fluid --}}
 
 <!-- Modal Preview Foto -->
 <div id="imageModal"

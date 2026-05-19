@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class LowonganPekerjaan extends Model
 {
@@ -22,4 +23,10 @@ class LowonganPekerjaan extends Model
         'aktif',
         'foto'
     ];
+
+    // ── Lowongan dibuat oleh satu User ──
+    public function pembuat(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'dibuat_oleh', 'id');
+    }
 }
