@@ -15,6 +15,7 @@ class Question extends Model
         'hint',
         'type',
         'is_required',
+        'is_archived',
         'urutan',
         'tipe_data',
     ];

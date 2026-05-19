@@ -21,7 +21,7 @@
                 </div>
             </div>
             <div class="modal-footer">
-                <button type="button" data-bs-dismiss="modal" class="btn btn-warning">Batal</button>
+                <button type="button" data-bs-dismiss="modal" class="btn btn-secondary">Batal</button>
                 <button type="submit" id="btn-submit" class="btn btn-primary">Upload</button>
             </div>
         </div>

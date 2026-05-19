@@ -4,9 +4,48 @@ namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
 use App\Models\LowonganPekerjaan;
+use Illuminate\Support\Facades\Storage;
 
 class LowonganPekerjaanController extends Controller
 {
+    // =============================================
+    // SHARED VALIDATION RULES
+    // =============================================
+    private function validationRules(bool $isUpdate = false): array
+    {
+        return [
+            'posisi'          => 'required|string|max:255',
+            'nama_perusahaan' => 'required|string|max:255',
+            'lokasi'          => 'nullable|string|max:255',
+            'gaji'            => 'nullable|string|max:100',
+            'deskripsi'       => 'nullable|string|max:5000',
+            'batas_lamaran'   => ['required', 'date', $isUpdate ? 'nullable' : 'after_or_equal:today'],
+            'kontak'          => ['required', 'regex:/^(08)[0-9]{8,12}$/'],
+            'link_lamaran'    => ['nullable', 'url', 'max:500'],
+            'foto'            => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ];
+    }
+
+    private function validationMessages(): array
+    {
+        return [
+            'posisi.required'          => 'Posisi pekerjaan wajib diisi.',
+            'nama_perusahaan.required' => 'Nama perusahaan wajib diisi.',
+            'batas_lamaran.required'   => 'Batas lamaran wajib diisi.',
+            'batas_lamaran.date'       => 'Format tanggal batas lamaran tidak valid.',
+            'batas_lamaran.after_or_equal' => 'Batas lamaran tidak boleh kurang dari hari ini.',
+            'kontak.required'          => 'Nomor kontak wajib diisi.',
+            'kontak.regex'             => 'Nomor kontak harus diawali 08 dan terdiri dari 10–14 digit.',
+            'link_lamaran.url'         => 'Link lamaran harus berupa URL yang valid (contoh: https://...).',
+            'foto.image'               => 'File foto harus berupa gambar.',
+            'foto.mimes'               => 'Format foto harus JPG, JPEG, atau PNG.',
+            'foto.max'                 => 'Ukuran foto maksimal 5 MB.',
+        ];
+    }
+
+    // =============================================
+    // ADMIN CRUD
+    // =============================================
     public function index()
     {
         $lowongan = LowonganPekerjaan::latest()->get();
@@ -28,71 +67,124 @@ class LowonganPekerjaanController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'posisi' => 'required',
-            'nama_perusahaan' => 'required',
-        ]);
+        $request->validate(
+            $this->validationRules(false),
+            $this->validationMessages()
+        );
+
+        $foto = null;
+        if ($request->hasFile('foto')) {
+            $file     = $request->file('foto');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('startbootstrap-sb-admin-gh-pages/assets/foto_loker'), $filename);
+            $foto = 'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $filename;
+        }
 
         LowonganPekerjaan::create([
-            'posisi' => $request->posisi,
+            'posisi'          => $request->posisi,
             'nama_perusahaan' => $request->nama_perusahaan,
-            'lokasi' => $request->lokasi,
-            'gaji' => $request->gaji,
-            'deskripsi' => $request->deskripsi,
-            'batas_lamaran' => $request->batas_lamaran,
-            'kontak' => $request->kontak,
-            'link_lamaran' => $request->link_lamaran,
-            'dibuat_oleh' => auth()->id(),
-            'role' => auth()->user()->role->role_nama ?? 'Dosen',
-            'aktif' => true,
+            'lokasi'          => $request->lokasi,
+            'gaji'            => $request->gaji,
+            'deskripsi'       => $request->deskripsi,
+            'batas_lamaran'   => $request->batas_lamaran,
+            'kontak'          => $request->kontak,
+            'link_lamaran'    => $request->link_lamaran,
+            'dibuat_oleh'     => auth()->id(),
+            'role'            => auth()->user()->role->role_nama ?? 'Dosen',
+            'aktif'           => true,
+            'foto'            => $foto,
         ]);
 
-        return redirect('/admin/lowongan-pekerjaan')
-            ->with('success', 'Lowongan berhasil ditambahkan');
+        return response()->json([
+            'success' => true,
+            'message' => 'Lowongan berhasil ditambahkan',
+        ]);
     }
 
     public function edit($id)
     {
-        $lowongan = LowonganPekerjaan::findOrFail($id);
-
-        return view('layoutAdmin.lowongan.edit', compact('lowongan'));
+        return response()->json(LowonganPekerjaan::findOrFail($id));
     }
 
     public function update(Request $request, $id)
     {
+        // Saat update, batas_lamaran boleh sama dengan tanggal lama (nullable after_or_equal)
+        $rules = $this->validationRules(true);
+        $rules['batas_lamaran'] = ['required', 'date'];
+
+        $request->validate($rules, $this->validationMessages());
+
         $lowongan = LowonganPekerjaan::findOrFail($id);
+        $data     = $request->except(['foto', '_method', '_token']);
 
-        $lowongan->update($request->all());
+        if ($request->hasFile('foto')) {
+            // Hapus foto lama
+            if ($lowongan->foto && file_exists(public_path($lowongan->foto))) {
+                unlink(public_path($lowongan->foto));
+            }
+            $file     = $request->file('foto');
+            $filename = time() . '_' . $file->getClientOriginalName();
+            $file->move(public_path('startbootstrap-sb-admin-gh-pages/assets/foto_loker'), $filename);
+            $data['foto'] = 'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $filename;
+        }
 
-        return redirect('/admin/lowongan-pekerjaan')
-            ->with('success', 'Lowongan berhasil diupdate');
+        $lowongan->update($data);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Lowongan berhasil diupdate',
+        ]);
     }
 
     public function destroy($id)
     {
         $lowongan = LowonganPekerjaan::findOrFail($id);
 
+        // Hapus foto jika ada
+        if ($lowongan->foto && file_exists(public_path($lowongan->foto))) {
+            unlink(public_path($lowongan->foto));
+        }
+
         $lowongan->delete();
 
-        return back()->with('success', 'Lowongan berhasil dihapus');
+        return response()->json([
+            'success' => true,
+            'message' => 'Lowongan berhasil dihapus',
+        ]);
     }
 
-// =======================
-// LOWONGAN PUBLIC
-// =======================
-    public function publicIndex()
-{
-    $lowongan = LowonganPekerjaan::where('aktif', true)
-        ->latest()
-        ->paginate(6);
+    public function showAdmin($id)
+    {
+        $lowongan = LowonganPekerjaan::findOrFail($id);
 
-    return view('layoutLandingPage.lowongan.index', compact('lowongan'));
-}
+        return view('layoutAdmin.lowongan.show', compact('lowongan'));
+    }
 
-public function show($id)
-{
-    $lowongan = LowonganPekerjaan::findOrFail($id);
+    // =============================================
+    // LOWONGAN PUBLIC (Landing Page)
+    // =============================================
+    public function publicIndex(Request $request)
+    {
+        $query = LowonganPekerjaan::where('aktif', true)->latest();
 
-    return view('layoutLandingPage.lowongan.detail', compact('lowongan'));
-}
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('posisi', 'like', "%{$keyword}%")
+                  ->orWhere('nama_perusahaan', 'like', "%{$keyword}%")
+                  ->orWhere('lokasi', 'like', "%{$keyword}%");
+            });
+        }
+
+        $lowongan = $query->paginate(6)->withQueryString();
+
+        return view('layoutLandingPage.lowongan.index', compact('lowongan'));
+    }
+
+    public function show($id)
+    {
+        $lowongan = LowonganPekerjaan::where('aktif', true)->findOrFail($id);
+
+        return view('layoutLandingPage.lowongan.detail', compact('lowongan'));
+    }
 }

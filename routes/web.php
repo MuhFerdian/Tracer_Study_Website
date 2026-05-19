@@ -115,6 +115,11 @@ Route::group([
         Route::get('/check-urutan', [PertanyaanController::class, 'checkUrutan']);
         Route::get('/create_ajax', [PertanyaanController::class, 'create_ajax']);
         Route::post('/store', [PertanyaanController::class, 'store']);
+        // Arsip
+        Route::get('/arsip', [PertanyaanController::class, 'arsip_index'])->name('pertanyaan.arsip');
+        Route::get('/arsip/list', [PertanyaanController::class, 'arsip_list']);
+        Route::patch('/{id}/arsip', [PertanyaanController::class, 'arsip_ajax']);
+        Route::patch('/{id}/restore', [PertanyaanController::class, 'restore_ajax']);
         Route::get('/{id}/edit_ajax', [PertanyaanController::class, 'edit_ajax']);
         Route::put('/{id}/update_ajax', [PertanyaanController::class, 'update_ajax']);
         Route::get('/{id}/delete_ajax', [PertanyaanController::class, 'confirm_ajax']);
@@ -147,6 +152,7 @@ Route::group([
     Route::get('/list', [LowonganPekerjaanController::class, 'list']);
     Route::get('/create', [LowonganPekerjaanController::class, 'create']);
     Route::post('/store', [LowonganPekerjaanController::class, 'store']);
+    Route::get('/{id}/show', [LowonganPekerjaanController::class, 'showAdmin']);
     Route::get('/{id}/edit', [LowonganPekerjaanController::class, 'edit']);
     Route::put('/{id}/update', [LowonganPekerjaanController::class, 'update']);
     Route::delete('/{id}/delete', [LowonganPekerjaanController::class, 'destroy']);
@@ -157,6 +163,11 @@ Route::group([
     // =======================
     Route::get('/alumni-sudah-mengisi', [ExportController::class, 'showAlumniSudahMengisi'])->name('alumni.sudah.mengisi');
     Route::get('/alumni-belum-mengisi', [ExportController::class, 'showAlumniBelumMengisi'])->name('alumni.belum.mengisi');
+
+    // =======================
+    // LAPORAN PDF
+    // =======================
+    Route::get('/laporan-pdf', [ExportController::class, 'laporanPdf'])->name('laporan.pdf');
 
     // =======================
     // EXPORT SEMUA DATA ALUMNI

@@ -13,10 +13,18 @@
                 <h1 class="mb-2">Ringkasan Data Alumni</h1>
                 <p class="mb-0">Pantau progres pengisian survey, sebaran pekerjaan, dan indikator kepuasan pengguna lulusan.</p>
             </div>
-            <div class="col-lg-4 text-lg-end">
-                <span class="badge rounded-pill bg-light text-primary px-3 py-2">
+            <div class="col-lg-4 text-lg-end d-flex flex-wrap gap-2 justify-content-lg-end">
+                <span class="badge rounded-pill bg-light text-primary px-4 py-2" style="font-size:.85rem; font-weight:700;">
                     <i class="fas fa-chart-line me-2"></i>Data monitoring
                 </span>
+                <a href="#" id="btnExportPdf"
+                   class="badge rounded-pill px-4 py-2 text-decoration-none"
+                   style="background:rgba(255,255,255,0.18);border:1px solid rgba(255,255,255,0.3);color:#fff;font-size:.85rem;font-weight:700;display:inline-flex;align-items:center;gap:.4rem;transition:all .2s;"
+                   onmouseover="this.style.background='rgba(255,255,255,0.28)'"
+                   onmouseout="this.style.background='rgba(255,255,255,0.18)'"
+                   title="Export laporan ringkasan jawaban alumni ke PDF">
+                    <i class="fas fa-file-pdf"></i>Export PDF
+                </a>
             </div>
         </div>
     </div>
@@ -151,7 +159,7 @@
         </div>
         <div class="col-xl-6">
             <div class="card h-100">
-                <div class="card-header"><i class="fas fa-chart-pie me-1"></i>Grafik Sebaran Profesi Lulusan</div>
+                <div class="card-header"><i class="fas fa-chart-bar me-1"></i>Grafik Sebaran Profesi Lulusan</div>
                 <div class="card-body d-flex align-items-center justify-content-center" id="profesiChartWrap">
                     <canvas id="profesiChart"></canvas>
                 </div>
@@ -293,8 +301,6 @@
 </div>
 
 {{-- ============================================
-     TOAST NOTIFICATION
-============================================ --}}
 <div class="position-fixed top-0 end-0 p-3" style="z-index: 9999">
     <div id="dashboardToast" class="toast align-items-center border-0 shadow" role="alert" aria-live="assertive" aria-atomic="true">
         <div class="d-flex">
@@ -378,15 +384,96 @@
         </div>
     </div>
 </div>
+
 @endsection
 
 @push('css')
 <style>
+    /* ── Badge status periode ── */
     .badge-aktif { background-color: #28a745; color: #fff; }
     .badge-tutup { background-color: #6c757d; color: #fff; }
     .badge-draft { background-color: #ffc107; color: #333; }
     #modalKonfirmasiPeriode .modal-content { border-radius: 1rem; }
     #dashboardToast { min-width: 280px; }
+
+    /* ── Panel filter periode ── */
+    .card.mb-4.border-0.shadow-sm:has(#selectPeriode) {
+        background: linear-gradient(135deg, #f0f6ff 0%, #ffffff 100%) !important;
+        border-left: 4px solid #1557c0 !important;
+        border-radius: 12px !important;
+    }
+
+    /* ── Metric cards — warna berbeda per posisi ── */
+    .col-xl-3:nth-child(1) .metric-card::before { background: linear-gradient(90deg, #1557c0, #2582f3); }
+    .col-xl-3:nth-child(2) .metric-card::before { background: linear-gradient(90deg, #059669, #34d399); }
+    .col-xl-3:nth-child(3) .metric-card::before { background: linear-gradient(90deg, #d97706, #fbbf24); }
+    .col-xl-3:nth-child(4) .metric-card::before { background: linear-gradient(90deg, #7c3aed, #a78bfa); }
+
+    .col-xl-3:nth-child(1) .metric-icon { background: linear-gradient(135deg, #1557c0, #2582f3); }
+    .col-xl-3:nth-child(2) .metric-icon { background: linear-gradient(135deg, #059669, #34d399); }
+    .col-xl-3:nth-child(3) .metric-icon { background: linear-gradient(135deg, #d97706, #fbbf24); }
+    .col-xl-3:nth-child(4) .metric-icon { background: linear-gradient(135deg, #7c3aed, #a78bfa); }
+
+    /* ── Metric cards penghasilan ── */
+    .col-xl-4:nth-child(1) .metric-card::before { background: linear-gradient(90deg, #0891b2, #22d3ee); }
+    .col-xl-4:nth-child(2) .metric-card::before { background: linear-gradient(90deg, #059669, #34d399); }
+    .col-xl-4:nth-child(3) .metric-card::before { background: linear-gradient(90deg, #dc2626, #f87171); }
+
+    .col-xl-4:nth-child(1) .metric-icon { background: linear-gradient(135deg, #0891b2, #22d3ee); }
+    .col-xl-4:nth-child(2) .metric-icon { background: linear-gradient(135deg, #059669, #34d399); }
+    .col-xl-4:nth-child(3) .metric-icon { background: linear-gradient(135deg, #dc2626, #f87171); }
+
+    /* ── Card grafik — left border accent ── */
+    .card:has(#instansiChart)    { border-left: 4px solid #1557c0 !important; }
+    .card:has(#profesiChart)     { border-left: 4px solid #0891b2 !important; }
+    .card:has(#kerjaSamaChart)   { border-left: 4px solid #059669 !important; }
+    .card:has(#keahlian)         { border-left: 4px solid #7c3aed !important; }
+    .card:has(#kemampuanBahasa)  { border-left: 4px solid #d97706 !important; }
+    .card:has(#kemampuanKomunikasi) { border-left: 4px solid #dc2626 !important; }
+    .card:has(#pengembanganDiri) { border-left: 4px solid #0f766e !important; }
+
+    /* ── Card tabel — left border accent ── */
+    .card:has(#tabelAlumni)           { border-left: 4px solid #1557c0 !important; }
+    .card:has(#tabelAverageWaitingTime) { border-left: 4px solid #0891b2 !important; }
+    .card:has(#tabelPenghasilan)      { border-left: 4px solid #059669 !important; }
+
+    /* ── Hover effect metric card ── */
+    .metric-card {
+        transition: transform 0.18s ease, box-shadow 0.18s ease;
+    }
+    .metric-card:hover {
+        transform: translateY(-4px);
+        box-shadow: 0 24px 50px rgba(8, 34, 79, 0.14) !important;
+    }
+
+    /* ── Tombol periode ── */
+    .btn-primary {
+        background: linear-gradient(135deg, #1557c0, #2582f3) !important;
+        border: none !important;
+        box-shadow: 0 6px 18px rgba(21, 87, 192, 0.28);
+        transition: all 0.2s ease;
+    }
+    .btn-primary:hover {
+        transform: translateY(-1px);
+        box-shadow: 0 10px 24px rgba(21, 87, 192, 0.38) !important;
+    }
+    .btn-outline-secondary {
+        border-color: #94a3b8 !important;
+        color: #475569 !important;
+        transition: all 0.2s ease;
+    }
+    .btn-outline-secondary:hover {
+        background: #f1f5f9 !important;
+        border-color: #64748b !important;
+        transform: translateY(-1px);
+    }
+
+    /* ── Table summary row ── */
+    .table-summary-row td {
+        background: linear-gradient(135deg, #eff6ff, #f0fdf4) !important;
+        color: #1e3a5f !important;
+        font-weight: 700;
+    }
 </style>
 @endpush
 
@@ -509,7 +596,14 @@ $(document).ready(function () {
     // CHART HELPERS
     // =============================================
     var COLORS = ['#007bff','#ffc107','#28a745','#dc3545','#6610f2','#fd7e14','#20c997','#6f42c1'];
+    var KOMPETENSI_COLORS = {
+        'Sangat Baik': '#1557c0',
+        'Baik':        '#ffc107',
+        'Cukup':       '#28a745',
+        'Kurang':      '#dc3545'
+    };
 
+    // Pie chart — untuk Sebaran Jenis Instansi
     function renderPie(canvasId, labels, values) {
         var el = document.getElementById(canvasId);
         if (!el) return;
@@ -517,7 +611,61 @@ $(document).ready(function () {
         el._chart = new Chart(el.getContext('2d'), {
             type: 'pie',
             data: { labels: labels, datasets: [{ data: values, backgroundColor: COLORS }] },
-            options: { responsive: true, plugins: { legend: { position: 'bottom' } } }
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.label + ': ' + ctx.parsed; } } }
+                }
+            }
+        });
+    }
+
+    // Bar chart horizontal — untuk Sebaran Profesi Lulusan
+    function renderBar(canvasId, labels, values) {
+        var el = document.getElementById(canvasId);
+        if (!el) return;
+        if (el._chart) el._chart.destroy();
+        el._chart = new Chart(el.getContext('2d'), {
+            type: 'bar',
+            data: {
+                labels: labels,
+                datasets: [{
+                    label: 'Jumlah Alumni',
+                    data: values,
+                    backgroundColor: COLORS,
+                    borderRadius: 6,
+                    borderSkipped: false
+                }]
+            },
+            options: {
+                indexAxis: 'y',
+                responsive: true,
+                plugins: { legend: { display: false } },
+                scales: {
+                    x: { beginAtZero: true, ticks: { stepSize: 1 } },
+                    y: { ticks: { font: { size: 11 } } }
+                }
+            }
+        });
+    }
+
+    // Doughnut chart — untuk grafik kompetensi
+    function renderDoughnut(canvasId, labels, values, bgColors) {
+        var el = document.getElementById(canvasId);
+        if (!el) return;
+        if (el._chart) el._chart.destroy();
+        el._chart = new Chart(el.getContext('2d'), {
+            type: 'doughnut',
+            data: { labels: labels, datasets: [{ data: values, backgroundColor: bgColors, hoverOffset: 8 }] },
+            options: {
+                responsive: true,
+                cutout: '60%',
+                plugins: {
+                    legend: { position: 'bottom' },
+                    tooltip: { callbacks: { label: function(ctx) { return ' ' + ctx.label + ': ' + ctx.parsed; } } }
+                }
+            }
         });
     }
 
@@ -529,10 +677,12 @@ $(document).ready(function () {
         $.get(url + periodParam())
             .done(function (res) {
                 if (!res || !res.length) { showEmpty(wrapperId); return; }
-                var order = ['Sangat Baik','Baik','Cukup','Kurang'];
-                var map   = {'Sangat Baik':0,'Baik':0,'Cukup':0,'Kurang':0};
+                var order  = ['Sangat Baik','Baik','Cukup','Kurang'];
+                var map    = {'Sangat Baik':0,'Baik':0,'Cukup':0,'Kurang':0};
                 res.forEach(function (r) { if (r.tingkat_kepuasan in map) map[r.tingkat_kepuasan] = r.jumlah_responden_per_tingkat; });
-                renderPie(canvasId, order, order.map(function (l) { return map[l]; }));
+                var vals   = order.map(function (l) { return map[l]; });
+                var colors = order.map(function (l) { return KOMPETENSI_COLORS[l]; });
+                renderDoughnut(canvasId, order, vals, colors);
             })
             .fail(function () { showEmpty(wrapperId, 'Gagal memuat data'); });
     }
@@ -550,16 +700,19 @@ $(document).ready(function () {
             $('#persentase').text(res.total_alumni > 0 ? (res.sudah_isi / res.total_alumni * 100).toFixed(1) + '%' : '0%');
         });
 
+        // Pie chart — Sebaran Jenis Instansi
         $.get("{{ url('/admin/dashboard/instansi-chart') }}" + p, function (res) {
             if (!res || !res.length) { showEmpty('instansiChartWrap'); return; }
             renderPie('instansiChart', res.map(function (i) { return i.jenis_instansi; }), res.map(function (i) { return i.total; }));
         }).fail(function () { showEmpty('instansiChartWrap', 'Gagal memuat data'); });
 
+        // Bar chart horizontal — Sebaran Profesi Lulusan
         $.get("{{ url('/admin/dashboard/profesi-chart') }}" + p, function (res) {
             if (!res || !res.length) { showEmpty('profesiChartWrap'); return; }
-            renderPie('profesiChart', res.map(function (x) { return x.profesi; }), res.map(function (x) { return x.total; }));
+            renderBar('profesiChart', res.map(function (x) { return x.profesi; }), res.map(function (x) { return x.total; }));
         }).fail(function () { showEmpty('profesiChartWrap', 'Gagal memuat data'); });
 
+        // Doughnut chart — Grafik Kompetensi
         loadKompetensi('/admin/dashboard/kerjasama-chart',           'kerjaSamaChart',      'kerjaSamaChartWrap');
         loadKompetensi('/admin/dashboard/keahlian-chart',            'keahlian',            'keahlianWrap');
         loadKompetensi('/admin/dashboard/kemampuan-bahasa-chart',    'kemampuanBahasa',     'kemampuanBahasaWrap');
@@ -708,6 +861,18 @@ $(document).ready(function () {
     // INIT
     // =============================================
     loadPeriodes();
+
+        // =============================================
+    // TOMBOL EXPORT PDF � buka di tab baru
+    // =============================================
+    $('#btnExportPdf').on('click', function (e) {
+        e.preventDefault();
+        var url = '{{ route("laporan.pdf") }}';
+        if (selectedPeriodId) {
+            url += '?period_id=' + selectedPeriodId;
+        }
+        window.open(url, '_blank');
+    });
 });
 </script>
 @endpush

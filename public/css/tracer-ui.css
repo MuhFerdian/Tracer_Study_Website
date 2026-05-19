@@ -1930,3 +1930,191 @@ body.sb-nav-fixed .alert {
         height: 48px;
     }
 }
+
+/* WhatsApp Tooltip */
+.wa-tooltip {
+    position: absolute;
+    right: 58px;
+    background: #ffffff;
+    color: #111827;
+    font-size: 0.85rem;
+    font-weight: 600;
+    padding: 8px 16px;
+    border-radius: 50px;
+    white-space: nowrap;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+    opacity: 0;
+    pointer-events: none;
+    transform: translateX(8px);
+    transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+.wa-float:hover .wa-tooltip {
+    opacity: 1;
+    transform: translateX(0);
+}
+
+/* Glow pulse animation */
+@keyframes wa-glow {
+    0%, 100% { box-shadow: 0 8px 24px rgba(37, 211, 102, 0.45); }
+    50%       { box-shadow: 0 8px 32px rgba(37, 211, 102, 0.75), 0 0 0 10px rgba(37, 211, 102, 0.12); }
+}
+
+.wa-float {
+    animation: wa-glow 2.5s ease-in-out infinite;
+}
+
+.wa-float:hover {
+    animation: none;
+    box-shadow: 0 8px 32px rgba(37, 211, 102, 0.75), 0 0 0 12px rgba(37, 211, 102, 0.15);
+}
+
+
+/* =====================================================
+   ADMIN BUTTON CONSISTENCY — scoped ke .sb-nav-fixed
+   Hanya berlaku di halaman admin, tidak merusak landing page
+   ===================================================== */
+
+/* ── Base tombol aksi di tabel ── */
+body.sb-nav-fixed .btn-sm {
+    border-radius: 6px !important;
+    font-size: 0.78rem !important;
+    font-weight: 600 !important;
+    padding: 0.3rem 0.65rem !important;
+    display: inline-flex !important;
+    align-items: center !important;
+    gap: 0.3rem !important;
+    transition: all 0.18s ease !important;
+    border: none !important;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08) !important;
+}
+
+body.sb-nav-fixed .btn-sm:hover {
+    transform: translateY(-1px) !important;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15) !important;
+}
+
+/* ── Edit / Warning → Amber soft ── */
+body.sb-nav-fixed .btn-warning,
+body.sb-nav-fixed .btn-sm.btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(245,158,11,0.3) !important;
+}
+body.sb-nav-fixed .btn-warning:hover {
+    background: linear-gradient(135deg, #d97706, #f59e0b) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(245,158,11,0.4) !important;
+}
+
+/* ── Hapus / Danger → Merah soft ── */
+body.sb-nav-fixed .btn-danger,
+body.sb-nav-fixed .btn-sm.btn-danger {
+    background: linear-gradient(135deg, #ef4444, #f87171) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(239,68,68,0.3) !important;
+}
+body.sb-nav-fixed .btn-danger:hover {
+    background: linear-gradient(135deg, #dc2626, #ef4444) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(239,68,68,0.4) !important;
+}
+
+/* ── Detail / Info → Biru soft ── */
+body.sb-nav-fixed .btn-info,
+body.sb-nav-fixed .btn-sm.btn-info {
+    background: linear-gradient(135deg, #0891b2, #22d3ee) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(8,145,178,0.3) !important;
+}
+body.sb-nav-fixed .btn-info:hover {
+    background: linear-gradient(135deg, #0e7490, #0891b2) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(8,145,178,0.4) !important;
+}
+
+/* ── Tambah / Success → Hijau solid ── */
+body.sb-nav-fixed .btn-success,
+body.sb-nav-fixed .btn-sm.btn-success {
+    background: linear-gradient(135deg, #059669, #34d399) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(5,150,105,0.3) !important;
+}
+body.sb-nav-fixed .btn-success:hover {
+    background: linear-gradient(135deg, #047857, #059669) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(5,150,105,0.4) !important;
+}
+
+/* ── Arsip / Secondary → Abu soft ── */
+body.sb-nav-fixed .btn-secondary,
+body.sb-nav-fixed .btn-sm.btn-secondary {
+    background: linear-gradient(135deg, #64748b, #94a3b8) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(100,116,139,0.25) !important;
+}
+body.sb-nav-fixed .btn-secondary:hover {
+    background: linear-gradient(135deg, #475569, #64748b) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(100,116,139,0.35) !important;
+}
+
+/* ── Primary → Biru utama ── */
+body.sb-nav-fixed .btn-primary,
+body.sb-nav-fixed .btn-sm.btn-primary {
+    background: linear-gradient(135deg, #1557c0, #2582f3) !important;
+    color: #fff !important;
+    box-shadow: 0 2px 8px rgba(21,87,192,0.3) !important;
+}
+body.sb-nav-fixed .btn-primary:hover {
+    background: linear-gradient(135deg, #0f3f8c, #1557c0) !important;
+    color: #fff !important;
+    box-shadow: 0 4px 14px rgba(21,87,192,0.4) !important;
+}
+
+/* ── Kembali / Outline secondary ── */
+body.sb-nav-fixed .btn-outline-secondary {
+    background: transparent !important;
+    border: 1.5px solid #94a3b8 !important;
+    color: #475569 !important;
+    box-shadow: none !important;
+}
+body.sb-nav-fixed .btn-outline-secondary:hover {
+    background: #f1f5f9 !important;
+    border-color: #64748b !important;
+    color: #1e293b !important;
+    transform: translateY(-1px) !important;
+}
+
+/* ── Tombol non-sm (Tambah, Export, Import di header tabel) ── */
+body.sb-nav-fixed .btn:not(.btn-sm):not(.btn-close):not(.navbar-toggler) {
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    transition: all 0.18s ease !important;
+}
+
+/* ── Badge status konsisten ── */
+body.sb-nav-fixed .badge {
+    font-size: 0.72rem !important;
+    font-weight: 600 !important;
+    padding: 0.35em 0.65em !important;
+    border-radius: 6px !important;
+}
+
+/* ── Override badge dashboard hero ── */
+body.sb-nav-fixed .dashboard-hero .badge {
+    font-size: 0.9rem !important;
+    padding: 0.55em 1.1em !important;
+    border-radius: 999px !important;
+}
+
+/* ── Fix footer admin agar selalu di bawah ── */
+body.sb-nav-fixed #layoutSidenav_content {
+    display: flex !important;
+    flex-direction: column !important;
+    min-height: calc(100vh - var(--admin-topbar-height, 64px)) !important;
+}
+
+body.sb-nav-fixed #layoutSidenav_content main {
+    flex: 1 !important;
+}

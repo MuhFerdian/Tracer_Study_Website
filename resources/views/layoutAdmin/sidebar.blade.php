@@ -2,7 +2,7 @@
     <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
         {{-- <div class="sb-sidenav-header d-flex flex-column align-items-center"
             style="padding-top: 0.3rem; padding-bottom: 0.3rem;">
-            <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc2.png') }}"
+            <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc5.png') }}"
                 alt="Logo" style="height: 80px; margin-right: 5px;"> --}}
             {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">Admin Panel</div> --}}
             {{-- @php
@@ -18,7 +18,7 @@
         <div class="sidebar-brand">
 
             <img class="logo-animated"
-                src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc3.png') }}"
+                src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc5.png') }}"
                 alt="Logo">
 
             <div class="sidebar-brand-title">
@@ -175,19 +175,92 @@
         background-color: #0f2b66 !important;
     }
 
-    .sb-sidenav-header {
-        border-bottom: 1px solid rgba(255, 255, 255, 0.08);
-        margin-bottom: 0.5rem;
-        padding-top: 0.5rem;
-        padding-bottom: 0.8rem;
+    .sidebar-brand {
+
+        padding: 24px 12px 22px;
+
+        text-align: center;
+
+        border-bottom: 1px solid rgba(255,255,255,0.08);
+
+        margin-bottom: 10px;
     }
 
-    .logo-animated {
-        transition: all 0.3s ease;
+    .sidebar-brand img {
+
+        width: 100px;
+        height: 100px;
+
+        object-fit: contain;
+
+        margin-bottom: 16px;
+
+        transition: all .3s ease;
+
+        filter:
+            drop-shadow(0 0 20px rgba(168,85,247,.35));
     }
 
-    .logo-animated:hover {
-        transform: scale(1.05);
+    .sidebar-brand img:hover {
+
+        transform: scale(1.06);
+    }
+
+    .sidebar-brand-title {
+
+        font-size: 1.05rem;
+
+        font-weight: 800;
+
+        line-height: 1.1;
+
+        color: #ffffff;
+
+        margin-bottom: 6px;
+    }
+
+    .sidebar-brand-title span {
+
+        color: #f5e6c8;
+    }
+
+    .sidebar-brand-subtitle {
+
+        font-size: 0.62rem;
+
+        color: rgba(255,255,255,0.72);
+
+        font-weight: 500;
+
+        letter-spacing: 1.2px;
+
+        margin-bottom: 10px;
+    }
+
+    .sidebar-role {
+
+        display: inline-block;
+
+        padding: 5px 14px;
+
+        border-radius: 999px;
+
+        background:
+            rgba(255,255,255,0.08);
+
+        border:
+            1px solid rgba(255,255,255,0.12);
+
+        color:
+            rgba(255,255,255,0.85);
+
+        font-size: 0.72rem;
+
+        font-weight: 600;
+
+        letter-spacing: .5px;
+
+        backdrop-filter: blur(10px);
     }
 
     .sb-sidenav-menu-heading {

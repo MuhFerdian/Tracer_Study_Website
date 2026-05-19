@@ -57,7 +57,7 @@
                       placeholder='["Opsi 1","Opsi 2","Opsi 3"]'
                       @if(in_array($data->type, ['single','multiple'])) required @endif
             >{{ $data->options->isNotEmpty() ? json_encode($data->options->pluck('label')->toArray()) : '' }}</textarea>
-            <small class="form-text text-muted">Format JSON: ["Opsi 1","Opsi 2"] atau pisahkan dengan koma</small>
+            <small class="form-text text-muted">Format JSON: ["Opsi 1","Opsi 2","Opsi 3"]</small>
             <small id="error-options" class="text-danger"></small>
           </div>
 

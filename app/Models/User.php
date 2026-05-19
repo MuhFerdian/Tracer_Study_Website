@@ -7,6 +7,7 @@ use Illuminate\Foundation\Auth\User as Authenticatable;
 use Laravel\Sanctum\HasApiTokens;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class User extends Authenticatable
 {
@@ -50,5 +51,21 @@ class User extends Authenticatable
     public function alumni(): HasOne
     {
         return $this->hasOne(alumniModel::class, 'user_id', 'id');
+    }
+
+    // =========================
+    // RELASI NOTIFICATIONS
+    // =========================
+    public function notifications(): HasMany
+    {
+        return $this->hasMany(Notification::class, 'user_id', 'id');
+    }
+
+    // =========================
+    // RELASI LOWONGAN PEKERJAAN
+    // =========================
+    public function lowonganPekerjaan(): HasMany
+    {
+        return $this->hasMany(LowonganPekerjaan::class, 'dibuat_oleh', 'id');
     }
 }

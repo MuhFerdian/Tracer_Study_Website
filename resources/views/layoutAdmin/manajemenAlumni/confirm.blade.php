@@ -19,7 +19,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn btn-warning">Batal</button>
+                <button type="button" data-dismiss="modal" class="btn btn-secondary">Batal</button>
                 <button type="submit" class="btn btn-danger">Ya, Hapus</button>
             </div>
         </div>

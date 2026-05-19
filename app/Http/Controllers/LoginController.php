@@ -6,6 +6,8 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\RateLimiter;
+use Illuminate\Validation\ValidationException;
 use App\Models\alumniModel;
 use App\Models\User;
 
@@ -27,17 +29,31 @@ class LoginController extends Controller
     public function login(Request $request)
     {
         $credentials = $request->validate([
-            'username' => ['required', 'string'],
-            'password' => ['required', 'string'],
-            'role' => ['required', 'in:admin,dosen'],
+            'username' => ['required', 'string', 'min:6', 'max:25', 'regex:/^[a-z0-9._]+$/'],
+            'password' => ['required', 'string', 'min:8', 'max:16'],
+            'role'     => ['required', 'in:admin,dosen'],
         ], [
             'username.required' => 'Username wajib diisi.',
+            'username.min'      => 'Username minimal 6 karakter.',
+            'username.max'      => 'Username terlalu panjang.',
+            'username.regex'    => 'Username hanya boleh huruf kecil, angka, titik, dan underscore.',
             'password.required' => 'Password wajib diisi.',
-            'role.required' => 'Pilih tipe user terlebih dahulu.',
-            'role.in' => 'Tipe user tidak valid.',
+            'password.min'      => 'Password minimal 8 karakter.',
+            'password.max'      => 'Password terlalu panjang.',
+            'role.required'     => 'Pilih tipe user terlebih dahulu.',
+            'role.in'           => 'Tipe user tidak valid.',
         ]);
 
-        $role = $credentials['role'];
+        // ── Rate limiting: maks 5 percobaan per menit per IP ──────────
+        $throttleKey = 'login.' . $request->ip();
+        if (RateLimiter::tooManyAttempts($throttleKey, 5)) {
+            $seconds = RateLimiter::availableIn($throttleKey);
+            return back()->withErrors([
+                'login' => "Terlalu banyak percobaan login. Coba lagi dalam {$seconds} detik.",
+            ])->withInput($request->only('username', 'role'));
+        }
+
+        $role     = $credentials['role'];
         $username = $credentials['username'];
         $password = $credentials['password'];
 
@@ -46,7 +62,8 @@ class LoginController extends Controller
         $user = $authResult['user'];
 
         if ($user) {
-            // Regenerate session
+            // Login berhasil — reset rate limiter
+            RateLimiter::clear($throttleKey);
             $request->session()->regenerate();
             Log::info("Login berhasil untuk {$role}: {$username}");
 
@@ -54,11 +71,13 @@ class LoginController extends Controller
                 ->with('success', 'Login berhasil sebagai ' . ucfirst($role) . '.');
         }
 
+        // Login gagal — tambah hitungan rate limiter
+        RateLimiter::hit($throttleKey, 60);
         Log::warning("Login gagal untuk {$role}: {$username}");
 
         return back()->withErrors([
             'login' => $authResult['message'] ?? ('Username atau password salah untuk role ' . $role . '.'),
-        ])->withInput();
+        ])->withInput($request->only('username', 'role'));
     }
 
     // Attempt login berdasarkan role

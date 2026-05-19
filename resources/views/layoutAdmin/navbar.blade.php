@@ -3,7 +3,7 @@
     {{-- BRAND --}}
     <a class="navbar-brand ps-3 d-flex align-items-center" href="{{ url('/admin') }}">
 
-        <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc3.png') }}"
+        <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc5.png') }}"
             alt="Logo">
 
         <div class="brand-wrapper">

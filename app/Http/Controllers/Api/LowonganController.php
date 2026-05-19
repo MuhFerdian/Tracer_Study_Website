@@ -8,69 +8,167 @@ use App\Models\LowonganPekerjaan;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\FcmService;
+use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Validator;
 
 class LowonganController extends Controller
 {
-    // =========================
-    // GET LOWONGAN
-    // =========================
-    public function index()
+    // =============================================
+    // GET LIST LOWONGAN
+    // Query params: ?search=, ?per_page=, ?page=
+    // =============================================
+    public function index(Request $request)
     {
-        $data = LowonganPekerjaan::where('aktif', true)
-            ->latest()
-            ->get();
+        $query = LowonganPekerjaan::where('aktif', true)->latest();
+
+        if ($request->filled('search')) {
+            $keyword = $request->search;
+            $query->where(function ($q) use ($keyword) {
+                $q->where('posisi', 'like', "%{$keyword}%")
+                  ->orWhere('nama_perusahaan', 'like', "%{$keyword}%")
+                  ->orWhere('lokasi', 'like', "%{$keyword}%");
+            });
+        }
+
+        $perPage   = (int) $request->get('per_page', 10);
+        $perPage   = min(max($perPage, 1), 50); // clamp 1–50
+        $paginated = $query->paginate($perPage);
+
+        $items = collect($paginated->items())->map(fn ($item) => $this->formatLowongan($item));
 
         return response()->json([
-            'status' => true,
-            'data' => $data
+            'status'  => true,
+            'message' => 'Data lowongan berhasil diambil',
+            'data'    => $items,
+            'meta'    => [
+                'current_page' => $paginated->currentPage(),
+                'last_page'    => $paginated->lastPage(),
+                'per_page'     => $paginated->perPage(),
+                'total'        => $paginated->total(),
+            ],
         ]);
     }
 
-    // =========================
-    // TAMBAH LOWONGAN
-    // =========================
-public function store(Request $request)
-{
-    $lowongan = LowonganPekerjaan::create([
-        'posisi' => $request->posisi,
-        'nama_perusahaan' => $request->nama_perusahaan,
-        'lokasi' => $request->lokasi,
-        'gaji' => $request->gaji,
-        'deskripsi' => $request->deskripsi,
-        'batas_lamaran' => $request->batas_lamaran,
-        'kontak' => $request->kontak,
-        'link_lamaran' => $request->link_lamaran,
-        'dibuat_oleh' => $request->dibuat_oleh,
-        'role' => $request->role ?? 'alumni',
-        'aktif' => true,
-    ]);
+    // =============================================
+    // GET DETAIL LOWONGAN
+    // =============================================
+    public function show($id)
+    {
+        $lowongan = LowonganPekerjaan::where('aktif', true)->find($id);
 
-    // ambil user yang valid saja
-    $users = User::whereNotNull('fcm_token')->get();
+        if (!$lowongan) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Lowongan tidak ditemukan atau sudah tidak aktif',
+            ], 404);
+        }
 
-    $fcm = new FcmService();
-
-    foreach ($users as $user) {
-
-        $notif = Notification::create([
-            'user_id' => $user->id,
-            'title' => 'Lowongan Baru 🔥',
-            'body' => $lowongan->posisi . ' di ' . $lowongan->nama_perusahaan,
-            'type' => 'lowongan',
-            'is_read' => 0,
+        return response()->json([
+            'status'  => true,
+            'message' => 'Detail lowongan berhasil diambil',
+            'data'    => $this->formatLowongan($lowongan),
         ]);
-
-        $fcm->sendNotification(
-            $user->fcm_token,
-            $notif->title,
-            $notif->body
-        );
     }
 
-    return response()->json([
-        'status' => true,
-        'message' => 'Lowongan + notifikasi berhasil dikirim',
-        'data' => $lowongan
-    ]);
-}
+    // =============================================
+    // TAMBAH LOWONGAN (dari mobile)
+    // =============================================
+    public function store(Request $request)
+    {
+        $validator = Validator::make($request->all(), [
+            'posisi'          => 'required|string|max:255',
+            'nama_perusahaan' => 'required|string|max:255',
+            'lokasi'          => 'nullable|string|max:255',
+            'gaji'            => 'nullable|string|max:100',
+            'deskripsi'       => 'nullable|string|max:5000',
+            'batas_lamaran'   => 'nullable|date|after_or_equal:today',
+            'kontak'          => ['nullable', 'regex:/^(08)[0-9]{8,12}$/'],
+            'link_lamaran'    => 'nullable|url|max:500',
+            'dibuat_oleh'     => 'nullable|integer|exists:users,id',
+            'role'            => 'nullable|in:admin,dosen,alumni',
+        ], [
+            'posisi.required'              => 'Posisi pekerjaan wajib diisi.',
+            'nama_perusahaan.required'     => 'Nama perusahaan wajib diisi.',
+            'batas_lamaran.date'           => 'Format tanggal batas lamaran tidak valid.',
+            'batas_lamaran.after_or_equal' => 'Batas lamaran tidak boleh kurang dari hari ini.',
+            'kontak.regex'                 => 'Nomor kontak harus diawali 08 dan terdiri dari 10–14 digit.',
+            'link_lamaran.url'             => 'Link lamaran harus berupa URL yang valid.',
+            'dibuat_oleh.exists'           => 'User pembuat tidak ditemukan.',
+            'role.in'                      => 'Role harus salah satu dari: admin, dosen, alumni.',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'status'  => false,
+                'message' => 'Validasi gagal',
+                'errors'  => $validator->errors(),
+            ], 422);
+        }
+
+        $lowongan = LowonganPekerjaan::create([
+            'posisi'          => $request->posisi,
+            'nama_perusahaan' => $request->nama_perusahaan,
+            'lokasi'          => $request->lokasi,
+            'gaji'            => $request->gaji,
+            'deskripsi'       => $request->deskripsi,
+            'batas_lamaran'   => $request->batas_lamaran,
+            'kontak'          => $request->kontak,
+            'link_lamaran'    => $request->link_lamaran,
+            'dibuat_oleh'     => $request->dibuat_oleh,
+            'role'            => $request->role ?? 'alumni',
+            'aktif'           => true,
+        ]);
+
+        // Kirim push notifikasi ke semua user yang punya FCM token
+        $users = User::whereNotNull('fcm_token')->get();
+        $fcm   = new FcmService();
+
+        foreach ($users as $user) {
+            $notif = Notification::create([
+                'user_id' => $user->id,
+                'title'   => 'Lowongan Baru 🔥',
+                'body'    => $lowongan->posisi . ' di ' . $lowongan->nama_perusahaan,
+                'type'    => 'lowongan',
+                'is_read' => 0,
+            ]);
+
+            $fcm->sendNotification(
+                $user->fcm_token,
+                $notif->title,
+                $notif->body
+            );
+        }
+
+        return response()->json([
+            'status'  => true,
+            'message' => 'Lowongan berhasil ditambahkan dan notifikasi dikirim',
+            'data'    => $this->formatLowongan($lowongan),
+        ], 201);
+    }
+
+    // =============================================
+    // HELPER: Format response + foto_url
+    // =============================================
+    private function formatLowongan(LowonganPekerjaan $item): array
+    {
+        return [
+            'id'              => $item->id,
+            'posisi'          => $item->posisi,
+            'nama_perusahaan' => $item->nama_perusahaan,
+            'lokasi'          => $item->lokasi,
+            'gaji'            => $item->gaji,
+            'deskripsi'       => $item->deskripsi,
+            'batas_lamaran'   => $item->batas_lamaran,
+            'kontak'          => $item->kontak,
+            'link_lamaran'    => $item->link_lamaran,
+            'dibuat_oleh'     => $item->dibuat_oleh,
+            'role'            => $item->role,
+            'aktif'           => (bool) $item->aktif,
+            'foto_url'        => $item->foto
+                                    ? Storage::url($item->foto)
+                                    : null,
+            'created_at'      => $item->created_at,
+            'updated_at'      => $item->updated_at,
+        ];
+    }
 }
