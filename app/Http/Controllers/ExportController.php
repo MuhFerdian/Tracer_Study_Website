@@ -109,23 +109,52 @@ class ExportController extends Controller
             $q->matrixOptions = $q->options;
             $q->matrixRows    = $q->details;
 
-            $rows = DB::select(
-                "SELECT ad.option_id, qd.id AS detail_id, COUNT(*) AS cnt
+            // Jawaban matrix disimpan sebagai JSON object {"item_label": "value"} di ad.value
+            // Kita ambil semua jawaban lalu parse per item_label × option_label
+            $answerRows = DB::select(
+                "SELECT ad.value
                  FROM answer_details ad
-                 JOIN answers a ON a.id = ad.answer_id {$periodCond}
-                 JOIN question_details qd ON qd.question_id = a.question_id
+                 JOIN answers a ON a.id = ad.answer_id
                  WHERE a.question_id = ?
-                   AND ad.option_id IS NOT NULL
-                 GROUP BY ad.option_id, qd.id",
+                   AND ad.value IS NOT NULL
+                   AND ad.value != ''
+                   " . ($pid > 0 ? "AND a.survey_period_id = {$pid}" : ""),
                 [$q->id]
             );
 
-            $matrixData = [];
+            // matrixData[item_label][option_label] = count
+            $matrixData     = [];
             $matrixRowTotal = [];
-            foreach ($rows as $r) {
-                $matrixData[$r->detail_id][$r->option_id] = $r->cnt;
-                $matrixRowTotal[$r->detail_id] = ($matrixRowTotal[$r->detail_id] ?? 0) + $r->cnt;
+
+            foreach ($answerRows as $ar) {
+                $decoded = json_decode($ar->value, true);
+                if (!is_array($decoded)) continue;
+
+                // Handle nested JSON: jika value dari key pertama adalah JSON object lagi
+                // Contoh data lama: {"anjay": "{\"gacor\":\"4\",\"anjay\":\"1\"}", "gacor": null}
+                // Kita perlu unwrap ke format flat: {"anjay":"1","gacor":"4","bagus":"3"}
+                $firstVal = reset($decoded);
+                if (is_string($firstVal) && strlen($firstVal) > 0 && $firstVal[0] === '{') {
+                    $innerDecoded = json_decode($firstVal, true);
+                    if (is_array($innerDecoded)) {
+                        // Gunakan inner JSON sebagai data sebenarnya
+                        $decoded = $innerDecoded;
+                    }
+                }
+
+                foreach ($decoded as $itemLabel => $optionValue) {
+                    if ($optionValue === null || $optionValue === '') continue;
+                    $itemLabel   = (string) $itemLabel;
+                    $optionValue = (string) $optionValue;
+
+                    if (!isset($matrixData[$itemLabel][$optionValue])) {
+                        $matrixData[$itemLabel][$optionValue] = 0;
+                    }
+                    $matrixData[$itemLabel][$optionValue]++;
+                    $matrixRowTotal[$itemLabel] = ($matrixRowTotal[$itemLabel] ?? 0) + 1;
+                }
             }
+
             $q->matrixData     = $matrixData;
             $q->matrixRowTotal = $matrixRowTotal;
         } else {

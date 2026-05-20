@@ -77,12 +77,22 @@ class MobileAnswerController extends Controller
 
                     $answersByQuestion[$qId]['value'][$itemKey] = $value;
                 } else {
-                    // Tidak ada 'item' field — mapping berdasarkan urutan pengiriman
-                    if ($details->count() > 0) {
-                        $currentItemIndex = count($answersByQuestion[$qId]['value']);
-                        if ($currentItemIndex < $details->count()) {
-                            $itemLabel = $details[$currentItemIndex]->item_label;
-                            $answersByQuestion[$qId]['value'][$itemLabel] = $value;
+                    // Tidak ada 'item' field
+                    // Cek apakah value adalah JSON object lengkap {"item_label": val, ...}
+                    $decodedValue = json_decode($value, true);
+                    if (is_array($decodedValue) && !array_is_list($decodedValue)) {
+                        // Value sudah berupa JSON object matrix lengkap — merge langsung
+                        foreach ($decodedValue as $k => $v) {
+                            $answersByQuestion[$qId]['value'][$k] = $v;
+                        }
+                    } else {
+                        // Mapping berdasarkan urutan pengiriman
+                        if ($details->count() > 0) {
+                            $currentItemIndex = count($answersByQuestion[$qId]['value']);
+                            if ($currentItemIndex < $details->count()) {
+                                $itemLabel = $details[$currentItemIndex]->item_label;
+                                $answersByQuestion[$qId]['value'][$itemLabel] = $value;
+                            }
                         }
                     }
                 }

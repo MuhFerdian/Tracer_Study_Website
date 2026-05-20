@@ -490,28 +490,61 @@
                     @endif
 
                 @elseif($q->type === 'matrix')
+                    @php
+                        $hasMatrixOptions = $q->matrixOptions && $q->matrixOptions->count() > 0;
+                    @endphp
                     <div style="overflow-x:auto;">
                         <table class="matrix-table">
                             <thead>
                                 <tr>
-                                    <th>Item</th>
-                                    @foreach($q->matrixOptions as $opt)
-                                        <th>{{ $opt->label }}</th>
-                                    @endforeach
+                                    <th style="width:40%">Item</th>
+                                    @if($hasMatrixOptions)
+                                        @foreach($q->matrixOptions as $opt)
+                                            <th>{{ $opt->label }}</th>
+                                        @endforeach
+                                    @else
+                                        {{-- Matrix tanpa options: tampilkan distribusi nilai per item --}}
+                                        <th>Rata-rata Jawaban</th>
+                                        <th>Distribusi</th>
+                                    @endif
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach($q->matrixRows as $row)
                                     <tr>
                                         <td>{{ $row->item_label }}</td>
-                                        @foreach($q->matrixOptions as $opt)
+                                        @if($hasMatrixOptions)
+                                            @foreach($q->matrixOptions as $opt)
+                                                @php
+                                                    $cnt = $q->matrixData[$row->item_label][$opt->label] ?? 0;
+                                                    $total = $q->matrixRowTotal[$row->item_label] ?? 0;
+                                                    $pct = $total > 0 ? round($cnt / $total * 100) : 0;
+                                                @endphp
+                                                <td>{{ $cnt }} <span style="font-size:.68rem;color:var(--muted)">({{ $pct }}%)</span></td>
+                                            @endforeach
+                                        @else
                                             @php
-                                                $cnt = $q->matrixData[$row->id][$opt->id] ?? 0;
-                                                $pct = ($q->matrixRowTotal[$row->id] ?? 0) > 0
-                                                    ? round($cnt / $q->matrixRowTotal[$row->id] * 100) : 0;
+                                                // Hitung rata-rata nilai untuk item ini
+                                                $itemData = $q->matrixData[$row->item_label] ?? [];
+                                                $totalCount = array_sum($itemData);
+                                                $weightedSum = 0;
+                                                foreach ($itemData as $val => $cnt) {
+                                                    if (is_numeric($val)) $weightedSum += (float)$val * $cnt;
+                                                }
+                                                $avg = $totalCount > 0 ? round($weightedSum / $totalCount, 1) : '-';
+                                                // Distribusi ringkas
+                                                $distStr = collect($itemData)->map(fn($c, $v) => "{$v}:{$c}")->implode(', ');
                                             @endphp
-                                            <td>{{ $cnt }} <span style="font-size:.68rem;color:var(--muted)">({{ $pct }}%)</span></td>
-                                        @endforeach
+                                            <td>
+                                                @if($avg !== '-')
+                                                    <strong style="color:var(--blue)">{{ $avg }}</strong>
+                                                    <span style="font-size:.68rem;color:var(--muted)"> / 5</span>
+                                                @else
+                                                    <span class="text-muted">-</span>
+                                                @endif
+                                            </td>
+                                            <td style="font-size:.75rem;color:var(--muted)">{{ $distStr ?: '-' }}</td>
+                                        @endif
                                     </tr>
                                 @endforeach
                             </tbody>

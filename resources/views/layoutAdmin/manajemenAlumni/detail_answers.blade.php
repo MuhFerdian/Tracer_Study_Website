@@ -204,9 +204,24 @@
                                                 $matrixAnswerRaw = [];
                                                 $firstDetail = $answerDetails->first();
                                                 if ($firstDetail && !empty($firstDetail->value)) {
-                                                    $decoded = json_decode($firstDetail->value, true);
+                                                    $rawVal = $firstDetail->value;
+                                                    $decoded = json_decode($rawVal, true);
+
                                                     if (is_array($decoded)) {
-                                                        $matrixAnswerRaw = $decoded;
+                                                        // Cek apakah ini nested: value dari key pertama adalah JSON object lagi
+                                                        // Contoh: {"anjay":"{\"gacor\":\"4\",...}","gacor":null}
+                                                        $firstVal = reset($decoded);
+                                                        if (is_string($firstVal) && str_starts_with(trim($firstVal), '{')) {
+                                                            $innerDecoded = json_decode($firstVal, true);
+                                                            if (is_array($innerDecoded)) {
+                                                                // Data nested — gunakan inner JSON sebagai jawaban sebenarnya
+                                                                $matrixAnswerRaw = $innerDecoded;
+                                                            } else {
+                                                                $matrixAnswerRaw = $decoded;
+                                                            }
+                                                        } else {
+                                                            $matrixAnswerRaw = $decoded;
+                                                        }
                                                     }
                                                 }
 
@@ -218,7 +233,7 @@
                                             <p class="mb-2">
                                                 <strong>Jawaban (Matrix):</strong>
                                             </p>
-                                            @if($questionDetails->isNotEmpty() && count($matrixAnswerRaw) > 0)
+                                            @if($questionDetails->isNotEmpty())
                                                 <div class="table-responsive">
                                                     <table class="table table-bordered table-sm">
                                                         <thead style="background-color:#1a73e8; color:#fff;">
@@ -228,21 +243,24 @@
                                                             </tr>
                                                         </thead>
                                                         <tbody>
-                                                            {{-- Iterasi dari question_details agar urutan selalu konsisten --}}
                                                             @foreach($questionDetails as $detailItem)
                                                                 @php
                                                                     $label = $detailItem->item_label;
-                                                                    $val   = $matrixAnswerRaw[$label] ?? '-';
+                                                                    $val   = $matrixAnswerRaw[$label] ?? null;
                                                                 @endphp
                                                                 <tr>
                                                                     <td><strong>{{ $label }}</strong></td>
                                                                     <td>
-                                                                        @if(is_array($val))
-                                                                            @foreach($val as $v)
-                                                                                <span class="badge bg-info mb-1">{{ $v }}</span>
-                                                                            @endforeach
+                                                                        @if($val !== null && $val !== '')
+                                                                            @if(is_array($val))
+                                                                                @foreach($val as $v)
+                                                                                    <span class="badge bg-info mb-1">{{ $v }}</span>
+                                                                                @endforeach
+                                                                            @else
+                                                                                <span class="badge bg-info">{{ $val }}</span>
+                                                                            @endif
                                                                         @else
-                                                                            <span class="badge bg-info">{{ $val }}</span>
+                                                                            <span class="text-muted">-</span>
                                                                         @endif
                                                                     </td>
                                                                 </tr>
