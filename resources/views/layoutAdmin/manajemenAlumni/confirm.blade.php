@@ -5,7 +5,7 @@
         <div class="modal-content">
             <div class="modal-header">
                 <h5 class="modal-title">Hapus Data Alumni</h5>
-                <button type="button" class="btn-close" data-dismiss="modal" aria-label="Close"></button>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
             <div class="modal-body">
                 <div class="alert alert-warning">
@@ -19,7 +19,7 @@
                 </table>
             </div>
             <div class="modal-footer">
-                <button type="button" data-dismiss="modal" class="btn btn-secondary">Batal</button>
+                <button type="button" data-bs-dismiss="modal" class="btn btn-secondary">Batal</button>
                 <button type="submit" class="btn btn-danger">Ya, Hapus</button>
             </div>
         </div>
@@ -28,11 +28,6 @@
 
 <script>
     $(document).ready(function() {
-        // Tutup modal saat klik tombol batal atau close
-        $('#myModal .btn-close, #myModal .btn-warning').on('click', function () {
-            $('#myModal').modal('hide');
-        });
-
         $("#form-delete-alumni").validate({
             rules: {},
             submitHandler: function(form) {

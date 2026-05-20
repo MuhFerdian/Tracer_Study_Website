@@ -39,11 +39,11 @@ class ExportController extends Controller
         $questions = Question::where('is_archived', false)
             ->orderBy('urutan')
             ->with([
-                'options' => fn ($q) => $q->orderBy('urutan'),
-                'details' => fn ($q) => $q->orderBy('urutan'),
+                'options' => fn($q) => $q->orderBy('urutan'),
+                'details' => fn($q) => $q->orderBy('urutan'),
             ])
             ->get()
-            ->map(fn ($q) => $this->enrichQuestion($q, $periodId));
+            ->map(fn($q) => $this->enrichQuestion($q, $periodId));
 
         return view('layoutAdmin.rekap.laporan_pdf', compact(
             'questions',
@@ -83,7 +83,6 @@ class ExportController extends Controller
                 [$q->id]
             );
             $q->textAnswers = collect($rows)->pluck('value');
-
         } elseif ($q->type === 'scale') {
             $rows = DB::select(
                 "SELECT ad.value AS label, COUNT(*) AS count
@@ -106,7 +105,6 @@ class ExportController extends Controller
                 [$q->id]
             );
             $q->avgValue = $avgRow->avg_val ?? null;
-
         } elseif ($q->type === 'matrix') {
             $q->matrixOptions = $q->options;
             $q->matrixRows    = $q->details;
@@ -130,24 +128,42 @@ class ExportController extends Controller
             }
             $q->matrixData     = $matrixData;
             $q->matrixRowTotal = $matrixRowTotal;
-
         } else {
-            // single / multiple — distribusi berdasarkan value (label teks) karena option_id tidak diisi
-            $rows = DB::select(
-                "SELECT
-                    qo.id,
-                    qo.label,
-                    COUNT(ad.id) AS count
-                 FROM question_options qo
-                 LEFT JOIN answer_details ad ON TRIM(LOWER(ad.value)) = TRIM(LOWER(qo.label))
-                 LEFT JOIN answers a ON a.id = ad.answer_id
-                     AND a.question_id = ? {$periodCond}
-                 WHERE qo.question_id = ?
-                 GROUP BY qo.id, qo.label
-                 ORDER BY qo.urutan",
-                [$q->id, $q->id]
-            );
-            $q->distribution = collect($rows);
+            // single / multiple — distribusi berdasarkan value (label teks)
+            // Jawaban bisa tersimpan sebagai plain string ATAU JSON array ["opsi"]
+            // Kita hitung per option label dengan JSON_CONTAINS dan LIKE fallback
+
+            $options = $q->options()->orderBy('urutan')->get();
+            $distribution = $options->map(function ($opt) use ($q, $periodCond) {
+                $pid = (int) ($periodCond ? preg_replace('/\D/', '', $periodCond) : 0);
+
+                // Hitung: value = plain string match
+                $plainCount = DB::table('answer_details as ad')
+                    ->join('answers as a', 'a.id', '=', 'ad.answer_id')
+                    ->where('a.question_id', $q->id)
+                    ->whereRaw('TRIM(LOWER(ad.value)) = TRIM(LOWER(?))', [$opt->label])
+                    ->when($pid > 0, fn($q) => $q->where('a.survey_period_id', $pid))
+                    ->count();
+
+                // Hitung: value = JSON array yang mengandung label ini
+                $jsonCount = DB::table('answer_details as ad')
+                    ->join('answers as a', 'a.id', '=', 'ad.answer_id')
+                    ->where('a.question_id', $q->id)
+                    ->whereRaw(
+                        "JSON_VALID(ad.value) = 1 AND JSON_CONTAINS(LOWER(ad.value), LOWER(JSON_QUOTE(?)))",
+                        [$opt->label]
+                    )
+                    ->when($pid > 0, fn($q) => $q->where('a.survey_period_id', $pid))
+                    ->count();
+
+                return (object) [
+                    'id'    => $opt->id,
+                    'label' => $opt->label,
+                    'count' => $plainCount + $jsonCount,
+                ];
+            });
+
+            $q->distribution = $distribution;
         }
 
         return $q;
@@ -185,8 +201,17 @@ class ExportController extends Controller
     public function exportExcel()
     {
         $alumni = alumniModel::select([
-            'id', 'nama', 'nim', 'prodi', 'no_hp', 'email',
-            'alamat', 'tempat_lahir', 'tanggal_lahir', 'angkatan', 'tahun_lulus',
+            'id',
+            'nama',
+            'nim',
+            'prodi',
+            'no_hp',
+            'email',
+            'alamat',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'angkatan',
+            'tahun_lulus',
         ])->orderBy('id')->get();
 
         if ($alumni->isEmpty()) {
@@ -207,8 +232,17 @@ class ExportController extends Controller
     {
         $alumni = alumniModel::whereIn('id', DB::table('answers')->select('alumni_id')->distinct())
             ->select([
-                'id', 'nama', 'nim', 'prodi', 'no_hp', 'email',
-                'alamat', 'tempat_lahir', 'tanggal_lahir', 'angkatan', 'tahun_lulus',
+                'id',
+                'nama',
+                'nim',
+                'prodi',
+                'no_hp',
+                'email',
+                'alamat',
+                'tempat_lahir',
+                'tanggal_lahir',
+                'angkatan',
+                'tahun_lulus',
             ])->orderBy('id')->get();
 
         if ($alumni->isEmpty()) {
@@ -231,8 +265,16 @@ class ExportController extends Controller
             'id',
             DB::table('answers')->select('alumni_id')->distinct()
         )->select([
-            'nama', 'nim', 'prodi', 'no_hp', 'email',
-            'alamat', 'tempat_lahir', 'tanggal_lahir', 'angkatan', 'tahun_lulus',
+            'nama',
+            'nim',
+            'prodi',
+            'no_hp',
+            'email',
+            'alamat',
+            'tempat_lahir',
+            'tanggal_lahir',
+            'angkatan',
+            'tahun_lulus',
         ])->orderBy('id')->get();
 
         if ($data->isEmpty()) {
@@ -303,9 +345,19 @@ class ExportController extends Controller
         ]);
 
         $headings = [
-            'Nama', 'NIM', 'Program Studi', 'No HP', 'Email', 'Alamat',
-            'Tempat Lahir', 'Tanggal Lahir', 'Angkatan', 'Tahun Lulus',
-            'Status Pekerjaan', 'Nama Instansi', 'Posisi',
+            'Nama',
+            'NIM',
+            'Program Studi',
+            'No HP',
+            'Email',
+            'Alamat',
+            'Tempat Lahir',
+            'Tanggal Lahir',
+            'Angkatan',
+            'Tahun Lulus',
+            'Status Pekerjaan',
+            'Nama Instansi',
+            'Posisi',
         ];
 
         foreach ($headings as $col => $heading) {
@@ -366,8 +418,16 @@ class ExportController extends Controller
         ]);
 
         $headings = [
-            'Nama', 'NIM', 'Program Studi', 'No HP', 'Email', 'Alamat',
-            'Tempat Lahir', 'Tanggal Lahir', 'Angkatan', 'Tahun Lulus',
+            'Nama',
+            'NIM',
+            'Program Studi',
+            'No HP',
+            'Email',
+            'Alamat',
+            'Tempat Lahir',
+            'Tanggal Lahir',
+            'Angkatan',
+            'Tahun Lulus',
         ];
 
         foreach ($headings as $col => $heading) {
@@ -418,7 +478,7 @@ class ExportController extends Controller
         $filename = $fileName . '_' . date('d-m-Y_H-i') . '.xlsx';
 
         return response()->streamDownload(
-            fn () => $writer->save('php://output'),
+            fn() => $writer->save('php://output'),
             $filename,
             ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
         );

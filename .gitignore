@@ -69,6 +69,7 @@ coverage/
 !.vscode/extensions.json
 *.code-workspace
 /.qodo
+/.github
 
 # PHPStorm / IntelliJ IDEA
 /.idea

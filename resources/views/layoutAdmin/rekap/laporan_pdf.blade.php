@@ -148,7 +148,7 @@
         /* ── HORIZONTAL BAR (CSS) ── */
         .hbar-list { display:grid; gap:.45rem; }
         .hbar-row { display:grid; grid-template-columns:1fr 3fr 52px; align-items:center; gap:.5rem; }
-        .hbar-label { font-size:.78rem; font-weight:500; color:var(--ink); text-align:right; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+        .hbar-label { font-size:.78rem; font-weight:500; color:var(--ink); text-align:right; white-space:normal; word-break:break-word; line-height:1.3; }
         .hbar-track { background:#e8edf5; border-radius:999px; height:20px; overflow:hidden; }
         .hbar-fill { height:100%; border-radius:999px; min-width:3px; }
         .hbar-val { font-size:.75rem; font-weight:700; color:var(--ink); }
@@ -354,7 +354,7 @@
                                 @foreach($q->distribution as $idx => $item)
                                     @php $pct = $total > 0 ? round((int)$item->count / $total * 100) : 0; @endphp
                                     <div class="hbar-row">
-                                        <div class="hbar-label" title="{{ $item->label }}">{{ Str::limit($item->label, 28) }}</div>
+                                        <div class="hbar-label">{{ $item->label }}</div>
                                         <div class="hbar-track">
                                             <div class="hbar-fill c{{ $idx % 8 }}" style="width:{{ $pct }}%"></div>
                                         </div>
@@ -373,7 +373,7 @@
                                     @foreach($q->distribution as $idx => $item)
                                         @php $pct = $total > 0 ? round((int)$item->count / $total * 100) : 0; @endphp
                                         <div class="hbar-row">
-                                            <div class="hbar-label" title="{{ $item->label }}">{{ Str::limit($item->label, 28) }}</div>
+                                            <div class="hbar-label">{{ $item->label }}</div>
                                             <div class="hbar-track">
                                                 <div class="hbar-fill c{{ $idx % 8 }}" style="width:{{ $pct }}%"></div>
                                             </div>
