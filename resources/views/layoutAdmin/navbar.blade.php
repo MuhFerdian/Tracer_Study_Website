@@ -3,7 +3,7 @@
     {{-- BRAND --}}
     <a class="navbar-brand ps-3 d-flex align-items-center" href="{{ url('/admin') }}">
 
-        <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc5.png') }}"
+        <img class="logo-animated" src="{{ asset('assets/img/logo_tc5.png') }}"
             alt="Logo">
 
         <div class="brand-wrapper">
@@ -18,37 +18,39 @@
         <i class="fas fa-bars"></i>
     </button>
 
-    {{-- NOTIFIKASI --}}
-    <div class="nav-notif-wrap ms-auto me-2 position-relative">
-        <button class="btn notif-btn" id="notifToggle" title="Notifikasi Alumni">
-            <i class="fas fa-bell"></i>
-            <span class="notif-badge d-none" id="notifBadge">0</span>
-        </button>
+    {{-- NOTIFIKASI & PROFILE WRAPPER --}}
+    <div class="nav-right-wrap ms-auto d-flex align-items-center gap-2">
+        {{-- NOTIFIKASI --}}
+        <div class="nav-notif-wrap position-relative">
+            <button class="btn notif-btn" id="notifToggle" title="Notifikasi Alumni">
+                <i class="fas fa-bell"></i>
+                <span class="notif-badge d-none" id="notifBadge">0</span>
+            </button>
 
-        {{-- Dropdown Panel --}}
-        <div class="notif-panel shadow" id="notifPanel">
-            <div class="notif-panel-header d-flex align-items-center justify-content-between">
-                <span class="fw-bold"><i class="fas fa-bell me-2 text-warning"></i>Notifikasi Alumni</span>
-                <button class="btn btn-sm btn-link text-muted p-0" id="notifMarkAll" title="Tandai semua sudah dibaca">
-                    <i class="fas fa-check-double"></i>
-                </button>
-            </div>
-            <div class="notif-panel-body" id="notifList">
-                <div class="notif-empty text-center py-4 text-muted">
-                    <i class="fas fa-bell-slash fs-3 mb-2 d-block"></i>
-                    <small>Belum ada alumni yang mengisi</small>
+            {{-- Dropdown Panel --}}
+            <div class="notif-panel shadow" id="notifPanel">
+                <div class="notif-panel-header d-flex align-items-center justify-content-between">
+                    <span class="fw-bold"><i class="fas fa-bell me-2 text-warning"></i>Notifikasi Alumni</span>
+                    <button class="btn btn-sm btn-link text-muted p-0" id="notifMarkAll" title="Tandai semua sudah dibaca">
+                        <i class="fas fa-check-double"></i>
+                    </button>
+                </div>
+                <div class="notif-panel-body" id="notifList">
+                    <div class="notif-empty text-center py-4 text-muted">
+                        <i class="fas fa-bell-slash fs-3 mb-2 d-block"></i>
+                        <small>Belum ada alumni yang mengisi</small>
+                    </div>
+                </div>
+                <div class="notif-panel-footer text-center">
+                    <a href="{{ url('/admin/alumni-sudah-mengisi') }}" class="text-primary small fw-semibold">
+                        Lihat semua alumni yang mengisi →
+                    </a>
                 </div>
             </div>
-            <div class="notif-panel-footer text-center">
-                <a href="{{ url('/admin/alumni-sudah-mengisi') }}" class="text-primary small fw-semibold">
-                    Lihat semua alumni yang mengisi →
-                </a>
-            </div>
         </div>
-    </div>
 
-    {{-- PROFILE --}}
-    <ul class="navbar-nav me-3">
+        {{-- PROFILE --}}
+        <ul class="navbar-nav">
 
         <li class="nav-item dropdown">
 
@@ -100,6 +102,8 @@
         </li>
 
     </ul>
+    </div>
+    {{-- END NOTIFIKASI & PROFILE WRAPPER --}}
 
 </nav>
 
@@ -271,7 +275,8 @@
     /* =========================
        TOP NAVBAR
     ========================== */
-    .top-navbar {
+    .top-navbar,
+    .sb-topnav.navbar {
         height: var(--admin-topbar-height, 64px);
         background: linear-gradient(90deg, #1e3a8a, #2563eb);
         box-shadow: 0 2px 12px rgba(0, 0, 0, 0.15);
@@ -285,7 +290,8 @@
     /* =========================
        BRAND
     ========================== */
-    .top-navbar .navbar-brand {
+    .top-navbar .navbar-brand,
+    .sb-topnav .navbar-brand {
         width: var(--admin-sidebar-width, 260px);
         display: flex;
         align-items: center;
@@ -299,6 +305,15 @@
     }
 
     .logo-animated:hover {
+        transform: rotate(10deg) scale(1.05);
+    }
+
+    .sb-topnav .logo-animated {
+        height: 42px;
+        transition: all 0.3s ease;
+    }
+
+    .sb-topnav .logo-animated:hover {
         transform: rotate(10deg) scale(1.05);
     }
 
@@ -319,6 +334,23 @@
         font-family: 'Poppins', sans-serif;
         font-size: 0.72rem;
         color: rgba(255, 255, 255, 0.75);
+        display: block !important;
+        visibility: visible !important;
+    }
+
+    .sb-topnav .brand-title {
+        font-family: 'Poppins', sans-serif;
+        font-size: 1.1rem;
+        font-weight: 700;
+        color: white;
+    }
+
+    .sb-topnav .brand-subtitle {
+        font-family: 'Poppins', sans-serif;
+        font-size: 0.72rem;
+        color: rgba(255, 255, 255, 0.75);
+        display: block !important;
+        visibility: visible !important;
     }
 
     /* =========================
@@ -335,9 +367,34 @@
         color: #dbeafe !important;
     }
 
+    .sb-topnav .toggle-btn {
+        color: white !important;
+    }
+
+    .sb-topnav .toggle-btn:hover {
+        color: #dbeafe !important;
+    }
+
     /* =========================
        SEARCH BOX (dihapus)
     ========================== */
+
+    /* =========================
+       RIGHT SIDE NAV WRAPPER
+    ========================== */
+    .nav-right-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-right: 1rem;
+    }
+
+    .sb-topnav .nav-right-wrap {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        padding-right: 1rem;
+    }
 
     /* =========================
        NOTIFIKASI BELL
@@ -359,6 +416,14 @@
     }
 
     .notif-btn:hover {
+        background: rgba(255,255,255,0.15) !important;
+    }
+
+    .sb-topnav .notif-btn {
+        color: white !important;
+    }
+
+    .sb-topnav .notif-btn:hover {
         background: rgba(255,255,255,0.15) !important;
     }
 
@@ -481,6 +546,25 @@
         color: #94a3b8;
     }
 
+    .sb-topnav .form-inline {
+        display: none !important;
+    }
+
+    /* Ensure nav components are visible */
+    .top-navbar .navbar-nav,
+    .sb-topnav .navbar-nav {
+        margin: 0;
+        padding: 0;
+        gap: 0;
+        display: flex !important;
+    }
+
+    .top-navbar .nav-item,
+    .sb-topnav .nav-item {
+        display: flex;
+        align-items: center;
+    }
+
     /* =========================
        PROFILE BUTTON
     ========================== */
@@ -494,58 +578,101 @@
         color: #dbeafe !important;
     }
 
+    .sb-topnav .profile-btn {
+        color: white !important;
+    }
+
+    .sb-topnav .profile-btn:hover {
+        color: #dbeafe !important;
+    }
+
     /* =========================
        DROPDOWN
     ========================== */
-    .top-navbar .dropdown-menu {
+    .top-navbar .dropdown-menu,
+    .sb-topnav .dropdown-menu {
         border-radius: 14px;
         padding: 0.5rem;
         min-width: 220px;
         font-family: 'Poppins', sans-serif;
     }
 
-    .top-navbar .dropdown-header {
+    .top-navbar .dropdown-header,
+    .sb-topnav .dropdown-header {
         padding: 0.7rem 1rem;
         font-size: 0.9rem;
     }
 
-    .top-navbar .dropdown-item {
+    .top-navbar .dropdown-item,
+    .sb-topnav .dropdown-item {
         border-radius: 10px;
         padding: 0.7rem 1rem;
         font-size: 0.9rem;
         transition: all 0.2s ease;
     }
 
-    .top-navbar .dropdown-item:hover {
+    .top-navbar .dropdown-item:hover,
+    .sb-topnav .dropdown-item:hover {
         background-color: #eff6ff;
     }
 
     /* =========================
        RESPONSIVE
     ========================== */
-    @media (max-width: 768px) {
-
-        .brand-subtitle {
-            display: none;
+    /* Override tablet breakpoint (991px down) dari tracer-ui.css */
+    @media (max-width: 991px) {
+        .sb-topnav .navbar-brand {
+            width: auto !important;
+            min-width: 0 !important;
         }
 
-        .brand-title {
+        .sb-topnav .navbar-brand .brand-title {
             font-size: 1rem;
         }
 
-        .top-navbar .navbar-brand {
-            width: 180px;
-            gap: 8px;
+        .sb-topnav .navbar-brand .brand-subtitle {
+            font-size: 0.62rem !important;
+            display: block !important;
+        }
+
+        .top-navbar .navbar-brand,
+        .sb-topnav .navbar-brand {
+            gap: 10px;
+        }
+    }
+
+    @media (max-width: 768px) {
+
+        .brand-subtitle {
+            font-size: 0.62rem !important;
+            display: block !important;
+            visibility: visible !important;
+        }
+
+        .brand-title {
+            font-size: 0.95rem;
+        }
+
+        .top-navbar .navbar-brand,
+        .sb-topnav .navbar-brand {
+            width: auto !important;
+            gap: 10px;
+            padding-left: 0.75rem !important;
         }
 
         .logo-animated {
-            height: 36px;
+            height: 38px;
+            flex-shrink: 0;
         }
 
         .toggle-btn {
-            order: 2;
             margin-left: auto;
-            margin-right: 1rem;
+            margin-right: 0.5rem;
+        }
+
+        .nav-right-wrap {
+            gap: 0.5rem;
+            padding-right: 0.5rem;
         }
 
         .notif-panel {
@@ -555,29 +682,62 @@
     }
 
     @media (max-width: 576px) {
-        .top-navbar {
-            padding: 0 0.5rem;
+        .top-navbar,
+        .sb-topnav.navbar {
+            padding: 0 0.5rem !important;
+            height: auto !important;
+            min-height: 60px !important;
         }
 
-        .top-navbar .navbar-brand {
-            width: 140px;
-            padding: 0;
+        .top-navbar .navbar-brand,
+        .sb-topnav .navbar-brand {
+            width: auto !important;
+            padding: 0.5rem 0 !important;
+            gap: 8px !important;
+        }
+
+        .brand-wrapper {
+            display: flex;
+            flex-direction: column;
+            line-height: 1;
         }
 
         .brand-title {
-            font-size: 0.9rem;
+            font-size: 0.85rem;
+            white-space: nowrap;
+        }
+
+        .brand-subtitle {
+            font-size: 0.58rem !important;
+            display: block !important;
+            visibility: visible !important;
+            white-space: nowrap;
         }
 
         .logo-animated {
-            height: 30px;
+            height: 32px;
+            flex-shrink: 0;
         }
 
         .toggle-btn {
             font-size: 1rem;
             padding: 0.25rem;
+            margin-left: auto;
+            margin-right: 0.3rem;
         }
 
-        .top-navbar .dropdown-menu {
+        .nav-right-wrap {
+            gap: 0.4rem;
+            padding-right: 0;
+        }
+
+        .notif-btn {
+            font-size: 1.1rem;
+            padding: 0.3rem 0.4rem;
+        }
+
+        .top-navbar .dropdown-menu,
+        .sb-topnav .dropdown-menu {
             min-width: 160px;
             font-size: 0.85rem;
         }
@@ -585,6 +745,24 @@
         .notif-panel {
             width: 280px;
             right: -40px;
+        }
+    }
+
+    /* Override untuk 600px ke bawah dari tracer-ui.css */
+    @media (max-width: 600px) {
+        .sb-topnav .navbar-brand {
+            width: auto !important;
+            min-width: 0 !important;
+            padding-left: 0.75rem !important;
+        }
+
+        .sb-topnav .navbar-brand .brand-title {
+            font-size: 0.85rem !important;
+        }
+
+        .sb-topnav .navbar-brand .brand-subtitle {
+            font-size: 0.58rem !important;
+            display: block !important;
         }
     }
 </style>

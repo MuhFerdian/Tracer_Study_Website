@@ -463,7 +463,7 @@ class ManajemenAlumniController extends Controller
                         'nullable|integer|min:1900|max:2100',
 
                     'no_hp' =>
-                        'nullable|string|min:10|max:15|regex:/^[0-9+\-]+$/',
+                        'nullable|string|min:10|max:13|regex:/^[0-9+\-]+$/',
 
                     'alamat' =>
                         'nullable|string|max:255',
@@ -594,7 +594,7 @@ class ManajemenAlumniController extends Controller
                 'nullable|email:rfc,dns|max:100|unique:alumni,email|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
 
             'no_hp' =>
-                'nullable|string|min:10|max:15|regex:/^[0-9+\-]+$/',
+                'nullable|string|min:10|max:13|regex:/^[0-9+\-]+$/',
 
             'alamat' =>
                 'nullable|string|max:255',
@@ -702,7 +702,7 @@ class ManajemenAlumniController extends Controller
                 'nullable|email:rfc,dns|max:100|unique:alumni,email,' . $id . ',id|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
 
             'no_hp' =>
-                'nullable|string|min:10|max:15|regex:/^[0-9+\-]+$/',
+                'nullable|string|min:10|max:13|regex:/^[0-9+\-]+$/',
 
             'alamat' =>
                 'nullable|string|max:255',

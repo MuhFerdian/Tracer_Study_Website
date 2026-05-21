@@ -41,7 +41,7 @@ body.auth-page {
             rgba(15, 23, 42, 0.55),
             rgba(15, 23, 42, 0.55)
         ),
-        url('../startbootstrap-sb-admin-gh-pages/assets/img/Polije-bg.jpg');
+        url('../assets/img/Polije-bg.jpg');
 
     background-size: cover;
     background-position: center;
@@ -2117,4 +2117,403 @@ body.sb-nav-fixed #layoutSidenav_content {
 
 body.sb-nav-fixed #layoutSidenav_content main {
     flex: 1 !important;
+}
+
+
+/* =========================================
+   HERO INTERACTIVE HOVER EFFECTS
+========================================= */
+
+/* Stat cards hover */
+.hero-stat--hover {
+    cursor: default;
+    transition: transform 0.25s ease, background 0.25s ease,
+                border-color 0.25s ease, box-shadow 0.25s ease;
+}
+
+.hero-stat--hover:hover {
+    transform: translateY(-6px) scale(1.03);
+    background: rgba(255, 255, 255, 0.22);
+    border-color: rgba(98, 217, 255, 0.45);
+    box-shadow: 0 16px 40px rgba(0, 0, 0, 0.22),
+                0 0 0 1px rgba(98, 217, 255, 0.3);
+}
+
+.hero-stat--hover:active {
+    transform: translateY(-2px) scale(1.01);
+}
+
+/* Hero visual card hover */
+.hero-visual {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.hero-visual:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 40px 100px rgba(0, 0, 0, 0.32),
+                0 0 0 1px rgba(255, 255, 255, 0.28);
+}
+
+/* Hero visual note hover */
+.hero-visual-note {
+    transition: transform 0.25s ease, background 0.25s ease;
+}
+
+.hero-visual:hover .hero-visual-note {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.96);
+}
+
+/* Hero badge hover */
+.hero-badge {
+    transition: transform 0.2s ease, background 0.2s ease,
+                border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+}
+
+.hero-badge:hover {
+    transform: translateY(-2px);
+    background: rgba(255, 255, 255, 0.2);
+    border-color: rgba(98, 217, 255, 0.5);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.15);
+}
+
+/* Button active (click) press effect */
+.btn-blue-glow:active {
+    transform: translateY(0px) scale(0.97);
+    box-shadow: 0 8px 20px rgba(98, 217, 255, 0.2);
+}
+
+.btn-outline-glass:active {
+    transform: translateY(0px) scale(0.97);
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Ripple effect on buttons */
+.btn-blue-glow,
+.btn-outline-glass {
+    position: relative;
+    overflow: hidden;
+}
+
+.btn-blue-glow::after,
+.btn-outline-glass::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle, rgba(255,255,255,0.35) 0%, transparent 65%);
+    opacity: 0;
+    transform: scale(0);
+    transition: transform 0.4s ease, opacity 0.4s ease;
+    pointer-events: none;
+}
+
+.btn-blue-glow:active::after,
+.btn-outline-glass:active::after {
+    opacity: 1;
+    transform: scale(2.5);
+    transition: 0s;
+}
+
+
+/* =========================================
+   ABOUT SECTION HOVER EFFECTS
+========================================= */
+
+/* Glass info cards hover */
+.glass-info--hover {
+    transition: transform 0.25s ease, box-shadow 0.25s ease,
+                border-color 0.25s ease, background 0.25s ease;
+    cursor: default;
+}
+
+.glass-info--hover:hover {
+    transform: translateY(-6px);
+    background: rgba(255, 255, 255, 0.96);
+    border-color: rgba(37, 130, 243, 0.28);
+    box-shadow: 0 20px 50px rgba(8, 34, 79, 0.14);
+}
+
+.glass-info--hover:hover i {
+    color: var(--tracer-blue-2);
+    transform: scale(1.15);
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.glass-info--hover i {
+    transition: transform 0.25s ease, color 0.25s ease;
+}
+
+.glass-info--hover:active {
+    transform: translateY(-2px);
+}
+
+/* About visual image hover */
+.about-visual--hover {
+    transition: transform 0.3s ease, box-shadow 0.3s ease;
+    overflow: hidden;
+}
+
+.about-visual--hover:hover {
+    transform: translateY(-8px);
+    box-shadow: 0 32px 80px rgba(8, 34, 79, 0.18);
+}
+
+.about-visual--hover img {
+    transition: transform 0.4s ease;
+}
+
+.about-visual--hover:hover img {
+    transform: scale(1.04);
+}
+
+/* Section kicker badge hover */
+.section-kicker {
+    transition: transform 0.2s ease, background 0.2s ease,
+                border-color 0.2s ease, box-shadow 0.2s ease;
+    cursor: default;
+}
+
+.section-kicker:hover {
+    transform: translateY(-2px);
+    background: rgba(37, 130, 243, 0.16);
+    border-color: rgba(37, 130, 243, 0.28);
+    box-shadow: 0 8px 20px rgba(37, 130, 243, 0.12);
+}
+
+
+/* =========================================
+   ADMIN TABLE — ENHANCED STYLING
+========================================= */
+
+/* Wrapper scroll */
+body.sb-nav-fixed .table-responsive {
+    border-radius: var(--tracer-radius);
+    overflow-x: auto;
+    box-shadow: 0 4px 20px rgba(8, 34, 79, 0.07);
+}
+
+/* Base table reset */
+body.sb-nav-fixed .table {
+    border-collapse: separate;
+    border-spacing: 0;
+    margin-bottom: 0;
+    font-size: 0.875rem;
+}
+
+/* ── HEADER ── */
+body.sb-nav-fixed .table thead tr th {
+    padding: 0.85rem 1rem;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: #ffffff !important;
+    background: linear-gradient(135deg, var(--tracer-blue) 0%, var(--tracer-blue-2) 100%) !important;
+    border-color: rgba(255, 255, 255, 0.15) !important;
+    white-space: nowrap;
+    vertical-align: middle;
+    position: relative;
+}
+
+/* Separator antar kolom header */
+body.sb-nav-fixed .table thead tr th:not(:last-child)::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 25%;
+    height: 50%;
+    width: 1px;
+    background: rgba(255, 255, 255, 0.25);
+}
+
+/* Rounded corners header */
+body.sb-nav-fixed .table thead tr th:first-child {
+    border-radius: var(--tracer-radius) 0 0 0;
+}
+body.sb-nav-fixed .table thead tr th:last-child {
+    border-radius: 0 var(--tracer-radius) 0 0;
+}
+
+/* DataTables sort icons warna putih */
+body.sb-nav-fixed .table thead .sorting::before,
+body.sb-nav-fixed .table thead .sorting::after,
+body.sb-nav-fixed .table thead .sorting_asc::before,
+body.sb-nav-fixed .table thead .sorting_asc::after,
+body.sb-nav-fixed .table thead .sorting_desc::before,
+body.sb-nav-fixed .table thead .sorting_desc::after {
+    color: rgba(255, 255, 255, 0.7) !important;
+    opacity: 1 !important;
+}
+
+/* ── BODY ROWS ── */
+body.sb-nav-fixed .table tbody tr td {
+    padding: 0.78rem 1rem;
+    color: #334155;
+    vertical-align: middle;
+    border-color: rgba(148, 163, 184, 0.15) !important;
+    transition: background 0.18s ease, color 0.18s ease;
+}
+
+/* Zebra stripe — lebih subtle */
+body.sb-nav-fixed .table-striped tbody tr:nth-of-type(odd) td {
+    background-color: rgba(37, 130, 243, 0.03) !important;
+}
+body.sb-nav-fixed .table-striped tbody tr:nth-of-type(even) td {
+    background-color: rgba(255, 255, 255, 0.7) !important;
+}
+
+/* Row hover highlight */
+body.sb-nav-fixed .table tbody tr:hover td {
+    background-color: rgba(37, 130, 243, 0.08) !important;
+    color: var(--tracer-ink);
+}
+
+/* Rounded corners last row */
+body.sb-nav-fixed .table tbody tr:last-child td:first-child {
+    border-radius: 0 0 0 var(--tracer-radius);
+}
+body.sb-nav-fixed .table tbody tr:last-child td:last-child {
+    border-radius: 0 0 var(--tracer-radius) 0;
+}
+
+/* ── ACTION BUTTONS IN TABLE ── */
+body.sb-nav-fixed .table .btn-sm {
+    padding: 0.3rem 0.65rem;
+    font-size: 0.75rem;
+    font-weight: 600;
+    border-radius: 6px;
+    transition: transform 0.18s ease, box-shadow 0.18s ease, filter 0.18s ease;
+    border: none;
+}
+
+body.sb-nav-fixed .table .btn-sm:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(0, 0, 0, 0.18);
+    filter: brightness(1.08);
+}
+
+body.sb-nav-fixed .table .btn-sm:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+/* Warna tombol aksi lebih vivid */
+body.sb-nav-fixed .table .btn-warning {
+    background: linear-gradient(135deg, #f59e0b, #fbbf24);
+    color: #ffffff !important;
+}
+body.sb-nav-fixed .table .btn-danger {
+    background: linear-gradient(135deg, #ef4444, #f87171);
+    color: #ffffff !important;
+}
+body.sb-nav-fixed .table .btn-secondary {
+    background: linear-gradient(135deg, #64748b, #94a3b8);
+    color: #ffffff !important;
+}
+body.sb-nav-fixed .table .btn-info {
+    background: linear-gradient(135deg, var(--tracer-blue-2), var(--tracer-cyan));
+    color: #ffffff !important;
+}
+body.sb-nav-fixed .table .btn-success {
+    background: linear-gradient(135deg, #10b981, #34d399);
+    color: #ffffff !important;
+}
+body.sb-nav-fixed .table .btn-primary {
+    background: linear-gradient(135deg, var(--tracer-blue), var(--tracer-blue-2));
+    color: #ffffff !important;
+}
+
+/* ── DATATABLES CONTROLS ── */
+
+/* Length & filter wrapper */
+body.sb-nav-fixed .dataTables_wrapper .dataTables_length label,
+body.sb-nav-fixed .dataTables_wrapper .dataTables_filter label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--tracer-muted);
+}
+
+body.sb-nav-fixed .dataTables_wrapper .dataTables_length select,
+body.sb-nav-fixed .dataTables_wrapper .dataTables_filter input {
+    border: 1px solid rgba(148, 163, 184, 0.35);
+    border-radius: 8px;
+    padding: 0.35rem 0.65rem;
+    font-size: 0.85rem;
+    color: var(--tracer-ink);
+    background: rgba(255, 255, 255, 0.9);
+    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+body.sb-nav-fixed .dataTables_wrapper .dataTables_filter input:focus {
+    outline: none;
+    border-color: rgba(37, 130, 243, 0.55);
+    box-shadow: 0 0 0 3px rgba(37, 130, 243, 0.1);
+}
+
+/* Pagination */
+body.sb-nav-fixed .dataTables_wrapper .dataTables_paginate .paginate_button {
+    border-radius: 8px !important;
+    font-size: 0.82rem;
+    font-weight: 600;
+    padding: 0.3rem 0.7rem !important;
+    margin: 0 2px;
+    border: 1px solid transparent !important;
+    transition: all 0.18s ease;
+}
+
+body.sb-nav-fixed .dataTables_wrapper .dataTables_paginate .paginate_button:hover {
+    background: rgba(37, 130, 243, 0.1) !important;
+    border-color: rgba(37, 130, 243, 0.25) !important;
+    color: var(--tracer-blue) !important;
+}
+
+body.sb-nav-fixed .dataTables_wrapper .dataTables_paginate .paginate_button.current,
+body.sb-nav-fixed .dataTables_wrapper .dataTables_paginate .paginate_button.current:hover {
+    background: linear-gradient(135deg, var(--tracer-blue), var(--tracer-blue-2)) !important;
+    border-color: transparent !important;
+    color: #ffffff !important;
+    box-shadow: 0 4px 12px rgba(21, 87, 192, 0.3);
+}
+
+body.sb-nav-fixed .dataTables_wrapper .dataTables_paginate .paginate_button.disabled,
+body.sb-nav-fixed .dataTables_wrapper .dataTables_paginate .paginate_button.disabled:hover {
+    color: #cbd5e1 !important;
+    cursor: not-allowed;
+}
+
+/* Info text */
+body.sb-nav-fixed .dataTables_wrapper .dataTables_info {
+    font-size: 0.82rem;
+    color: var(--tracer-muted);
+    padding-top: 0.6rem;
+}
+
+/* Processing overlay */
+body.sb-nav-fixed .dataTables_wrapper .dataTables_processing {
+    border-radius: var(--tracer-radius);
+    background: rgba(255, 255, 255, 0.92);
+    border: 1px solid rgba(37, 130, 243, 0.2);
+    color: var(--tracer-blue);
+    font-weight: 700;
+    box-shadow: 0 8px 24px rgba(8, 34, 79, 0.12);
+}
+
+
+/* =========================================
+   ADMIN TABLE — OUTER BORDER (GACOR)
+========================================= */
+
+body.sb-nav-fixed .table-responsive {
+    border-radius: var(--tracer-radius);
+    box-shadow:
+        0 8px 28px rgba(8, 34, 79, 0.1);
+}
+
+/* Border di card yang membungkus header + table */
+body.sb-nav-fixed .card {
+    border: 2px solid rgba(21, 87, 192, 0.748) !important;
+    box-shadow:
+        0 0 0 1px rgba(98, 217, 255, 0.12),
+        0 8px 28px rgba(8, 34, 79, 0.1) !important;
 }

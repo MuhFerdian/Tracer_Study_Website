@@ -231,7 +231,7 @@
                         <div class="col-md-5 text-center">
                             <a href="#" data-bs-toggle="modal" data-bs-target="#modalSertifikat" title="Lihat sertifikat lengkap">
                                 <img
-                                    src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/SERTIFIKAT_AKREDITASI_NGANJUK.jpg') }}"
+                                    src="{{ asset('assets/img/SERTIFIKAT_AKREDITASI_NGANJUK.jpg') }}"
                                     alt="Sertifikat Akreditasi LAM INFOKOM"
                                     class="img-fluid rounded-3 shadow-sm"
                                     style="max-height: 160px; object-fit: cover; border: 2px solid #dbeafe; transition: transform 0.2s;"
@@ -260,7 +260,7 @@
                     </div>
                     <div class="modal-body text-center p-3">
                         <img
-                            src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/SERTIFIKAT_AKREDITASI_NGANJUK.jpg') }}"
+                            src="{{ asset('assets/img/SERTIFIKAT_AKREDITASI_NGANJUK.jpg') }}"
                             alt="Sertifikat Akreditasi LAM INFOKOM"
                             class="img-fluid rounded-3"
                             style="max-height: 80vh;"
@@ -279,7 +279,7 @@
             <div class="col-md-4 col-sm-6 animate__animated animate__fadeInUp">
                 <div class="benefit-card text-center">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/kaprodi_ulfaemi.png') }}"
+                        src="{{ asset('assets/img/kaprodi_ulfaemi.png') }}"
                         alt="Ulfa Emi Rahmawati, S.Kom., M.Kom."
                         class="rounded-circle mb-3 border border-3"
                         style="width: 120px; height: 120px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -294,7 +294,7 @@
             <div class="col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-1s">
                 <div class="benefit-card text-center">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/admin_prodi.jpg') }}"
+                        src="{{ asset('assets/img/admin_prodi.jpg') }}"
                         alt="M. Zulian Nurohman, S.A."
                         class="rounded-circle mb-3 border border-3"
                         style="width: 120px; height: 120px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"

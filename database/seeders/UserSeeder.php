@@ -46,7 +46,7 @@ class UserSeeder extends Seeder
             [
                 'role_id' => $adminRoleId,
                 'name' => 'Admin',
-                'email' => 'admin@example.com',
+                'email' => 'admin@gmail.com',
                 'password' => Hash::make('password123'),
                 // 'status' => 'pending',
                 'status' => 'active',
@@ -61,7 +61,7 @@ class UserSeeder extends Seeder
             [
                 'role_id' => $dosenRoleId,
                 'name' => 'Dosen',
-                'email' => 'dosen@example.com',
+                'email' => 'dosen@gmail.com',
                 'password' => Hash::make('password123'),
                 'status' => 'pending',
                 'updated_at' => $now,

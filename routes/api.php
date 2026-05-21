@@ -39,6 +39,16 @@ Route::get('/questions', [MobileQuestionController::class, 'index']);
 // Protected routes - require Sanctum token
 Route::middleware('auth:sanctum')->group(function () {
     Route::post('/answers', [MobileAnswerController::class, 'store']);
+    Route::get('/profile', [ProfileController::class, 'show']);
+    Route::post('/update-profile', [AlumniController::class, 'updateProfile']);
+    Route::post('/save-fcm-token', function (Request $request) {
+        $user = $request->user(); // ambil dari token, bukan dari request body
+        if ($user) {
+            $user->fcm_token = $request->token;
+            $user->save();
+        }
+        return response()->json(['status' => true]);
+    });
 });
 Route::post('/verify-otp', [MobileAuthController::class, 'verifyOtp']);
 Route::post('/resend-otp', [MobileAuthController::class, 'resendOtp']);
@@ -56,20 +66,9 @@ Route::get('/notifications/{user_id}', function ($id) {
         ->get();
 });
 
-Route::post('/save-fcm-token', function (Request $request) {
-    $user = \App\Models\User::find($request->user_id);
-
-    if ($user) {
-        $user->fcm_token = $request->token;
-        $user->save();
-    }
-
-    return response()->json(['status' => true]);
-});
+// Dipindah ke dalam auth:sanctum di atas
+// Route::post('/save-fcm-token', ...);
 Route::get('/reminder-survey', [ReminderController::class, 'kirimReminder']);
-
-Route::get('/profile', [ProfileController::class, 'show']);
-Route::post('/update-profile', [AlumniController::class, 'updateProfile']);
 
 Route::get('/lowongan', [LowonganController::class, 'index']);
 Route::get('/lowongan/{id}', [LowonganController::class, 'show']);

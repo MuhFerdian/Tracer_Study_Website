@@ -19,7 +19,14 @@ use Illuminate\Support\Facades\Storage;
             <div class="row mb-5 align-items-center">
                 <div class="col-md-4">
                     @if($lowongan->foto)
-                    <img src="{{ asset($lowongan->foto) }}"
+                    @php
+                        // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)
+                        // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()
+                        $fotoUrl = str_starts_with($lowongan->foto, 'startbootstrap')
+                            ? asset($lowongan->foto)
+                            : \Illuminate\Support\Facades\Storage::url($lowongan->foto);
+                    @endphp
+                    <img src="{{ $fotoUrl }}"
                     class="img-fluid rounded-4 shadow-sm"
                     onclick="openImageModal(this.src)"
                     style="

@@ -13,12 +13,11 @@
 
 # Vendor & dependencies (install ulang via composer)
 /vendor
-composer.lock
 
 # Node.js dependencies (install ulang via npm)
 /node_modules
 /node_modules/*
-package-lock.json
+# package-lock.json
 yarn.lock
 
 # ==============================================
@@ -37,8 +36,11 @@ yarn.lock
 # Laravel temp files
 /public/hot
 /public/hot/*
-/public/build
-/public/build/*
+# /public/build
+# /public/build/*
+
+# Bootstrap cache (auto-generated, jangan di-commit)
+/bootstrap/cache/*.php
 
 # Laravel debug & logs
 *.log
@@ -175,6 +177,10 @@ docker-compose.override.yml
 # PROJECT SPECIFIC (PBL Tracer Study)
 # ==============================================
 
+# Firebase service account (RAHASIA - JANGAN PERNAH PUSH!)
+storage/app/firebase/service-account.json
+# composer.lock
+
 # Backup files
 *.backup
 *.sql
@@ -186,6 +192,7 @@ database/*.dump
 backup/
 backups/
 .bkp/
+deploy.php
 
 # Sesitive data (jika ada testing data)
 database/seeders/data/*.json

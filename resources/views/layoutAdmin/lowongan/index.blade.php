@@ -59,17 +59,17 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Nama Perusahaan</label>
-                                <input type="text" name="nama_perusahaan" id="nama_perusahaan" class="form-control" placeholder="Nama perusahaan" required>
+                                <input type="text" name="nama_perusahaan" id="nama_perusahaan" class="form-control" placeholder="Contoh: PT Freeport Indonesia" required>
                             </div>
                         </div>
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Lokasi</label>
-                                <input type="text" name="lokasi" id="lokasi" class="form-control" placeholder="Surabaya / Remote">
+                                <input type="text" name="lokasi" id="lokasi" class="form-control" placeholder="Contoh: Surabaya / Remote">
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Gaji</label>
-                                <input type="text" name="gaji" id="gaji" class="form-control" placeholder="Rp 5.000.000">
+                                <input type="text" name="gaji" id="gaji" class="form-control" placeholder="Contoh: Rp 5.000.000">
                             </div>
                         </div>
                         <div class="row mb-3">
@@ -79,12 +79,12 @@
                             </div>
                             <div class="col-md-6">
                                 <label class="form-label fw-bold">Kontak</label>
-                                <input type="text" name="kontak" id="kontak" class="form-control" placeholder="08123456789">
+                                <input type="text" name="kontak" id="kontak" class="form-control" placeholder="Contoh: 08123456789">
                             </div>
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Link Lamaran</label>
-                            <input type="url" name="link_lamaran" id="link_lamaran" class="form-control" placeholder="https://">
+                            <input type="url" name="link_lamaran" id="link_lamaran" class="form-control" placeholder="Contoh: https://">
                         </div>
                         <div class="mb-3">
                             <label class="form-label fw-bold">Deskripsi</label>

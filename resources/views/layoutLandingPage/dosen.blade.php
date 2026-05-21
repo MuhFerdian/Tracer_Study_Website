@@ -23,7 +23,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/dr-khomsatun-nimah-spd-mpd.jpg') }}"
+                        src="{{ asset('assets/img/dr-khomsatun-nimah-spd-mpd.jpg') }}"
                         alt="Dr. Khomsatun Ni'mah, S.Pd., M.Pd."
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -39,7 +39,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/kaprodi_ulfaemi.png') }}"
+                        src="{{ asset('assets/img/kaprodi_ulfaemi.png') }}"
                         alt="Ulfa Emi Rahmawati, S.Kom., M.Kom."
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -55,7 +55,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-1s">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/intan-sulistyaningrum-sakkinah-spd-meng.jpg') }}"
+                        src="{{ asset('assets/img/intan-sulistyaningrum-sakkinah-spd-meng.jpg') }}"
                         alt="Intan Sulistyaningrum Sakkinah, S.Pd., M.Eng"
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -71,7 +71,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/qonitatul-hasanah-sst-mtrt.jpg') }}"
+                        src="{{ asset('assets/img/qonitatul-hasanah-sst-mtrt.jpg') }}"
                         alt="Qonitatul Hasanah, S.ST., M.Tr.T"
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -87,7 +87,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-1s">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/puji_st_meng.png') }}"
+                        src="{{ asset('assets/img/puji_st_meng.png') }}"
                         alt="Puji Hastuti, S.T., M.Eng."
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -103,7 +103,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/raditya_arief_skom_meng.png') }}"
+                        src="{{ asset('assets/img/raditya_arief_skom_meng.png') }}"
                         alt="Raditya Arief Pratama, S.Kom., M.Eng"
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -119,7 +119,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/qonitatul-hasanah-sst-mtrt.jpg') }}"
+                        src="{{ asset('assets/img/qonitatul-hasanah-sst-mtrt.jpg') }}"
                         alt="Qonitatul Hasanah, S.ST., M.Tr.T"
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"
@@ -135,7 +135,7 @@
             <div class="col-lg-3 col-md-4 col-sm-6 animate__animated animate__fadeInUp animate__delay-2s">
                 <div class="benefit-card text-center h-100">
                     <img
-                        src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/muhammad-ainul-fikri-st-meng.jpg') }}"
+                        src="{{ asset('assets/img/muhammad-ainul-fikri-st-meng.jpg') }}"
                         alt="Muhammad Ainul Fikri, S.T., M.Eng."
                         class="rounded-circle mb-3 border border-3"
                         style="width: 110px; height: 110px; object-fit: cover; border-color: var(--primary, #2563eb) !important;"

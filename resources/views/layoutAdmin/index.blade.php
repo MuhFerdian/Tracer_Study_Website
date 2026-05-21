@@ -621,34 +621,167 @@ $(document).ready(function () {
         });
     }
 
-    // Bar chart horizontal — untuk Sebaran Profesi Lulusan
+    // Bar chart vertikal — untuk Sebaran Profesi Lulusan
+    // function renderBar(canvasId, labels, values) {
+    //     var el = document.getElementById(canvasId);
+    //     if (!el) return;
+    //     if (el._chart) el._chart.destroy();
+
+    //     var maxVal = Math.max.apply(null, values);
+    //     var suggestedMax = maxVal < 3 ? maxVal + 1 : Math.ceil(maxVal * 1.15);
+
+    //     // Tinggi dinamis agar label tidak miring: minimal 250px, 50px per bar
+    //     var dynHeight = Math.max(250, labels.length * 50);
+    //     el.style.height = dynHeight + 'px';
+    //     el.parentElement.style.alignItems = 'flex-start';
+
+    //     el._chart = new Chart(el.getContext('2d'), {
+    //         type: 'bar',
+    //         data: {
+    //             labels: labels,
+    //             datasets: [{
+    //                 label: 'Jumlah Alumni',
+    //                 data: values,
+    //                 backgroundColor: COLORS,
+    //                 borderRadius: 6,
+    //                 borderSkipped: false
+    //             }]
+    //         },
+    //         options: {
+    //             indexAxis: 'y',
+    //             responsive: true,
+    //             maintainAspectRatio: false,
+    //             plugins: {
+    //                 legend: { position: 'top' },
+    //                 tooltip: {
+    //                     callbacks: {
+    //                         label: function(ctx) { return ' ' + ctx.parsed.x + ' alumni'; }
+    //                     }
+    //                 }
+    //             },
+    //             scales: {
+    //                 x: {
+    //                     beginAtZero: true,
+    //                     min: 0,
+    //                     suggestedMax: suggestedMax,
+    //                     ticks: {
+    //                         stepSize: 1,
+    //                         precision: 0,
+    //                         callback: function(value) {
+    //                             return Number.isInteger(value) ? value : null;
+    //                         },
+    //                         maxRotation: 0,
+    //                         minRotation: 0
+    //                     },
+    //                     grid: { color: 'rgba(0,0,0,0.06)' }
+    //                 },
+    //                 y: {
+    //                     ticks: {
+    //                         font: { size: 11 },
+    //                         maxRotation: 0,
+    //                         minRotation: 0,
+    //                         autoSkip: false
+    //                     },
+    //                     grid: { display: false }
+    //                 }
+    //             }
+    //         }
+    //     });
+    // }
+
     function renderBar(canvasId, labels, values) {
-        var el = document.getElementById(canvasId);
-        if (!el) return;
-        if (el._chart) el._chart.destroy();
-        el._chart = new Chart(el.getContext('2d'), {
-            type: 'bar',
-            data: {
-                labels: labels,
-                datasets: [{
-                    label: 'Jumlah Alumni',
-                    data: values,
-                    backgroundColor: COLORS,
-                    borderRadius: 6,
-                    borderSkipped: false
-                }]
+
+    var el = document.getElementById(canvasId);
+
+    if (!el) return;
+
+    if (el._chart) el._chart.destroy();
+
+    var maxVal = Math.max.apply(null, values);
+
+    var suggestedMax = maxVal < 3
+        ? maxVal + 1
+        : Math.ceil(maxVal * 1.15);
+
+    // tinggi chart
+    el.style.height = '320px';
+
+    el._chart = new Chart(el.getContext('2d'), {
+
+        type: 'bar',
+
+        data: {
+            labels: labels,
+
+            datasets: [{
+                label: 'Jumlah Alumni',
+                data: values,
+                backgroundColor: COLORS,
+                borderRadius: 8,
+                borderSkipped: false
+            }]
+        },
+
+        options: {
+
+            responsive: true,
+            maintainAspectRatio: false,
+
+            plugins: {
+                legend: {
+                    position: 'top'
+                },
+
+                tooltip: {
+                    callbacks: {
+                        label: function(ctx) {
+                            return ' ' + ctx.parsed.y + ' alumni';
+                        }
+                    }
+                }
             },
-            options: {
-                indexAxis: 'y',
-                responsive: true,
-                plugins: { legend: { display: false } },
-                scales: {
-                    x: { beginAtZero: true, ticks: { stepSize: 1 } },
-                    y: { ticks: { font: { size: 11 } } }
+
+            scales: {
+
+                x: {
+                    ticks: {
+                        autoSkip: false,
+                        maxRotation: 0,
+                        minRotation: 0,
+                        font: {
+                            size: 11
+                        }
+                    },
+
+                    grid: {
+                        display: false
+                    }
+                },
+
+                y: {
+                    beginAtZero: true,
+                    min: 0,
+                    suggestedMax: suggestedMax,
+
+                    ticks: {
+                        stepSize: 1,
+                        precision: 0,
+
+                        callback: function(value) {
+                            return Number.isInteger(value)
+                                ? value
+                                : null;
+                        }
+                    },
+
+                    grid: {
+                        color: 'rgba(0,0,0,0.06)'
+                    }
                 }
             }
-        });
-    }
+        }
+    });
+}
 
     // Doughnut chart — untuk grafik kompetensi
     function renderDoughnut(canvasId, labels, values, bgColors) {

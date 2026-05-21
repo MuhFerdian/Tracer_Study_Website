@@ -1,4 +1,4 @@
-<!-- @extends('layoutAdmin.app') -->
+@extends('layoutAdmin.app')
 
 @section('content')
 
@@ -13,7 +13,8 @@
         <div class="card-body p-4">
 
             <form action="{{ url('admin/lowongan-pekerjaan/store') }}"
-                  method="POST">
+                  method="POST"
+                  enctype="multipart/form-data">
 
                 @csrf
 
@@ -41,7 +42,7 @@
                         <input type="text"
                                name="nama_perusahaan"
                                class="form-control rounded-3"
-                               placeholder="Nama perusahaan"
+                               placeholder="Contoh: PT Freeport Indonesia"
                                required>
                     </div>
 
@@ -54,7 +55,7 @@
                         <input type="text"
                                name="lokasi"
                                class="form-control rounded-3"
-                               placeholder="Surabaya / Remote">
+                               placeholder="Contoh: Surabaya / Remote">
                     </div>
 
                     {{-- GAJI --}}
@@ -66,7 +67,7 @@
                         <input type="text"
                                name="gaji"
                                class="form-control rounded-3"
-                               placeholder="Rp 5.000.000">
+                               placeholder="Contoh: Rp 5.000.000- Rp 8.000.000">
                     </div>
 
                     {{-- BATAS LAMARAN --}}
@@ -89,7 +90,7 @@
                         <input type="text"
                                name="kontak"
                                class="form-control rounded-3"
-                               placeholder="08123456789">
+                               placeholder="Contoh: 08123456789">
                     </div>
 
                     {{-- LINK --}}
@@ -101,7 +102,20 @@
                         <input type="text"
                                name="link_lamaran"
                                class="form-control rounded-3"
-                               placeholder="https://">
+                               placeholder="Contoh: https://">
+                    </div>
+
+                    {{-- FOTO --}}
+                    <div class="col-md-12 mb-3">
+                        <label class="form-label fw-semibold">
+                            Foto Lowongan
+                        </label>
+                        <input type="file"
+                               name="foto"
+                               class="form-control rounded-3"
+                               placeholder="Contoh: foto_lowongan.jpg"
+                               accept="image/jpg,image/jpeg,image/png">
+                        <small class="text-muted">Format: JPG, JPEG, PNG • Maksimal 5 MB</small>
                     </div>
 
                     {{-- DESKRIPSI --}}

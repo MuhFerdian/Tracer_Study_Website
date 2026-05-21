@@ -23,7 +23,7 @@
                 <div class="form-group mb-3">
                     <label class="fw-semibold">Nama <span class="text-danger">*</span></label>
                     <input type="text" name="nama_alumni" value="{{ $alumni->nama }}" class="form-control"
-                        placeholder="Contoh: Muh Masrukhin Ferdian" required>
+                        placeholder="Contoh: Muhammad Masrukhin Ferdian" required>
                     <small class="text-muted">Nama lengkap alumni sesuai ijazah.</small>
                     <small id="error-nama_alumni" class="error-text text-danger d-block"></small>
                 </div>

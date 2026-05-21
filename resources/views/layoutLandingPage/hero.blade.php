@@ -29,15 +29,15 @@
                 </div>
 
                 <div class="hero-stat-grid animate__animated animate__fadeInUp animate__delay-1s">
-                    <div class="hero-stat">
+                    <div class="hero-stat hero-stat--hover">
                         <strong>Alumni</strong>
                         <span>Riwayat lulusan lebih mudah dilacak</span>
                     </div>
-                    <div class="hero-stat">
+                    <div class="hero-stat hero-stat--hover">
                         <strong>Data</strong>
                         <span>Rekap survey tersusun otomatis</span>
                     </div>
-                    <div class="hero-stat">
+                    <div class="hero-stat hero-stat--hover">
                         <strong>Mutu</strong>
                         <span>Evaluasi kurikulum lebih terukur</span>
                     </div>
@@ -46,7 +46,7 @@
 
             <div class="col-lg-6 position-relative">
                 <div class="hero-visual animate__animated animate__fadeInRight animate__delay-1s">
-                    <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/ilustrasi.png') }}"
+                    <img src="{{ asset('assets/img/ilustrasi.png') }}"
                         alt="Ilustrasi Tracer Study">
                     <div class="hero-visual-note">
                         <i class="fas fa-shield-halved"></i>

@@ -185,26 +185,39 @@ function formatGajiLoker(string $gaji): string {
     .loker-empty .benefit-icon { margin: 0 auto 18px; }
 
     /* Pagination */
-    .loker-pager { gap: 6px; }
-    .loker-pager .page-link {
-        border: 1px solid var(--tracer-line);
+    .loker-pagination-wrap nav { display: flex; justify-content: center; }
+    .loker-pagination-wrap .pagination {
+        gap: 6px;
+        flex-wrap: wrap;
+        justify-content: center;
+    }
+    .loker-pagination-wrap .page-link {
+        border: 1px solid var(--tracer-line) !important;
         border-radius: 12px !important;
-        padding: 8px 14px;
-        color: var(--tracer-blue);
-        font-weight: 700;
-        font-size: .84rem;
-        background: rgba(255,255,255,.82);
+        padding: 8px 14px !important;
+        color: var(--tracer-blue) !important;
+        font-weight: 700 !important;
+        font-size: .84rem !important;
+        background: rgba(255,255,255,.82) !important;
         backdrop-filter: blur(10px);
         transition: .2s;
+        line-height: 1.4;
     }
-    .loker-pager .page-link:hover { background: rgba(37,130,243,.08); border-color: rgba(37,130,243,.2); }
-    .loker-pager .page-item.active .page-link {
-        background: linear-gradient(135deg, var(--tracer-blue), var(--tracer-blue-2));
-        border-color: transparent;
-        color: white;
+    .loker-pagination-wrap .page-link:hover {
+        background: rgba(37,130,243,.08) !important;
+        border-color: rgba(37,130,243,.2) !important;
+        color: var(--tracer-blue) !important;
+    }
+    .loker-pagination-wrap .page-item.active .page-link {
+        background: linear-gradient(135deg, var(--tracer-blue), var(--tracer-blue-2)) !important;
+        border-color: transparent !important;
+        color: white !important;
         box-shadow: 0 6px 18px rgba(37,130,243,.3);
     }
-    .loker-pager .page-item.disabled .page-link { opacity: .45; }
+    .loker-pagination-wrap .page-item.disabled .page-link {
+        opacity: .45;
+        pointer-events: none;
+    }
 
     /* Lightbox */
     .lb-overlay {
@@ -311,7 +324,9 @@ function formatGajiLoker(string $gaji): string {
                     {{-- Foto --}}
                     @if($item->foto)
                     @php
-                        $fotoUrl = str_starts_with($item->foto, 'startbootstrap') || str_starts_with($item->foto, 'foto_loker')
+                        // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)
+                        // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()
+                        $fotoUrl = str_starts_with($item->foto, 'startbootstrap')
                             ? asset($item->foto)
                             : \Illuminate\Support\Facades\Storage::url($item->foto);
                     @endphp
@@ -409,10 +424,8 @@ function formatGajiLoker(string $gaji): string {
 
         {{-- Pagination --}}
         @if($lowongan->hasPages())
-        <div class="mt-5 d-flex justify-content-center">
-            <ul class="pagination loker-pager">
-                {{ $lowongan->appends(request()->query())->links() }}
-            </ul>
+        <div class="mt-5 loker-pagination-wrap">
+            {{ $lowongan->appends(request()->query())->links('pagination::bootstrap-5') }}
         </div>
         @endif
 

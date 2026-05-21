@@ -13,11 +13,11 @@
     <meta name="author" content="" />
     <title>Dashboard - Tracer Study JTI Polije Nganjuk</title>
     <meta name="csrf-token" content="{{ csrf_token() }}">
-    <link rel="icon" type="image/png" href="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/Logo_Polije2.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/Logo_Polije2.png') }}">
 
     {{-- Core CSS --}}
-    <link href="{{ asset('/startbootstrap-sb-admin-gh-pages/css/styles.css') }}" rel="stylesheet" />
+    <link href="{{ asset('/assets/css/styles.css') }}" rel="stylesheet" />
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@latest/font/bootstrap-icons.css">
     <link rel="stylesheet" href="{{ asset('css/tracer-ui.css') }}">
@@ -58,12 +58,12 @@
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js" crossorigin="anonymous"></script>
 
     {{-- 3. SB Admin Core Scripts --}}
-    <script src="{{ asset('/startbootstrap-sb-admin-gh-pages/js/scripts.js') }}"></script>
+    <script src="{{ asset('/assets/js/scripts.js') }}"></script>
 
     {{-- 4. Chart.js (jika digunakan untuk grafik) --}}
     <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.8.0/Chart.min.js" crossorigin="anonymous"></script>
-    <script src="{{ asset('/startbootstrap-sb-admin-gh-pages/assets/demo/chart-area-demo.js') }}"></script>
-    <script src="{{ asset('/startbootstrap-sb-admin-gh-pages/assets/demo/chart-bar-demo.js') }}"></script>
+    <script src="{{ asset('/assets/demo/chart-area-demo.js') }}"></script>
+    <script src="{{ asset('/assets/demo/chart-bar-demo.js') }}"></script>
 
     {{-- 5. jQuery DataTables (pastikan ini yang Anda gunakan, bukan Simple-DataTables) --}}
     <script src="https://cdn.datatables.net/1.13.6/js/jquery.dataTables.min.js"></script>

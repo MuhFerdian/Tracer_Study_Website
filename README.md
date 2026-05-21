@@ -1,6 +1,6 @@
 <p align="center">
   <a href="https://polije.ac.id" target="_blank">
-    <img src="public/startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije_Blue.png" width="200" alt="Polije Logo">
+    <img src="public/assets/img/Logo_Polije_Blue.png" width="200" alt="Polije Logo">
   </a>
 </p>
 
