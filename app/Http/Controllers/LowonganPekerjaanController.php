@@ -69,22 +69,36 @@ class LowonganPekerjaanController extends Controller
     public function store(Request $request, FcmService $fcm)
     {
         $request->validate([
-            'posisi' => 'required',
+            'posisi'          => 'required',
             'nama_perusahaan' => 'required',
+            'kontak'          => ['required', 'regex:/^(08)[0-9]{8,12}$/'],
+            'foto'            => 'nullable|image|mimes:jpg,jpeg,png|max:5120',
+        ], [
+            'kontak.regex' => 'Nomor kontak harus diawali 08 dan terdiri dari 10-14 digit.',
+            'foto.image'   => 'File foto harus berupa gambar.',
+            'foto.mimes'   => 'Format foto harus JPG, JPEG, atau PNG.',
+            'foto.max'     => 'Ukuran foto maksimal 5 MB.',
         ]);
 
+        $foto = null;
+        if ($request->hasFile('foto')) {
+            $path = $request->file('foto')->store('foto_loker', 'public');
+            $foto = $path;
+        }
+
         $lowongan = LowonganPekerjaan::create([
-            'posisi' => $request->posisi,
+            'posisi'          => $request->posisi,
             'nama_perusahaan' => $request->nama_perusahaan,
-            'lokasi' => $request->lokasi,
-            'gaji' => $request->gaji,
-            'deskripsi' => $request->deskripsi,
-            'batas_lamaran' => $request->batas_lamaran,
-            'kontak' => $request->kontak,
-            'link_lamaran' => $request->link_lamaran,
-            'dibuat_oleh' => auth()->id(),
-            'role' => auth()->user()->role->role_nama ?? 'Dosen',
-            'aktif' => true,
+            'lokasi'          => $request->lokasi,
+            'gaji'            => $request->gaji,
+            'deskripsi'       => $request->deskripsi,
+            'batas_lamaran'   => $request->batas_lamaran,
+            'kontak'          => $request->kontak,
+            'link_lamaran'    => $request->link_lamaran,
+            'dibuat_oleh'     => auth()->id(),
+            'role'            => auth()->user()->role->role_nama ?? 'Dosen',
+            'aktif'           => true,
+            'foto'            => $foto,
         ]);
 
         // ambil semua alumni
@@ -128,13 +142,19 @@ class LowonganPekerjaanController extends Controller
 
         if ($request->hasFile('foto')) {
             // Hapus foto lama
-            if ($lowongan->foto && file_exists(public_path($lowongan->foto))) {
-                unlink(public_path($lowongan->foto));
+            if ($lowongan->foto) {
+                if (str_starts_with($lowongan->foto, 'startbootstrap')) {
+                    // Path lama: file ada di public/
+                    $oldPath = public_path($lowongan->foto);
+                    if (file_exists($oldPath)) {
+                        unlink($oldPath);
+                    }
+                } else {
+                    \Illuminate\Support\Facades\Storage::disk('public')->delete($lowongan->foto);
+                }
             }
-            $file     = $request->file('foto');
-            $filename = time() . '_' . $file->getClientOriginalName();
-            $file->move(public_path('startbootstrap-sb-admin-gh-pages/assets/foto_loker'), $filename);
-            $data['foto'] = 'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $filename;
+            $path         = $request->file('foto')->store('foto_loker', 'public');
+            $data['foto'] = $path;
         }
 
         $lowongan->update($data);
@@ -149,9 +169,18 @@ class LowonganPekerjaanController extends Controller
     {
         $lowongan = LowonganPekerjaan::findOrFail($id);
 
-        // Hapus foto jika ada
-        if ($lowongan->foto && file_exists(public_path($lowongan->foto))) {
-            unlink(public_path($lowongan->foto));
+        // Hapus foto sebelum delete record
+        if ($lowongan->foto) {
+            if (str_starts_with($lowongan->foto, 'startbootstrap')) {
+                // Path lama: file ada di public/
+                $oldPath = public_path($lowongan->foto);
+                if (file_exists($oldPath)) {
+                    unlink($oldPath);
+                }
+            } else {
+                // Path baru: file ada di storage/app/public/
+                \Illuminate\Support\Facades\Storage::disk('public')->delete($lowongan->foto);
+            }
         }
 
         $lowongan->delete();

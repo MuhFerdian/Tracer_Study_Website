@@ -64,9 +64,9 @@ function formatGaji(string $gaji): string {
                         {{-- FOTO --}}
                         @if(!empty($item->foto))
                             @php
-                                // Foto baru: path relatif ke public/ (mengandung 'startbootstrap' atau 'foto_loker')
-                                // Foto lama: path di storage/app/public/ (hanya 'loker/namafile')
-                                $fotoUrl = str_starts_with($item->foto, 'startbootstrap') || str_starts_with($item->foto, 'foto_loker')
+                                // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)
+                                // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()
+                                $fotoUrl = str_starts_with($item->foto, 'startbootstrap')
                                     ? asset($item->foto)
                                     : \Illuminate\Support\Facades\Storage::url($item->foto);
                             @endphp

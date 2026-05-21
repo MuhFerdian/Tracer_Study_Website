@@ -70,36 +70,83 @@ class DashboardController extends Controller
 
     // ==================================================
     // Grafik Sebaran Profesi Lulusan → f8
+    // Menggunakan distribusi per option label (konsisten dengan PDF)
     // ==================================================
     public function getProfesiChart(Request $request)
     {
         $periodId = $request->query('period_id');
-        $periodCond = $periodId ? "AND a.survey_period_id = ?" : '';
+        $pid      = (int) $periodId;
 
-        // Urutan ?: period_id dulu (di JOIN), lalu kode_soal (di WHERE)
-        $params = [];
-        if ($periodId) $params[] = $periodId;
-        $params[] = 'f8';
-
-        $data = DB::select("
-            SELECT
-                ad.value AS profesi,
-                COUNT(DISTINCT a.alumni_id) AS total
-            FROM answer_details ad
-            JOIN answers a   ON a.id = ad.answer_id $periodCond
-            JOIN questions q ON q.id = a.question_id
-            WHERE q.kode_soal = ?
-              AND ad.value IS NOT NULL
-              AND ad.value != ''
-            GROUP BY ad.value
-            ORDER BY total DESC
-        ", $params);
-
-        if (empty($data)) {
+        // Ambil question f8
+        $question = DB::table('questions')->where('kode_soal', 'f8')->first();
+        if (!$question) {
             return response()->json([['profesi' => 'Belum Ada Data', 'total' => 0]]);
         }
 
-        return response()->json($data);
+        // Ambil semua option label untuk f8
+        $options = DB::table('question_options')
+            ->where('question_id', $question->id)
+            ->orderBy('urutan')
+            ->pluck('label');
+
+        if ($options->isEmpty()) {
+            // Fallback: pakai ad.value langsung jika tidak ada options
+            $periodCond = $pid > 0 ? "AND a.survey_period_id = ?" : '';
+            $params = [];
+            if ($pid > 0) $params[] = $pid;
+            $params[] = 'f8';
+
+            $data = DB::select("
+                SELECT
+                    ad.value AS profesi,
+                    COUNT(DISTINCT a.alumni_id) AS total
+                FROM answer_details ad
+                JOIN answers a   ON a.id = ad.answer_id $periodCond
+                JOIN questions q ON q.id = a.question_id
+                WHERE q.kode_soal = ?
+                  AND ad.value IS NOT NULL
+                  AND ad.value != ''
+                GROUP BY ad.value
+                ORDER BY total DESC
+            ", $params);
+
+            return empty($data)
+                ? response()->json([['profesi' => 'Belum Ada Data', 'total' => 0]])
+                : response()->json($data);
+        }
+
+        // Hitung per option label (plain string + JSON array) — sama persis dengan PDF
+        $distribution = $options->map(function ($label) use ($question, $pid) {
+            $plainCount = DB::table('answer_details as ad')
+                ->join('answers as a', 'a.id', '=', 'ad.answer_id')
+                ->where('a.question_id', $question->id)
+                ->whereRaw('TRIM(LOWER(ad.value)) = TRIM(LOWER(?))', [$label])
+                ->when($pid > 0, fn($q) => $q->where('a.survey_period_id', $pid))
+                ->count();
+
+            $jsonCount = DB::table('answer_details as ad')
+                ->join('answers as a', 'a.id', '=', 'ad.answer_id')
+                ->where('a.question_id', $question->id)
+                ->whereRaw(
+                    "JSON_VALID(ad.value) = 1 AND JSON_CONTAINS(LOWER(ad.value), LOWER(JSON_QUOTE(?)))",
+                    [$label]
+                )
+                ->when($pid > 0, fn($q) => $q->where('a.survey_period_id', $pid))
+                ->count();
+
+            return [
+                'profesi' => $label,
+                'total'   => $plainCount + $jsonCount,
+            ];
+        })->filter(fn($item) => $item['total'] > 0)
+          ->sortByDesc('total')
+          ->values();
+
+        if ($distribution->isEmpty()) {
+            return response()->json([['profesi' => 'Belum Ada Data', 'total' => 0]]);
+        }
+
+        return response()->json($distribution);
     }
 
     // ==================================================

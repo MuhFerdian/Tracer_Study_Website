@@ -4,8 +4,8 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <title>Laporan Tracer Study — Tracer Study JTI Polije</title>
-    <link rel="icon" type="image/png" href="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}">
-    <link rel="shortcut icon" type="image/png" href="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/Logo_Polije2.png') }}">
+    <link rel="shortcut icon" type="image/png" href="{{ asset('assets/img/Logo_Polije2.png') }}">
     <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap" rel="stylesheet">
     <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
     <style>

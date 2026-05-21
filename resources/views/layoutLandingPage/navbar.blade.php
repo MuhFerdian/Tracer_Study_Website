@@ -1,7 +1,7 @@
 <nav class="navbar navbar-expand-lg navbar-dark landing-navbar fixed-top" id="mainNavbar">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-3" href="{{ url('/landingpage') }}">
-            <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/Logo_Polije2.png') }}" alt="Logo Politeknik Negeri Jember">
+            <img src="{{ asset('assets/img/Logo_Polije2.png') }}" alt="Logo Politeknik Negeri Jember">
             <div class="d-flex flex-column">
                 <span class="landing-brand-title">Tracer Study</span>
                 <small class="landing-brand-subtitle">Jurusan Teknologi Informasi</small>

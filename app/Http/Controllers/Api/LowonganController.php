@@ -8,7 +8,6 @@ use App\Models\LowonganPekerjaan;
 use App\Models\Notification;
 use App\Models\User;
 use App\Services\FcmService;
-use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
 
 class LowonganController extends Controller
@@ -23,18 +22,20 @@ class LowonganController extends Controller
 
         if ($request->filled('search')) {
             $keyword = $request->search;
+
             $query->where(function ($q) use ($keyword) {
                 $q->where('posisi', 'like', "%{$keyword}%")
-                  ->orWhere('nama_perusahaan', 'like', "%{$keyword}%")
-                  ->orWhere('lokasi', 'like', "%{$keyword}%");
+                    ->orWhere('nama_perusahaan', 'like', "%{$keyword}%")
+                    ->orWhere('lokasi', 'like', "%{$keyword}%");
             });
         }
 
         $perPage   = (int) $request->get('per_page', 10);
-        $perPage   = min(max($perPage, 1), 50); // clamp 1–50
+        $perPage   = min(max($perPage, 1), 50);
         $paginated = $query->paginate($perPage);
 
-        $items = collect($paginated->items())->map(fn ($item) => $this->formatLowongan($item));
+        $items = collect($paginated->items())
+            ->map(fn($item) => $this->formatLowongan($item));
 
         return response()->json([
             'status'  => true,
@@ -71,7 +72,7 @@ class LowonganController extends Controller
     }
 
     // =============================================
-    // TAMBAH LOWONGAN (dari mobile)
+    // TAMBAH LOWONGAN
     // =============================================
     public function store(Request $request)
     {
@@ -86,6 +87,10 @@ class LowonganController extends Controller
             'link_lamaran'    => 'nullable|url|max:500',
             'dibuat_oleh'     => 'nullable|integer|exists:users,id',
             'role'            => 'nullable|in:admin,dosen,alumni',
+
+            // FOTO
+            'foto'            => 'nullable|image|mimes:jpg,jpeg,png|max:2048',
+
         ], [
             'posisi.required'              => 'Posisi pekerjaan wajib diisi.',
             'nama_perusahaan.required'     => 'Nama perusahaan wajib diisi.',
@@ -95,6 +100,11 @@ class LowonganController extends Controller
             'link_lamaran.url'             => 'Link lamaran harus berupa URL yang valid.',
             'dibuat_oleh.exists'           => 'User pembuat tidak ditemukan.',
             'role.in'                      => 'Role harus salah satu dari: admin, dosen, alumni.',
+
+            // FOTO
+            'foto.image'                   => 'File harus berupa gambar.',
+            'foto.mimes'                   => 'Foto harus berformat jpg, jpeg, atau png.',
+            'foto.max'                     => 'Ukuran foto maksimal 2MB.',
         ]);
 
         if ($validator->fails()) {
@@ -105,6 +115,34 @@ class LowonganController extends Controller
             ], 422);
         }
 
+        // =============================================
+        // UPLOAD FOTO
+        // =============================================
+        $fotoPath = null;
+
+        if ($request->hasFile('foto')) {
+
+            $file = $request->file('foto');
+
+            // Nama file unik
+            $namaFile = time() . '_' . $file->getClientOriginalName();
+
+            // Folder tujuan
+            $tujuanPath = public_path(
+                'startbootstrap-sb-admin-gh-pages/assets/foto_loker'
+            );
+
+            // Pindahkan file
+            $file->move($tujuanPath, $namaFile);
+
+            // Simpan path ke database
+            $fotoPath =
+                'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $namaFile;
+        }
+
+        // =============================================
+        // SIMPAN LOWONGAN
+        // =============================================
         $lowongan = LowonganPekerjaan::create([
             'posisi'          => $request->posisi,
             'nama_perusahaan' => $request->nama_perusahaan,
@@ -117,13 +155,20 @@ class LowonganController extends Controller
             'dibuat_oleh'     => $request->dibuat_oleh,
             'role'            => $request->role ?? 'alumni',
             'aktif'           => true,
+
+            // FOTO
+            'foto'            => $fotoPath,
         ]);
 
-        // Kirim push notifikasi ke semua user yang punya FCM token
+        // =============================================
+        // PUSH NOTIFIKASI
+        // =============================================
         $users = User::whereNotNull('fcm_token')->get();
-        $fcm   = new FcmService();
+
+        $fcm = new FcmService();
 
         foreach ($users as $user) {
+
             $notif = Notification::create([
                 'user_id' => $user->id,
                 'title'   => 'Lowongan Baru 🔥',
@@ -147,7 +192,7 @@ class LowonganController extends Controller
     }
 
     // =============================================
-    // HELPER: Format response + foto_url
+    // FORMAT RESPONSE
     // =============================================
     private function formatLowongan(LowonganPekerjaan $item): array
     {
@@ -164,9 +209,12 @@ class LowonganController extends Controller
             'dibuat_oleh'     => $item->dibuat_oleh,
             'role'            => $item->role,
             'aktif'           => (bool) $item->aktif,
+
+            // FOTO URL
             'foto_url'        => $item->foto
-                                    ? Storage::url($item->foto)
-                                    : null,
+                ? asset($item->foto)
+                : null,
+
             'created_at'      => $item->created_at,
             'updated_at'      => $item->updated_at,
         ];

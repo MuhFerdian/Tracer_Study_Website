@@ -2,7 +2,7 @@
     <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
         {{-- <div class="sb-sidenav-header d-flex flex-column align-items-center"
             style="padding-top: 0.3rem; padding-bottom: 0.3rem;">
-            <img class="logo-animated" src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc5.png') }}"
+            <img class="logo-animated" src="{{ asset('assets/img/logo_tc5.png') }}"
                 alt="Logo" style="height: 80px; margin-right: 5px;"> --}}
             {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">Admin Panel</div> --}}
             {{-- @php
@@ -18,7 +18,7 @@
         <div class="sidebar-brand">
 
             <img class="logo-animated"
-                src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_tc5.png') }}"
+                src="{{ asset('assets/img/logo_tc5.png') }}"
                 alt="Logo">
 
             <div class="sidebar-brand-title">

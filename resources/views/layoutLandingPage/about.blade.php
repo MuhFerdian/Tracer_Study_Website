@@ -18,12 +18,12 @@
                     </p>
 
                     <div class="glass-info-row">
-                        <div class="glass-info">
+                        <div class="glass-info glass-info--hover">
                             <i class="fas fa-briefcase mb-3 fs-4"></i>
                             <h5 class="fw-bold mb-2">Karir Lulusan</h5>
                             <p class="section-copy mb-0">Melihat bidang kerja, masa tunggu, dan perkembangan alumni.</p>
                         </div>
-                        <div class="glass-info">
+                        <div class="glass-info glass-info--hover">
                             <i class="fas fa-graduation-cap mb-3 fs-4"></i>
                             <h5 class="fw-bold mb-2">Mutu Pendidikan</h5>
                             <p class="section-copy mb-0">Menjadi bahan evaluasi kurikulum dan layanan akademik.</p>
@@ -33,8 +33,8 @@
             </div>
 
             <div class="col-lg-6">
-                <div class="about-visual">
-                    <img src="{{ asset('startbootstrap-sb-admin-gh-pages/assets/img/logo_jti.jpg') }}"
+                <div class="about-visual about-visual--hover">
+                    <img src="{{ asset('assets/img/logo_jti.jpg') }}"
                         alt="Jurusan Teknologi Informasi Politeknik Negeri Jember">
                 </div>
             </div>

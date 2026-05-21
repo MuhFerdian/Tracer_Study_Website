@@ -43,11 +43,11 @@ class MobileAuthController extends Controller
     public function register(Request $request)
     {
         $request->validate([
-            'nim'      => 'required|string|unique:users,nim',
+            'nim'      => 'required|string',
             'email'    => 'required|email|unique:users,email|regex:/^[a-zA-Z0-9._%+\-]+@gmail\.com$/i',
             'username' => 'required|regex:/^[a-z0-9]+$/|unique:users,username',
-            'no_hp'    => 'required|string|unique:users,no_hp',
-            'password' => 'required|min:6',
+            'no_hp'    => 'required|string|regex:/^(08)[0-9]{8,12}$/|unique:users,no_hp',
+            'password' => 'required|min:8|max:16',
         ], [
             'email.regex' => 'Email harus menggunakan domain @gmail.com.',
         ]);
@@ -210,7 +210,7 @@ class MobileAuthController extends Controller
     {
         $request->validate([
             'email'    => 'required|email',
-            'password' => 'required|min:6',
+            'password' => 'required|min:8',
         ]);
 
         // Cek apakah OTP sudah diverifikasi sebelumnya

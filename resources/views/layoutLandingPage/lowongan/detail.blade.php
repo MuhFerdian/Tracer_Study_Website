@@ -303,7 +303,9 @@ function formatGajiDetail(string $gaji): string {
                     {{-- FOTO BANNER --}}
                     @if($lowongan->foto)
                     @php
-                        $fotoUrl = str_starts_with($lowongan->foto, 'startbootstrap') || str_starts_with($lowongan->foto, 'foto_loker')
+                        // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)
+                        // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()
+                        $fotoUrl = str_starts_with($lowongan->foto, 'startbootstrap')
                             ? asset($lowongan->foto)
                             : \Illuminate\Support\Facades\Storage::url($lowongan->foto);
                     @endphp

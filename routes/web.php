@@ -172,9 +172,9 @@ Route::group([
     // =======================
     // EXPORT SEMUA DATA ALUMNI
     // =======================
-    Route::get('/admin/export/alumni', [ExportController::class, 'exportExcel'])->name('export.alumni');
-    Route::get('/admin/export/alumni-sudah', [ExportController::class, 'exportExcelSudahMengisi'])->name('export.alumni.sudah');
-    Route::get('/admin/export/alumni-belum', [ExportController::class, 'exportExcelBelumMengisi'])->name('export.alumni.belum');
+    Route::get('/export/alumni', [ExportController::class, 'exportExcel'])->name('export.alumni');
+    Route::get('/export/alumni-sudah', [ExportController::class, 'exportExcelSudahMengisi'])->name('export.alumni.sudah');
+    Route::get('/export/alumni-belum', [ExportController::class, 'exportExcelBelumMengisi'])->name('export.alumni.belum');
 
     // =======================
     // PERIODE SURVEI
