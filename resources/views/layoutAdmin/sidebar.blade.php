@@ -169,6 +169,7 @@
     .sb-sidenav {
         font-family: 'Poppins', sans-serif;
         overflow-y: auto;
+        -webkit-overflow-scrolling: touch;
     }
 
     .sb-sidenav-dark {
@@ -195,7 +196,7 @@
 
         margin-bottom: 16px;
 
-        transition: all .3s ease;
+        transition: transform .3s ease;
 
         filter:
             drop-shadow(0 0 20px rgba(168,85,247,.35));
@@ -277,23 +278,34 @@
         font-size: 0.92rem;
         font-weight: 600;
         color: rgba(255, 255, 255, 0.76) !important;
+
         border-left: 4px solid transparent;
-        transition: all 0.25s ease;
         border-radius: 8px;
+
         margin: 0.25rem 0.6rem;
         padding: 0.78rem 0.9rem;
+
         white-space: normal !important;
         overflow-wrap: anywhere;
+
         display: flex;
         align-items: center;
         gap: 0.5rem;
+
+        /* smooth & aman */
+        transition:
+            background-color 0.2s ease,
+            color 0.2s ease,
+            box-shadow 0.2s ease;
+
+        will-change: background-color;
     }
 
     .sb-sidenav .nav-link:hover {
         background-color: rgba(255, 255, 255, 0.08);
         color: #ffffff !important;
-        transform: none;
         border-left-color: transparent;
+        transform: none !important;
     }
 
     .sb-sidenav .nav-link.active {
@@ -322,7 +334,7 @@
     }
 
     .sb-sidenav-collapse-arrow i {
-        transition: transform 0.3s ease;
+        transition: transform 0.18s ease;
         color: rgba(255, 255, 255, 0.72);
     }
 
@@ -356,4 +368,42 @@
         background: rgba(255, 255, 255, 0.28);
         border-radius: 10px;
     }
+
+    /* =========================
+    FIX SIDEBAR GLITCH
+    ========================= */
+
+    #layoutSidenav_nav,
+    .sb-sidenav,
+    .sb-sidenav-menu,
+    .sb-sidenav-menu .nav {
+        backface-visibility: hidden;
+        -webkit-font-smoothing: antialiased;
+        transform: translateZ(0);
+    }
+
+    /* Hindari repaint berlebihan */
+    .sb-sidenav * {
+        box-sizing: border-box;
+    }
+
+    /* Scroll lebih smooth */
+    .sb-sidenav-menu {
+        overflow-y: auto;
+        overflow-x: hidden;
+        scroll-behavior: smooth;
+    }
+
+    /* Collapse Bootstrap lebih smooth */
+    .collapse {
+        transition: height 0.16s ease-out !important;
+    }
+
+
+    /* Prevent sidebar flicker */
+    #layoutSidenav_nav {
+        will-change: auto;
+        contain: layout style paint;
+    }
+
 </style>

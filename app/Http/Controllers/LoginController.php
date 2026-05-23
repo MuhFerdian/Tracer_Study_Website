@@ -39,7 +39,7 @@ class LoginController extends Controller
             'username.regex'    => 'Username hanya boleh huruf kecil, angka, titik, dan underscore.',
             'password.required' => 'Password wajib diisi.',
             'password.min'      => 'Password minimal 8 karakter.',
-            'password.max'      => 'Password terlalu panjang.',
+            'password.max'      => 'Password maximal 16 karakter.',
             'role.required'     => 'Pilih tipe user terlebih dahulu.',
             'role.in'           => 'Tipe user tidak valid.',
         ]);

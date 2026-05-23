@@ -16,7 +16,7 @@
             <label class="form-label fw-medium">Password Baru</label>
             <div class="position-relative">
                 <input type="password" class="form-control pe-5" id="password_baru" name="password_baru"
-                    placeholder="Minimal 6 karakter">
+                    placeholder="Minimal 8 karakter">
                 <span class="position-absolute top-50 end-0 translate-middle-y me-3"
                     style="cursor:pointer; z-index:10;"
                     id="toggle_pw_baru">

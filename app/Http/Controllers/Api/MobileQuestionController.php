@@ -30,11 +30,11 @@ class MobileQuestionController extends Controller
             ->get()
             ->keyBy('question_id');
 
-        // ambil semua pertanyaan + options
+        // ambil semua pertanyaan + options (hanya yang TIDAK diarsip)
         $questions = Question::with(['options' => function ($query) {
             $query->orderBy('urutan');
         }, 'details'])
-
+            ->where('is_archived', false)
             ->orderBy('urutan')
             ->get();
 

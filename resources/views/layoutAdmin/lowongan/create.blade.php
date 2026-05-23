@@ -99,7 +99,7 @@
                             Link Lamaran
                         </label>
 
-                        <input type="text"
+                        <input type="url"
                                name="link_lamaran"
                                class="form-control rounded-3"
                                placeholder="Contoh: https://">
@@ -116,6 +116,10 @@
                                placeholder="Contoh: foto_lowongan.jpg"
                                accept="image/jpg,image/jpeg,image/png">
                         <small class="text-muted">Format: JPG, JPEG, PNG • Maksimal 5 MB</small>
+                        <img id="preview-foto"
+                                src="#"
+                                class="mt-3 rounded shadow-sm d-none"
+                                width="200">
                     </div>
 
                     {{-- DESKRIPSI --}}
@@ -155,5 +159,18 @@
     </div>
 
 </div>
+
+<script>
+document.querySelector('input[name="foto"]')
+    .addEventListener('change', function(e) {
+
+    const preview = document.getElementById('preview-foto');
+
+    if (e.target.files.length > 0) {
+        preview.src = URL.createObjectURL(e.target.files[0]);
+        preview.classList.remove('d-none');
+    }
+});
+</script>
 
 @endsection

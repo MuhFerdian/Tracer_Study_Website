@@ -19,13 +19,17 @@ use Illuminate\Support\Facades\Storage;
             <div class="row mb-5 align-items-center">
                 <div class="col-md-4">
                     @if($lowongan->foto)
-                    @php
+                    {{-- @php
                         // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)
                         // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()
                         $fotoUrl = str_starts_with($lowongan->foto, 'startbootstrap')
                             ? asset($lowongan->foto)
                             : \Illuminate\Support\Facades\Storage::url($lowongan->foto);
+                    @endphp --}}
+                    @php
+                        $fotoUrl = asset('storage/' . $lowongan->foto);
                     @endphp
+                    
                     <img src="{{ $fotoUrl }}"
                     class="img-fluid rounded-4 shadow-sm"
                     onclick="openImageModal(this.src)"
@@ -38,6 +42,7 @@ use Illuminate\Support\Facades\Storage;
                     transition:0.3s;"
                     onmouseover="this.style.transform='scale(1.02)'"
                     onmouseout="this.style.transform='scale(1)'">
+
                     @else
                     <div class="rounded-4 d-flex align-items-center justify-content-center shadow-sm" 
                     style="width: 100%; height: 350px; background-color: #D9D9D9; border: 1px solid #ced4da;">

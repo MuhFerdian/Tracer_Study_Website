@@ -131,7 +131,7 @@
                         <div class="position-relative">
                             <input type="password" class="form-control pe-5"
                                 id="password_baru" name="password_baru"
-                                placeholder="Minimal 6 karakter">
+                                placeholder="Minimal 8 karakter">
                             <span id="toggle_pw_baru"
                                 class="position-absolute top-50 end-0 translate-middle-y me-3"
                                 style="cursor:pointer; z-index:10;">
@@ -666,8 +666,8 @@
         }
 
         .toggle-btn {
-            margin-left: auto;
-            margin-right: 0.5rem;
+            margin-left: 0.3rem;
+            margin-right: 0;
         }
 
         .nav-right-wrap {
@@ -722,8 +722,8 @@
         .toggle-btn {
             font-size: 1rem;
             padding: 0.25rem;
-            margin-left: auto;
-            margin-right: 0.3rem;
+            margin-left: 0.3rem;
+            margin-right: 0;
         }
 
         .nav-right-wrap {

@@ -13,7 +13,7 @@
             <label class="fw-semibold">Username <span class="text-danger">*</span></label>
             <input type="text" name="username" id="username" value="{{ $user->username }}" class="form-control"
                 placeholder="Contoh: ulfa.emi">
-            <small class="text-muted">Hanya boleh huruf, angka, titik, dan underscore. Minimal 4 karakter.</small>
+            <small class="text-muted">Hanya boleh huruf, angka, titik, dan underscore. Minimal 5 karakter.</small>
             <small id="error-username" class="text-danger d-block"></small>
         </div>
 
@@ -42,7 +42,7 @@
                     <i class="fas fa-eye" id="iconPassword"></i>
                 </button>
             </div>
-            <small class="text-muted">Isi hanya jika ingin mengganti password. Minimal 6 karakter.</small>
+            <small class="text-muted">Isi hanya jika ingin mengganti password. Minimal 8 karakter.</small>
             <small id="error-password" class="text-danger d-block"></small>
         </div>
 

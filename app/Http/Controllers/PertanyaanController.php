@@ -529,6 +529,268 @@ class PertanyaanController extends Controller
         return view('layoutAdmin.pertanyaan.arsip');
     }
 
+    // public function arsip_export()
+    // {
+    //     $questions = Question::with('options', 'details')
+    //         ->where('is_archived', true)
+    //         ->orderBy('urutan')
+    //         ->orderBy('id')
+    //         ->get();
+
+    //     $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+    //     $sheet = $spreadsheet->getActiveSheet();
+    //     $sheet->setTitle('Arsip Pertanyaan');
+
+    //     // Header
+    //     $headers = ['No', 'Kode Soal', 'Pertanyaan', 'Tipe', 'Opsi / Item Matrix', 'Urutan'];
+    //     foreach ($headers as $col => $header) {
+    //         $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . '1';
+    //         $sheet->setCellValue($cell, $header);
+    //     }
+
+    //     $sheet->getStyle('A1:F1')->applyFromArray([
+    //         'font' => ['bold' => true, 'color' => ['rgb' => 'FFFFFF']],
+    //         'fill' => ['fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID, 'startColor' => ['rgb' => '1557c0']],
+    //         'alignment' => ['horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER],
+    //     ]);
+
+    //     // Data rows
+    //     foreach ($questions as $idx => $q) {
+    //         $row = $idx + 2;
+
+    //         if ($q->type === 'matrix') {
+    //             $opsi = $q->details->pluck('item_label')->implode(', ');
+    //         } else {
+    //             $opsi = $q->options->pluck('label')->implode(', ');
+    //         }
+
+    //         $sheet->setCellValue('A' . $row, $idx + 1);
+    //         $sheet->setCellValue('B' . $row, $q->kode_soal ?? '-');
+    //         $sheet->setCellValue('C' . $row, $q->pertanyaan);
+    //         $sheet->setCellValue('D' . $row, $q->type);
+    //         $sheet->setCellValue('E' . $row, $opsi ?: '-');
+    //         $sheet->setCellValue('F' . $row, $q->urutan);
+
+    //         // Zebra stripe
+    //         if ($idx % 2 === 0) {
+    //             $sheet->getStyle("A{$row}:F{$row}")->getFill()
+    //                 ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+    //                 ->getStartColor()->setRGB('f0f6ff');
+    //         }
+    //     }
+
+    //     // Auto size
+    //     foreach (range(1, 6) as $col) {
+    //         $sheet->getColumnDimension(
+    //             \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col)
+    //         )->setAutoSize(true);
+    //     }
+
+    //     // Border seluruh tabel
+    //     $lastRow = $questions->count() + 1;
+    //     $sheet->getStyle("A1:F{$lastRow}")->getBorders()->getAllBorders()
+    //         ->setBorderStyle(\PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN);
+
+    //     $writer   = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+    //     $filename = 'arsip_pertanyaan_' . date('d-m-Y') . '.xlsx';
+
+    //     return response()->streamDownload(
+    //         fn() => $writer->save('php://output'),
+    //         $filename,
+    //         ['Content-Type' => 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet']
+    //     );
+    // }
+
+    public function arsip_export()
+    {
+        $questions = Question::with('options', 'details')
+            ->where('is_archived', true)
+            ->orderBy('urutan')
+            ->orderBy('id')
+            ->get();
+
+        if ($questions->isEmpty()) {
+
+            return redirect()
+                ->back()
+                ->with('error', 'Data arsip pertanyaan masih kosong.');
+        }
+
+        $spreadsheet = new \PhpOffice\PhpSpreadsheet\Spreadsheet();
+        $sheet = $spreadsheet->getActiveSheet();
+        $sheet->setTitle('Arsip Pertanyaan');
+
+        // =========================================
+        // TITLE
+        // =========================================
+        $sheet->mergeCells('A1:F1');
+        $sheet->setCellValue('A1', 'ARSIP PERTANYAAN TRACER STUDY');
+
+        $sheet->mergeCells('A2:F2');
+        $sheet->setCellValue(
+            'A2',
+            'Politeknik Negeri Jember - Teknologi Informasi'
+        );
+
+        $sheet->mergeCells('A3:F3');
+        $sheet->setCellValue(
+            'A3',
+            'Tanggal Export : ' . date('d-m-Y H:i')
+        );
+
+        // STYLE TITLE
+        $sheet->getStyle('A1:F3')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '0F172A']
+            ]
+        ]);
+
+        $sheet->getStyle('A1')->getFont()->setSize(18);
+        $sheet->getStyle('A2')->getFont()->setSize(12);
+        $sheet->getStyle('A3')->getFont()->setSize(10);
+
+        // =========================================
+        // HEADER TABLE
+        // =========================================
+        $headers = [
+            'No',
+            'Kode Soal',
+            'Pertanyaan',
+            'Tipe',
+            'Opsi / Item Matrix',
+            'Urutan'
+        ];
+
+        foreach ($headers as $col => $header) {
+            $cell = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col + 1) . '5';
+            $sheet->setCellValue($cell, $header);
+        }
+
+        // HEADER STYLE
+        $sheet->getStyle('A5:F5')->applyFromArray([
+            'font' => [
+                'bold' => true,
+                'color' => ['rgb' => 'FFFFFF']
+            ],
+            'fill' => [
+                'fillType' => \PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID,
+                'startColor' => ['rgb' => '1557C0']
+            ],
+            'alignment' => [
+                'horizontal' => \PhpOffice\PhpSpreadsheet\Style\Alignment::HORIZONTAL_CENTER,
+                'vertical' => \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+            ],
+            'borders' => [
+                'allBorders' => [
+                    'borderStyle' => \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN,
+                    'color' => ['rgb' => 'D1D5DB']
+                ]
+            ]
+        ]);
+
+        // =========================================
+        // DATA
+        // =========================================
+        foreach ($questions as $idx => $q) {
+
+            $row = $idx + 6;
+
+            if ($q->type === 'matrix') {
+                $opsi = $q->details->pluck('item_label')->implode(', ');
+            } else {
+                $opsi = $q->options->pluck('label')->implode(', ');
+            }
+
+            $sheet->setCellValue('A' . $row, $idx + 1);
+            $sheet->setCellValue('B' . $row, $q->kode_soal ?? '-');
+            $sheet->setCellValue('C' . $row, $q->pertanyaan);
+            $sheet->setCellValue('D' . $row, strtoupper($q->type));
+            $sheet->setCellValue('E' . $row, $opsi ?: '-');
+            $sheet->setCellValue('F' . $row, $q->urutan);
+
+            // Zebra stripe
+            if ($idx % 2 == 0) {
+                $sheet->getStyle("A{$row}:F{$row}")
+                    ->getFill()
+                    ->setFillType(\PhpOffice\PhpSpreadsheet\Style\Fill::FILL_SOLID)
+                    ->getStartColor()
+                    ->setRGB('F8FAFC');
+            }
+
+            // Wrap text
+            $sheet->getStyle("C{$row}:E{$row}")
+                ->getAlignment()
+                ->setWrapText(true);
+
+            // Vertical center
+            $sheet->getStyle("A{$row}:F{$row}")
+                ->getAlignment()
+                ->setVertical(
+                    \PhpOffice\PhpSpreadsheet\Style\Alignment::VERTICAL_CENTER
+                );
+        }
+
+        // =========================================
+        // BORDER
+        // =========================================
+        $lastRow = $questions->count() + 5;
+
+        $sheet->getStyle("A5:F{$lastRow}")
+            ->getBorders()
+            ->getAllBorders()
+            ->setBorderStyle(
+                \PhpOffice\PhpSpreadsheet\Style\Border::BORDER_THIN
+            );
+
+        // =========================================
+        // AUTO SIZE
+        // =========================================
+        foreach (range(1, 6) as $col) {
+
+            $column = \PhpOffice\PhpSpreadsheet\Cell\Coordinate::stringFromColumnIndex($col);
+
+            $sheet->getColumnDimension($column)
+                ->setAutoSize(true);
+        }
+
+        // =========================================
+        // ROW HEIGHT
+        // =========================================
+        foreach (range(5, $lastRow) as $row) {
+            $sheet->getRowDimension($row)
+                ->setRowHeight(-1);
+        }
+
+        // =========================================
+        // FREEZE HEADER
+        // =========================================
+        $sheet->freezePane('A6');
+
+        // =========================================
+        // EXPORT
+        // =========================================
+        $writer = new \PhpOffice\PhpSpreadsheet\Writer\Xlsx($spreadsheet);
+
+        $filename = 'arsip_pertanyaan_' . date('d-m-Y') . '.xlsx';
+
+        return response()->streamDownload(
+            fn() => $writer->save('php://output'),
+            $filename,
+            [
+                'Content-Type' =>
+                    'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'
+            ]
+        );
+    }
+
     public function arsip_list(Request $request)
     {
         if ($request->ajax()) {

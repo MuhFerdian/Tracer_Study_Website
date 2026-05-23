@@ -18,12 +18,30 @@
         </div>
     </div>
 
+    {{-- ALERT ERROR --}}
+    @if(session('error'))
+        <div class="alert alert-danger alert-dismissible fade show" role="alert">
+            <i class="fas fa-circle-exclamation me-1"></i>
+            {{ session('error') }}
+
+            <button type="button"
+                    class="btn-close"
+                    data-bs-dismiss="alert">
+            </button>
+        </div>
+    @endif
+
     <div class="card mb-4">
         <div class="card-header d-flex justify-content-between align-items-center">
             <span><i class="fas fa-archive me-1"></i> Daftar Pertanyaan Diarsip</span>
-            <a href="{{ url('/admin/pertanyaan') }}" class="btn btn-secondary btn-sm">
-                <i class="fas fa-arrow-left me-1"></i>Kembali
-            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ route('pertanyaan.arsip.export') }}" class="btn btn-success btn-sm">
+                    <i class="fas fa-file-excel me-1"></i>Export Excel
+                </a>
+                <a href="{{ url('/admin/pertanyaan') }}" class="btn btn-secondary btn-sm">
+                    <i class="fas fa-arrow-left me-1"></i>Kembali
+                </a>
+            </div>
         </div>
         <div class="card-body">
             <div class="table-responsive">

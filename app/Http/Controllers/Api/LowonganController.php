@@ -118,26 +118,39 @@ class LowonganController extends Controller
         // =============================================
         // UPLOAD FOTO
         // =============================================
+        // $fotoPath = null;
+
+        // if ($request->hasFile('foto')) {
+
+        //     $file = $request->file('foto');
+
+        //     // Nama file unik
+        //     $namaFile = time() . '_' . $file->getClientOriginalName();
+
+        //     // Folder tujuan
+        //     $tujuanPath = public_path(
+        //         'startbootstrap-sb-admin-gh-pages/assets/foto_loker'
+        //     );
+
+        //     // Pindahkan file
+        //     $file->move($tujuanPath, $namaFile);
+
+        //     // Simpan path ke database
+        //     $fotoPath =
+        //         'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $namaFile;
+        // }
+
+        // =============================================
+        // UPLOAD FOTO
+        // =============================================
         $fotoPath = null;
 
         if ($request->hasFile('foto')) {
 
-            $file = $request->file('foto');
-
-            // Nama file unik
-            $namaFile = time() . '_' . $file->getClientOriginalName();
-
-            // Folder tujuan
-            $tujuanPath = public_path(
-                'startbootstrap-sb-admin-gh-pages/assets/foto_loker'
+            $fotoPath = $request->file('foto')->store(
+                'foto_loker',
+                'public'
             );
-
-            // Pindahkan file
-            $file->move($tujuanPath, $namaFile);
-
-            // Simpan path ke database
-            $fotoPath =
-                'startbootstrap-sb-admin-gh-pages/assets/foto_loker/' . $namaFile;
         }
 
         // =============================================
@@ -211,9 +224,9 @@ class LowonganController extends Controller
             'aktif'           => (bool) $item->aktif,
 
             // FOTO URL
-            'foto_url'        => $item->foto
-                ? asset($item->foto)
-                : null,
+            'foto_url' => $item->foto
+            ? asset('storage/' . $item->foto)
+            : null,
 
             'created_at'      => $item->created_at,
             'updated_at'      => $item->updated_at,

@@ -118,6 +118,7 @@ Route::group([
         // Arsip
         Route::get('/arsip', [PertanyaanController::class, 'arsip_index'])->name('pertanyaan.arsip');
         Route::get('/arsip/list', [PertanyaanController::class, 'arsip_list']);
+        Route::get('/arsip/export', [PertanyaanController::class, 'arsip_export'])->name('pertanyaan.arsip.export');
         Route::patch('/{id}/arsip', [PertanyaanController::class, 'arsip_ajax']);
         Route::patch('/{id}/restore', [PertanyaanController::class, 'restore_ajax']);
         Route::get('/{id}/edit_ajax', [PertanyaanController::class, 'edit_ajax']);

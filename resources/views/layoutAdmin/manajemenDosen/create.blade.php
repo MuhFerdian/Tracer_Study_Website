@@ -12,7 +12,7 @@
             <label class="fw-semibold">Username <span class="text-danger">*</span></label>
             <input type="text" name="username" id="username" class="form-control"
                 placeholder="Contoh: ulfa.emi">
-            <small class="text-muted">Hanya boleh huruf, angka, titik, dan underscore. Minimal 4 karakter.</small>
+            <small class="text-muted">Hanya boleh huruf, angka, titik, dan underscore. Minimal 5 karakter.</small>
             <small id="error-username" class="text-danger d-block"></small>
         </div>
 
@@ -36,7 +36,7 @@
             <label class="fw-semibold">Password <span class="text-danger">*</span></label>
             <div class="input-group">
                 <input type="password" name="password" id="password" class="form-control"
-                    placeholder="Minimal 6 karakter">
+                    placeholder="Minimal 8 karakter">
                 <button type="button" class="btn btn-outline-secondary" id="togglePassword" tabindex="-1">
                     <i class="fas fa-eye" id="iconPassword"></i>
                 </button>

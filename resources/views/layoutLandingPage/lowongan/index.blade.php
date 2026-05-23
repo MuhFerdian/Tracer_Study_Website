@@ -323,12 +323,15 @@ function formatGajiLoker(string $gaji): string {
 
                     {{-- Foto --}}
                     @if($item->foto)
+                    {{-- <!--@php-->
+                    <!--    // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)-->
+                    <!--    // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()-->
+                    <!--    $fotoUrl = str_starts_with($item->foto, 'startbootstrap')-->
+                    <!--        ? asset($item->foto)-->
+                    <!--        : \Illuminate\Support\Facades\Storage::url($item->foto);-->
+                    <!--@endphp--> --}}
                     @php
-                        // Path lama: dimulai dengan 'startbootstrap' (disimpan di public/)
-                        // Path baru: disimpan via Storage::disk('public'), pakai Storage::url()
-                        $fotoUrl = str_starts_with($item->foto, 'startbootstrap')
-                            ? asset($item->foto)
-                            : \Illuminate\Support\Facades\Storage::url($item->foto);
+                        $fotoUrl = asset('storage/' . $item->foto);
                     @endphp
                     <div class="loker-card-foto-wrap">
                         <img

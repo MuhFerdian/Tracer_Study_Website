@@ -48,8 +48,11 @@
                     <button class="btn btn-sm btn-primary me-1" data-bs-toggle="modal" data-bs-target="#modalTambahPeriode">
                         <i class="fas fa-plus me-1"></i>Buat Periode
                     </button>
-                    <button class="btn btn-sm btn-outline-secondary" id="btnKelolaAktif" style="display:none">
+                    <button class="btn btn-sm btn-outline-secondary me-1" id="btnKelolaAktif" style="display:none">
                         <i class="fas fa-cog me-1"></i>Kelola Aktif
+                    </button>
+                    <button class="btn btn-sm btn-outline-danger" id="btnHapusPeriode" style="display:none; border: 2px solid #dc2626;">
+                        <i class="fas fa-trash me-1"></i>Hapus
                     </button>
                 </div>
             </div>
@@ -356,11 +359,13 @@
                     <div class="row">
                         <div class="col-6 mb-3">
                             <label class="form-label">Tanggal Buka <span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal_buka" class="form-control" required>
+                            <input type="date" id="inputTanggalBuka" name="tanggal_buka" class="form-control" required>
+                            <small class="text-muted">Mulai survey dari tanggal ini</small>
                         </div>
                         <div class="col-6 mb-3">
                             <label class="form-label">Tanggal Tutup <span class="text-danger">*</span></label>
-                            <input type="date" name="tanggal_tutup" class="form-control" required>
+                            <input type="date" id="inputTanggalTutup" name="tanggal_tutup" class="form-control" required>
+                            <small id="warningTanggal" class="text-danger" style="display:none;">❌ Tanggal tutup harus lebih besar dari buka</small>
                         </div>
                     </div>
                     <div class="mb-3">
@@ -391,7 +396,7 @@
 <style>
     /* ── Badge status periode ── */
     .badge-aktif { background-color: #28a745; color: #fff; }
-    .badge-tutup { background-color: #6c757d; color: #fff; }
+    .badge-tutup { background-color: #dc2626; color: #fff; }
     .badge-draft { background-color: #ffc107; color: #333; }
     #modalKonfirmasiPeriode .modal-content { border-radius: 1rem; }
     #dashboardToast { min-width: 280px; }
@@ -523,43 +528,119 @@ $(document).ready(function () {
     }
 
     // =============================================
-    // LOAD DAFTAR PERIODE
+    // HAPUS PERIODE — ATTACH HANDLER
+    // =============================================
+    function attachDeleteHandler() {
+        $('#btnHapusPeriode').off('click').on('click', function (e) {
+            e.preventDefault();
+            e.stopPropagation();
+            
+            var p = $(this).data('period');
+            console.log('Delete button clicked, period:', p);
+            
+            if (!p || !p.id) {
+                showToast('❌ Data periode tidak ditemukan.', 'danger');
+                return false;
+            }
+
+            showKonfirmasi({
+                title    : 'Hapus Periode?',
+                desc     : 'Periode "' + p.nama + '" akan dihapus permanen. Tindakan ini tidak bisa dibatalkan. Lanjutkan?',
+                icon     : '⚠️',
+                btnClass : 'btn-danger',
+                onConfirm: function () {
+                    var deleteUrl = "{{ url('/admin/survey-period') }}/" + p.id + "/delete";
+                    console.log('Confirming delete, URL:', deleteUrl);
+                    
+                    $.ajax({
+                        url    : deleteUrl,
+                        method : 'DELETE',
+                        headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' },
+                        dataType: 'json',
+                        timeout: 5000,
+                        success: function (res) {
+                            console.log('Delete success:', res);
+                            if (res && res.status) {
+                                showToast('✓ ' + (res.message || 'Periode berhasil dihapus.'), 'success');
+                                setTimeout(function() { loadPeriodes(); }, 500);
+                            } else {
+                                showToast('❌ ' + (res.message || 'Gagal menghapus periode.'), 'danger');
+                            }
+                        },
+                        error: function (xhr, status, error) {
+                            console.log('Delete error:', status, error, xhr);
+                            
+                            var msg = 'Terjadi kesalahan saat menghapus periode.';
+                            if (xhr.status === 422) {
+                                try {
+                                    var res = xhr.responseJSON;
+                                    msg = res.message || msg;
+                                } catch(e) {}
+                            }
+                            
+                            showToast('❌ ' + msg, 'danger');
+                        }
+                    });
+                }
+            });
+            
+            return false;
+        });
+    }
+
+    // =============================================
+    // LOAD DAFTAR PERIODE (dengan Real-time refresh)
     // =============================================
     function loadPeriodes() {
         $.get("{{ url('/admin/survey-period') }}", function (res) {
             var $sel = $('#selectPeriode');
+            var currentVal = $sel.val(); // Simpan nilai yang dipilih saat ini
             $sel.find('option:not(:first)').remove();
 
             if (!res.data || res.data.length === 0) {
                 $('#infoPeriodeAktif').html(
                     '<span class="text-warning"><i class="fas fa-exclamation-triangle me-1"></i>Belum ada periode survei. Klik "Buat Periode" untuk memulai.</span>'
                 );
-                loadAllDashboardData();
+                if (!currentVal) loadAllDashboardData();
                 return;
             }
 
             res.data.forEach(function (p) {
-                var icon = p.status === 'aktif' ? ' 🟢' : (p.status === 'draft' ? ' 🟡' : '');
+                var icon = p.status === 'aktif' ? ' 🟢' : (p.status === 'draft' ? ' 🟡' : ' 🔴');
                 $sel.append('<option value="' + p.id + '" data-status="' + p.status + '" data-obj=\'' + JSON.stringify(p) + '\'>'
                     + p.nama + icon + '</option>');
             });
 
             var aktif = res.data.find(function (p) { return p.status === 'aktif'; });
-            if (aktif) {
+            
+            // Jika ada periode aktif dan belum ada pilihan, pilih otomatis
+            if (aktif && !currentVal) {
                 $sel.val(aktif.id);
                 selectedPeriodId = aktif.id;
+                showInfoPeriode(aktif);
+                loadAllDashboardData();
+            } else if (currentVal) {
+                // Maintain pilihan yang sebelumnya
+                $sel.val(currentVal);
+                var selectedPeriod = res.data.find(function (p) { return p.id == currentVal; });
+                if (selectedPeriod) {
+                    showInfoPeriode(selectedPeriod);
+                }
+            } else if (aktif) {
                 showInfoPeriode(aktif);
             } else {
                 $('#infoPeriodeAktif').html('<span class="text-muted"><i class="fas fa-info-circle me-1"></i>Tidak ada periode aktif. Pilih periode lalu klik "Kelola Aktif".</span>');
                 $('#btnKelolaAktif').hide();
             }
-
-            loadAllDashboardData();
         });
     }
 
     function showInfoPeriode(p) {
-        if (!p) { $('#btnKelolaAktif').hide(); return; }
+        if (!p) { 
+            $('#btnKelolaAktif').hide();
+            $('#btnHapusPeriode').hide();
+            return;
+        }
         var badges = { aktif: 'badge-aktif', tutup: 'badge-tutup', draft: 'badge-draft' };
         var label  = { aktif: 'Aktif', tutup: 'Tutup', draft: 'Draft' };
         $('#infoPeriodeAktif').html(
@@ -571,6 +652,14 @@ $(document).ready(function () {
             ? '<i class="fas fa-stop-circle me-1"></i>Tutup Periode'
             : '<i class="fas fa-play-circle me-1"></i>Aktifkan Periode';
         $('#btnKelolaAktif').show().html(btnLabel).data('period', p);
+        
+        // Tombol Hapus hanya muncul jika status bukan aktif
+        if (p.status !== 'aktif') {
+            $('#btnHapusPeriode').show().data('period', p);
+            attachDeleteHandler(); // Attach handler saat button di-show
+        } else {
+            $('#btnHapusPeriode').hide();
+        }
     }
 
     // =============================================
@@ -910,10 +999,63 @@ $(document).ready(function () {
     }
 
     // =============================================
+    // REAL-TIME VALIDASI TANGGAL
+    // =============================================
+    function validateTanggal() {
+        var tanggalBuka = $('#inputTanggalBuka').val();
+        var tanggalTutup = $('#inputTanggalTutup').val();
+        var $warning = $('#warningTanggal');
+        var $btnSimpan = $('#btnSimpanPeriode');
+        
+        if (tanggalBuka && tanggalTutup) {
+            if (new Date(tanggalTutup) <= new Date(tanggalBuka)) {
+                $warning.show();
+                $btnSimpan.prop('disabled', true);
+                $('#inputTanggalTutup').addClass('is-invalid');
+            } else {
+                $warning.hide();
+                $btnSimpan.prop('disabled', false);
+                $('#inputTanggalTutup').removeClass('is-invalid');
+            }
+        }
+    }
+    
+    $('#inputTanggalBuka, #inputTanggalTutup').on('change', validateTanggal);
+
+    // =============================================
     // FORM BUAT PERIODE
     // =============================================
     $('#formTambahPeriode').on('submit', function (e) {
         e.preventDefault();
+        
+        // Validasi tanggal frontend
+        var tanggalBuka = new Date($('input[name=tanggal_buka]').val());
+        var tanggalTutup = new Date($('input[name=tanggal_tutup]').val());
+        
+        // Cek apakah field kosong
+        if (!$('input[name=tanggal_buka]').val()) {
+            showToast('⚠️ Tanggal Buka harus diisi!', 'warning');
+            return;
+        }
+        if (!$('input[name=tanggal_tutup]').val()) {
+            showToast('⚠️ Tanggal Tutup harus diisi!', 'warning');
+            return;
+        }
+        
+        // Cek tanggal buka dan tutup sama
+        if (tanggalBuka.getTime() === tanggalTutup.getTime()) {
+            showToast('❌ Tanggal Buka dan Tutup tidak boleh sama!', 'danger');
+            $('input[name=tanggal_tutup]').focus();
+            return;
+        }
+        
+        // Cek tanggal tutup lebih besar dari buka
+        if (tanggalTutup <= tanggalBuka) {
+            showToast('❌ Tanggal Tutup harus lebih besar dari Tanggal Buka!', 'danger');
+            $('input[name=tanggal_tutup]').focus();
+            return;
+        }
+        
         var $btn = $('#btnSimpanPeriode').prop('disabled', true).html('<span class="spinner-border spinner-border-sm me-1"></span>Menyimpan...');
 
         $.ajax({
@@ -994,6 +1136,53 @@ $(document).ready(function () {
     // INIT
     // =============================================
     loadPeriodes();
+
+    // =============================================
+    // SMART POLLING — Hanya saat tab FOKUS
+    // =============================================
+    var pollInterval = null;
+    var POLL_INTERVAL = 10000; // 10 detik
+
+    function startPolling() {
+        if (!pollInterval) {
+            pollInterval = setInterval(function() {
+                loadPeriodes();
+            }, POLL_INTERVAL);
+            console.log('🟢 Polling DIMULAI (tab aktif)');
+        }
+    }
+
+    function stopPolling() {
+        if (pollInterval) {
+            clearInterval(pollInterval);
+            pollInterval = null;
+            console.log('🔴 Polling DIHENTIKAN (tab tidak fokus)');
+        }
+    }
+
+    // Mulai polling saat halaman pertama kali load
+    startPolling();
+
+    // Deteksi saat user fokus/tidak fokus ke tab ini
+    document.addEventListener('visibilitychange', function() {
+        if (document.hidden) {
+            // Tab tidak fokus (user ke tab lain)
+            stopPolling();
+        } else {
+            // Tab kembali fokus
+            console.log('🟢 Tab kembali fokus → Load data sekarang');
+            loadPeriodes(); // Load sekali langsung
+            startPolling();
+        }
+    });
+
+    // Bonus: Deteksi saat window blur (user pergi ke app lain)
+    window.addEventListener('blur', stopPolling);
+    window.addEventListener('focus', function() {
+        console.log('🟢 Window fokus → Resume polling');
+        loadPeriodes();
+        startPolling();
+    });
 
         // =============================================
     // TOMBOL EXPORT PDF � buka di tab baru

@@ -6,6 +6,7 @@ use Illuminate\Http\Request;
 use App\Models\LowonganPekerjaan;
 use App\Models\User;
 use App\Services\FcmService;
+use Illuminate\Support\Facades\Log;
 
 class LowonganPekerjaanController extends Controller
 {
@@ -108,16 +109,15 @@ class LowonganPekerjaanController extends Controller
 
         // kirim notif
         foreach ($users as $user) {
-
-            $fcm->sendToUser(
-                $user->id,
-                "Lowongan Baru 🎉",
-                "Lowongan {$lowongan->posisi} telah tersedia",
-                // [
-                //     'type' => 'lowongan',
-                //     'lowongan_id' => $lowongan->id
-                // ]
-            );
+            try {
+                $fcm->sendToUser(
+                    $user->id,
+                    "Lowongan Baru 🎉",
+                    "Lowongan {$lowongan->posisi} telah tersedia"
+                );
+            } catch (\Exception $e) {
+                Log::error('FCM Error: ' . $e->getMessage());
+            }
         }
 
         return redirect('/admin/lowongan-pekerjaan')
@@ -140,48 +140,59 @@ class LowonganPekerjaanController extends Controller
         $lowongan = LowonganPekerjaan::findOrFail($id);
         $data     = $request->except(['foto', '_method', '_token']);
 
-        if ($request->hasFile('foto')) {
-            // Hapus foto lama
-            if ($lowongan->foto) {
-                if (str_starts_with($lowongan->foto, 'startbootstrap')) {
-                    // Path lama: file ada di public/
-                    $oldPath = public_path($lowongan->foto);
-                    if (file_exists($oldPath)) {
-                        unlink($oldPath);
-                    }
-                } else {
+        // if ($request->hasFile('foto')) {
+        //     // Hapus foto lama
+        //     if ($lowongan->foto) {
+        //         if (str_starts_with($lowongan->foto, 'startbootstrap')) {
+        //             // Path lama: file ada di public/
+        //             $oldPath = public_path($lowongan->foto);
+        //             if (file_exists($oldPath)) {
+        //                 unlink($oldPath);
+        //             }
+        //         } else {
+        //             \Illuminate\Support\Facades\Storage::disk('public')->delete($lowongan->foto);
+        //         }
+        //     }
+        //     $path         = $request->file('foto')->store('foto_loker', 'public');
+        //     $data['foto'] = $path;
+        // }
+
+            if ($request->hasFile('foto')) {
+                // Hapus foto lama
+                if ($lowongan->foto) {
                     \Illuminate\Support\Facades\Storage::disk('public')->delete($lowongan->foto);
                 }
+
+                $path = $request->file('foto')->store('foto_loker', 'public');
+                $data['foto'] = $path;
             }
-            $path         = $request->file('foto')->store('foto_loker', 'public');
-            $data['foto'] = $path;
-        }
-
-        $lowongan->update($data);
-
-        return response()->json([
-            'success' => true,
-            'message' => 'Lowongan berhasil diupdate',
-        ]);
-    }
+                $lowongan->update($data);
+                return response()->json([
+                    'success' => true,
+                    'message' => 'Lowongan berhasil diupdate',
+                ]);
+            }
 
     public function destroy($id)
     {
         $lowongan = LowonganPekerjaan::findOrFail($id);
 
-        // Hapus foto sebelum delete record
-        if ($lowongan->foto) {
-            if (str_starts_with($lowongan->foto, 'startbootstrap')) {
-                // Path lama: file ada di public/
-                $oldPath = public_path($lowongan->foto);
-                if (file_exists($oldPath)) {
-                    unlink($oldPath);
-                }
-            } else {
-                // Path baru: file ada di storage/app/public/
+        // if ($lowongan->foto) {
+        //     if (str_starts_with($lowongan->foto, 'startbootstrap')) {
+        //         // Path lama: file ada di public/
+        //         $oldPath = public_path($lowongan->foto);
+        //         if (file_exists($oldPath)) {
+        //             unlink($oldPath);
+        //         }
+        //     } else {
+        //         // Path baru: file ada di storage/app/public/
+        //         \Illuminate\Support\Facades\Storage::disk('public')->delete($lowongan->foto);
+        //     }
+        // }
+
+            if ($lowongan->foto) {
                 \Illuminate\Support\Facades\Storage::disk('public')->delete($lowongan->foto);
             }
-        }
 
         $lowongan->delete();
 

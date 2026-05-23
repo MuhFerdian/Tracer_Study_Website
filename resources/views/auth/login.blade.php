@@ -14,6 +14,20 @@
 </head>
 
 <body class="auth-page">
+    <!-- Video Background -->
+    <video 
+        autoplay 
+        muted 
+        loop 
+        playsinline
+        style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; object-fit: cover; z-index: 0;">
+        <source src="{{ asset('assets/img/Bg_Polije.mp4') }}" type="video/mp4">
+        Your browser does not support the video tag.
+    </video>
+
+    <!-- Grid Effect Overlay -->
+    <div style="position: absolute; inset: 0; background-image: linear-gradient(rgba(255,255,255,0.03) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.03) 1px, transparent 1px); background-size: 50px 50px; pointer-events: none; z-index: 1;"></div>
+
     <main class="login-shell">
         <section class="login-brand-panel" aria-label="Informasi Tracer Study">
             <div>

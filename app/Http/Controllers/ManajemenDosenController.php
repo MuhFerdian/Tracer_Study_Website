@@ -60,8 +60,14 @@ class ManajemenDosenController extends Controller
             // })
             ->addColumn('aksi', function ($d) {
                 return '
-                    <button onclick="edit('.$d->id.')" class="btn btn-warning btn-sm">Edit</button>
-                    <button onclick="hapus('.$d->id.')" class="btn btn-danger btn-sm">Hapus</button>
+                    <div class="d-flex gap-1 justify-content-center">
+                        <button onclick="edit('.$d->id.')" class="btn btn-warning btn-sm">
+                            <i class="fas fa-edit me-1"></i>Edit
+                        </button>
+                        <button onclick="hapus('.$d->id.')" class="btn btn-danger btn-sm">
+                            <i class="fas fa-trash me-1"></i>Hapus
+                        </button>
+                    </div>
                 ';
             })
 
@@ -83,8 +89,8 @@ class ManajemenDosenController extends Controller
     public function store(Request $request)
     {
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|min:4|max:50|unique:users,username|regex:/^[A-Za-z0-9._]+$/',
-            'name'     => 'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
+            'username' => 'required|string|min:5|max:50|unique:users,username|regex:/^[A-Za-z0-9._]+$/',
+            'name'     => 'required|string|min:5|max:100|regex:/^[\pL\s\.\-\']+$/u',
             'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email',
             'password' => 'required|string|min:8|max:16',
             'status'   => 'required|in:pending,active',
@@ -147,8 +153,8 @@ class ManajemenDosenController extends Controller
         $user = User::findOrFail($id);
 
         $validator = Validator::make($request->all(), [
-            'username' => 'required|string|min:6|max:25|unique:users,username,' . $id . '|regex:/^[a-z0-9._]+$/',
-            'name'     => 'required|string|min:3|max:100|regex:/^[\pL\s\.\-\']+$/u',
+            'username' => 'required|string|min:5|max:25|unique:users,username,' . $id . '|regex:/^[a-z0-9._]+$/',
+            'name'     => 'required|string|min:5|max:100|regex:/^[\pL\s\.\-\']+$/u',
             'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email,' . $id,
             'password' => 'required|string|min:8|max:16',
             'status'   => 'required|in:pending,active',
@@ -158,7 +164,7 @@ class ManajemenDosenController extends Controller
             'name.regex'      => 'Nama hanya boleh huruf, spasi, titik, dan tanda hubung.',
             'email.unique'    => 'Email sudah digunakan dosen lain.',
             'password.min'     => 'Password minimal 8 karakter.',
-            'password.max'     => 'Password terlalu panjang.',
+            'password.max'     => 'Password maximal 16 karakter.',
         ]);
 
         if ($validator->fails()) {

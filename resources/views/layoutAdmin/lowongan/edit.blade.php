@@ -13,7 +13,8 @@
         <div class="card-body p-4">
 
             <form action="{{ url('admin/lowongan-pekerjaan/'.$lowongan->id.'/update') }}"
-                  method="POST">
+                  method="POST"
+                  enctype="multipart/form-data">
 
                 @csrf
                 @method('PUT')
@@ -107,6 +108,22 @@
                         <textarea name="deskripsi"
                                   rows="5"
                                   class="form-control rounded-3">{{ $lowongan->deskripsi }}</textarea>
+                    </div>
+                    
+                    <div class="col-md-12 mb-4">
+                        <label class="form-label fw-semibold">
+                            Foto
+                        </label>
+
+                        <input type="file"
+                            name="foto"
+                            class="form-control rounded-3">
+
+                        @if($lowongan->foto)
+                            <img src="{{ asset('storage/' . $lowongan->foto) }}"
+                                width="200"
+                                class="mt-3 rounded shadow-sm">
+                        @endif
                     </div>
 
                 </div>

@@ -64,7 +64,7 @@ class MobileAuthController extends Controller
 
         $otp = random_int(100000, 999999);
 
-        Cache::put('register_'.$request->email, [
+        Cache::put('register_' . $request->email, [
             'nim' => $request->nim,
             'email' => $request->email,
             'username' => $request->username,
@@ -107,7 +107,7 @@ class MobileAuthController extends Controller
 
         $otp = random_int(100000, 999999);
 
-        Cache::put('forgot_'.$request->email, [
+        Cache::put('forgot_' . $request->email, [
             'email' => $request->email,
             'otp' => Hash::make($otp),
         ], now()->addMinutes(5));
@@ -136,8 +136,8 @@ class MobileAuthController extends Controller
         ]);
 
         $key = $request->type == 'register'
-            ? 'register_'.$request->email
-            : 'forgot_'.$request->email;
+            ? 'register_' . $request->email
+            : 'forgot_' . $request->email;
 
         $data = Cache::get($key);
 
@@ -230,7 +230,7 @@ class MobileAuthController extends Controller
             ], 404);
         }
 
-         // Cek apakah password baru sama dengan password lama
+        // Cek apakah password baru sama dengan password lama
         if (Hash::check($request->password, $user->password)) {
             return response()->json([
                 'status'  => false,
@@ -241,7 +241,9 @@ class MobileAuthController extends Controller
         // Update password baru
         DB::table('users')
             ->where('email', $request->email)
-            ->update(['password' => Hash::make($request->password)]);
+            ->update([
+                'password' => Hash::make($request->password)
+            ]);
 
         // Hapus token sesi reset setelah digunakan
         Cache::forget($resetKey);
@@ -263,8 +265,8 @@ class MobileAuthController extends Controller
         ]);
 
         $key = $request->type == 'register'
-            ? 'register_'.$request->email
-            : 'forgot_'.$request->email;
+            ? 'register_' . $request->email
+            : 'forgot_' . $request->email;
 
         $data = Cache::get($key);
 
@@ -340,18 +342,18 @@ class MobileAuthController extends Controller
             'message' => 'Login berhasil',
             'token' => $token,
             'user' => [
-            'user_id' => $alumni->user->id,
-            'alumni_id' => $alumni->id,
-            'nim' => $alumni->nim,
-            'name' => $alumni->nama,
-            'email' => $alumni->email,
-            'no_hp' => $alumni->no_hp,
-            'prodi' => $alumni->prodi,
-            'angkatan' => $alumni->angkatan,
-            'tahunLulus' => $alumni->tahun_lulus,
-            'alamat' => $alumni->alamat,
-            'image' => $alumni->image,
-        ],
+                'user_id' => $alumni->user->id,
+                'alumni_id' => $alumni->id,
+                'nim' => $alumni->nim,
+                'name' => $alumni->nama,
+                'email' => $alumni->email,
+                'no_hp' => $alumni->no_hp,
+                'prodi' => $alumni->prodi,
+                'angkatan' => $alumni->angkatan,
+                'tahunLulus' => $alumni->tahun_lulus,
+                'alamat' => $alumni->alamat,
+                'image' => $alumni->image,
+            ],
         ]);
     }
 }

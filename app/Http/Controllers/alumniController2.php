@@ -133,6 +133,8 @@ class AlumniController extends Controller
         // UPDATE DATA
         // ==============================
         $alumni->nama = $request->nama;
+        $alumni->no_hp = $request->no_hp;
+        $alumni->email = $request->email;
         $alumni->prodi = $request->prodi;
         $alumni->angkatan = $request->angkatan;
         $alumni->tahun_lulus = $request->tahun_lulus;
@@ -141,11 +143,6 @@ class AlumniController extends Controller
         $alumni->tanggal_lahir = $request->tanggal_lahir;
 
         $alumni->save();
-
-        // Tambahkan full URL foto
-        $alumni->image_url = $alumni->image
-            ? asset('storage/' . $alumni->image)
-            : null;
 
         return response()->json([
             'status' => true,
