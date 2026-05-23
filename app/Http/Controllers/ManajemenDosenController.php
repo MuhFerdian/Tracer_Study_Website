@@ -156,7 +156,7 @@ class ManajemenDosenController extends Controller
             'username' => 'required|string|min:5|max:25|unique:users,username,' . $id . '|regex:/^[a-z0-9._]+$/',
             'name'     => 'required|string|min:5|max:100|regex:/^[\pL\s\.\-\']+$/u',
             'email'    => 'nullable|email:rfc,dns|max:100|unique:users,email,' . $id,
-            'password' => 'required|string|min:8|max:16',
+            'password' => 'nullable|string|min:8|max:16',
             'status'   => 'required|in:pending,active',
         ], [
             'username.regex'  => 'Username hanya boleh huruf, angka, titik, dan underscore.',

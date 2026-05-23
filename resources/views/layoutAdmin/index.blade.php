@@ -51,7 +51,7 @@
                     <button class="btn btn-sm btn-outline-secondary me-1" id="btnKelolaAktif" style="display:none">
                         <i class="fas fa-cog me-1"></i>Kelola Aktif
                     </button>
-                    <button class="btn btn-sm btn-outline-danger" id="btnHapusPeriode" style="display:none; border: 2px solid #dc2626;">
+                    <button class="btn btn-sm btn-outline-danger" id="btnHapusPeriode" style="display:none; border: 2px solid #000000;">
                         <i class="fas fa-trash me-1"></i>Hapus
                     </button>
                 </div>
@@ -516,6 +516,17 @@ $(document).ready(function () {
 
         var btnYa = document.getElementById('btnKonfirmasiYa');
         btnYa.className = 'btn btn-sm px-4 ' + (opts.btnClass || 'btn-primary');
+        btnYa.textContent = opts.btnText || 'Ya, Lanjutkan';
+
+        // Tampilkan/sembunyikan tombol batal sesuai kebutuhan
+        var btnBatal = document.querySelector('#modalKonfirmasiPeriode [data-bs-dismiss="modal"]');
+        if (btnBatal) {
+            if (opts.hideCancel) {
+                btnBatal.style.setProperty('display', 'none', 'important');
+            } else {
+                btnBatal.style.setProperty('display', 'inline-block', 'important');
+            }
+        }
 
         var newBtn = btnYa.cloneNode(true);
         btnYa.parentNode.replaceChild(newBtn, btnYa);
@@ -540,6 +551,22 @@ $(document).ready(function () {
             
             if (!p || !p.id) {
                 showToast('❌ Data periode tidak ditemukan.', 'danger');
+                return false;
+            }
+
+            // Jika periode aktif, tampilkan peringatan/blokir
+            if (p.status === 'aktif') {
+                showKonfirmasi({
+                    title     : '⚠️ Periode Sedang Aktif!',
+                    desc      : 'Periode "' + p.nama + '" saat ini sedang aktif untuk survey alumni. Periode aktif tidak dapat dihapus. Silakan tutup periode ini terlebih dahulu sebelum menghapus.',
+                    icon      : '⚠️',
+                    btnClass  : 'btn-secondary',
+                    btnText   : 'Mengerti',
+                    hideCancel: true,
+                    onConfirm : function () {
+                        // Tidak melakukan apa-apa, hanya menutup modal
+                    }
+                });
                 return false;
             }
 
@@ -653,13 +680,9 @@ $(document).ready(function () {
             : '<i class="fas fa-play-circle me-1"></i>Aktifkan Periode';
         $('#btnKelolaAktif').show().html(btnLabel).data('period', p);
         
-        // Tombol Hapus hanya muncul jika status bukan aktif
-        if (p.status !== 'aktif') {
-            $('#btnHapusPeriode').show().data('period', p);
-            attachDeleteHandler(); // Attach handler saat button di-show
-        } else {
-            $('#btnHapusPeriode').hide();
-        }
+        // Tombol Hapus selalu muncul agar user bisa klik & melihat peringatan jika periode aktif
+        $('#btnHapusPeriode').show().data('period', p);
+        attachDeleteHandler();
     }
 
     // =============================================
@@ -673,6 +696,7 @@ $(document).ready(function () {
         } else {
             $('#infoPeriodeAktif').html('<span class="text-muted">Menampilkan semua periode.</span>');
             $('#btnKelolaAktif').hide();
+            $('#btnHapusPeriode').hide(); // Sembunyikan tombol hapus saat "Semua Periode" terpilih
         }
         loadAllDashboardData();
     });

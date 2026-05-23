@@ -703,10 +703,20 @@ class PertanyaanController extends Controller
 
             $row = $idx + 6;
 
+            // Tentukan isi kolom Opsi / Item Matrix sesuai tipe pertanyaan
             if ($q->type === 'matrix') {
                 $opsi = $q->details->pluck('item_label')->implode(', ');
+                if (empty($opsi)) $opsi = '-';
+            } elseif ($q->type === 'scale') {
+                // Scale: ambil dari options jika ada, jika tidak tampilkan keterangan skala
+                $optLabels = $q->options->pluck('label')->filter()->implode(', ');
+                $opsi = $optLabels ?: 'Skala Penilaian (1-5)';
+            } elseif ($q->type === 'text') {
+                $opsi = 'Jawaban Teks Bebas';
             } else {
+                // single / multiple
                 $opsi = $q->options->pluck('label')->implode(', ');
+                if (empty($opsi)) $opsi = '-';
             }
 
             $sheet->setCellValue('A' . $row, $idx + 1);
@@ -770,9 +780,13 @@ class PertanyaanController extends Controller
         }
 
         // =========================================
-        // FREEZE HEADER
+        // FREEZE HEADER — FIX: Tambah 'A6' sebagai topLeftCell
+        // Tanpa parameter kedua, Excel mulai scrollable pane dari A1
+        // sehingga header tampak ganda (muncul di frozen area DAN scrollable area).
+        // Cek juga active cell / selected cell agar Excel tidak memaksa scroll ke A1.
         // =========================================
-        $sheet->freezePane('A6');
+        $sheet->freezePane('A6', 'A6');
+        $sheet->setSelectedCell('A6');
 
         // =========================================
         // EXPORT
@@ -811,23 +825,22 @@ class PertanyaanController extends Controller
                 ->addColumn('options_display', function ($row) {
 
                     if ($row->type === 'matrix') {
-
-                        if ($row->details->isEmpty()) {
-                            return '-';
-                        }
-
-                        return $row->details
-                            ->pluck('item_label')
-                            ->implode(', ');
+                        if ($row->details->isEmpty()) return '-';
+                        return $row->details->pluck('item_label')->implode(', ');
                     }
 
-                    if ($row->options->isEmpty()) {
-                        return '-';
+                    if ($row->type === 'scale') {
+                        $labels = $row->options->pluck('label')->filter()->implode(', ');
+                        return $labels ?: 'Skala Penilaian (1-5)';
                     }
 
-                    return $row->options
-                        ->pluck('label')
-                        ->implode(', ');
+                    if ($row->type === 'text') {
+                        return 'Jawaban Teks Bebas';
+                    }
+
+                    // single / multiple
+                    if ($row->options->isEmpty()) return '-';
+                    return $row->options->pluck('label')->implode(', ');
                 })
 
                 ->addColumn('aksi', function ($row) {

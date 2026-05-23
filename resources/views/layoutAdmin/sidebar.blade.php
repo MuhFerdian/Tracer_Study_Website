@@ -1,20 +1,6 @@
 <div id="layoutSidenav_nav">
     <nav class="sb-sidenav accordion sb-sidenav-dark" id="sidenavAccordion">
-        {{-- <div class="sb-sidenav-header d-flex flex-column align-items-center"
-            style="padding-top: 0.3rem; padding-bottom: 0.3rem;">
-            <img class="logo-animated" src="{{ asset('assets/img/logo_tc5.png') }}"
-                alt="Logo" style="height: 80px; margin-right: 5px;"> --}}
-            {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">Admin Panel</div> --}}
-            {{-- @php
-                $role = auth()->user()->role->role_nama ?? '';
-            @endphp --}}
 
-            {{-- <div class="text-white fw-semibold" style="font-size: 1.1rem;">
-                {{ $role == 'Admin' ? 'Admin Panel' : 'Dosen Panel' }}
-            </div> --}}
-
-            {{-- <div class="text-muted" style="font-size: 0.85rem;">Teknologi Informasi</div>
-        </div> --}}
         <div class="sidebar-brand">
 
             <img class="logo-animated"
@@ -31,6 +17,25 @@
 
             @php
                 $role = auth()->user()->role->role_nama ?? '';
+
+                // Kelompokkan kondisi route di sini agar rapi dan tidak duplikat
+                $onSurvey     = request()->is('admin/alumni-belum-mengisi')
+                             || request()->is('admin/alumni-sudah-mengisi');
+
+                $onAlumni     = request()->is('admin/alumni')
+                             || request()->is('admin/alumni/*');
+
+                $onDosen      = request()->is('admin/manajemen-dosen')
+                             || request()->is('admin/manajemen-dosen/*');
+
+                $onPertanyaan = request()->is('admin/pertanyaan')
+                             || request()->is('admin/pertanyaan/*');
+
+                $onLowongan   = request()->is('admin/lowongan-pekerjaan*');
+
+                $onDashboard  = request()->is('admin')
+                             && !$onSurvey && !$onAlumni
+                             && !$onDosen  && !$onPertanyaan && !$onLowongan;
             @endphp
 
             <div class="sidebar-role">
@@ -38,6 +43,7 @@
             </div>
 
         </div>
+
         <div class="sb-sidenav-menu">
             <div class="nav">
 
@@ -45,7 +51,8 @@
                 <div class="sb-sidenav-menu-heading">Utama</div>
 
                 {{-- DASHBOARD --}}
-                <a class="nav-link {{ request()->is('admin') ? 'active' : '' }}" href="{{ url('/admin') }}">
+                <a class="nav-link {{ $onDashboard ? 'active' : '' }}"
+                    href="{{ url('/admin') }}">
 
                     <div class="sb-nav-link-icon">
                         <i class="fas fa-house"></i>
@@ -55,10 +62,14 @@
                 </a>
 
                 {{-- SURVEI ALUMNI --}}
-                <a class="nav-link collapsed
-        {{ request()->is('admin/alumni-belum-mengisi') || request()->is('admin/alumni-sudah-mengisi') ? '' : 'collapsed' }}"
-                    href="#" data-bs-toggle="collapse" data-bs-target="#collapseSurvey"
-                    aria-expanded="{{ request()->is('admin/alumni-belum-mengisi') || request()->is('admin/alumni-sudah-mengisi') ? 'true' : 'false' }}"
+                {{-- BUG FIX: Hilangkan hardcoded "collapsed" di dalam class="" --}}
+                {{-- Sebelumnya: class="nav-link collapsed {{ ... ? '' : 'collapsed' }}" --}}
+                {{-- → selalu ada kata "collapsed" walaupun harusnya terbuka            --}}
+                <a class="nav-link {{ $onSurvey ? '' : 'collapsed' }}"
+                    href="#"
+                    data-bs-toggle="collapse"
+                    data-bs-target="#collapseSurvey"
+                    aria-expanded="{{ $onSurvey ? 'true' : 'false' }}"
                     aria-controls="collapseSurvey">
 
                     <div class="sb-nav-link-icon">
@@ -73,26 +84,20 @@
                 </a>
 
                 {{-- ISI MENU SURVEI --}}
-                <div class="collapse
-        {{ request()->is('admin/alumni-belum-mengisi') || request()->is('admin/alumni-sudah-mengisi') ? 'show' : '' }}"
-                    id="collapseSurvey" data-bs-parent="#sidenavAccordion">
+                <div class="collapse {{ $onSurvey ? 'show' : '' }}"
+                    id="collapseSurvey"
+                    data-bs-parent="#sidenavAccordion">
 
                     <nav class="sb-sidenav-menu-nested nav">
 
-                        {{-- BELUM MENGISI --}}
-                        <a class="nav-link
-                {{ request()->is('admin/alumni-belum-mengisi') ? 'active' : '' }}"
+                        <a class="nav-link {{ request()->is('admin/alumni-belum-mengisi') ? 'active' : '' }}"
                             href="{{ url('/admin/alumni-belum-mengisi') }}">
-
                             <i class="fas fa-user-clock me-2"></i>
                             Alumni Belum Mengisi
                         </a>
 
-                        {{-- SUDAH MENGISI --}}
-                        <a class="nav-link
-                {{ request()->is('admin/alumni-sudah-mengisi') ? 'active' : '' }}"
+                        <a class="nav-link {{ request()->is('admin/alumni-sudah-mengisi') ? 'active' : '' }}"
                             href="{{ url('/admin/alumni-sudah-mengisi') }}">
-
                             <i class="fas fa-user-check me-2"></i>
                             Alumni Sudah Mengisi
                         </a>
@@ -108,8 +113,7 @@
                 {{-- KHUSUS ADMIN --}}
                 @if($role == 'Admin')
 
-                    <a class="nav-link
-                        {{ request()->is('admin/manajemen-dosen') ? 'active' : '' }}"
+                    <a class="nav-link {{ $onDosen ? 'active' : '' }}"
                         href="{{ url('admin/manajemen-dosen') }}">
 
                         <div class="sb-nav-link-icon">
@@ -122,8 +126,9 @@
                 @endif
 
                 {{-- MANAJEMEN ALUMNI --}}
-                <a class="nav-link
-        {{ request()->is('admin/alumni') ? 'active' : '' }}" href="{{ url('admin/alumni') }}">
+                {{-- BUG FIX: Tambah wildcard (*) agar subpage (create/edit) juga active --}}
+                <a class="nav-link {{ $onAlumni ? 'active' : '' }}"
+                    href="{{ url('admin/alumni') }}">
 
                     <div class="sb-nav-link-icon">
                         <i class="fas fa-users"></i>
@@ -133,8 +138,9 @@
                 </a>
 
                 {{-- PERTANYAAN --}}
-                <a class="nav-link
-        {{ request()->is('admin/pertanyaan') ? 'active' : '' }}" href="{{ url('admin/pertanyaan') }}">
+                {{-- BUG FIX: Tambah wildcard (*) agar subpage pertanyaan juga active --}}
+                <a class="nav-link {{ $onPertanyaan ? 'active' : '' }}"
+                    href="{{ url('admin/pertanyaan') }}">
 
                     <div class="sb-nav-link-icon">
                         <i class="fas fa-circle-question"></i>
@@ -144,8 +150,7 @@
                 </a>
 
                 {{-- LOWONGAN PEKERJAAN --}}
-                <a class="nav-link
-                    {{ request()->is('admin/lowongan-pekerjaan*') ? 'active' : '' }}"
+                <a class="nav-link {{ $onLowongan ? 'active' : '' }}"
                     href="{{ url('admin/lowongan-pekerjaan') }}">
 
                     <div class="sb-nav-link-icon">
@@ -154,6 +159,7 @@
 
                     Lowongan Pekerjaan
                 </a>
+
             </div>
         </div>
         <div class="sb-sidenav-footer">
@@ -166,6 +172,9 @@
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap');
 
+    /* ============================================================
+       SIDEBAR BASE
+    ============================================================ */
     .sb-sidenav {
         font-family: 'Poppins', sans-serif;
         overflow-y: auto;
@@ -176,94 +185,65 @@
         background-color: #0f2b66 !important;
     }
 
+    /* ============================================================
+       BRAND HEADER
+    ============================================================ */
     .sidebar-brand {
-
         padding: 24px 12px 22px;
-
         text-align: center;
-
         border-bottom: 1px solid rgba(255,255,255,0.08);
-
         margin-bottom: 10px;
     }
 
     .sidebar-brand img {
-
         width: 100px;
         height: 100px;
-
         object-fit: contain;
-
         margin-bottom: 16px;
-
         transition: transform .3s ease;
-
-        filter:
-            drop-shadow(0 0 20px rgba(168,85,247,.35));
+        filter: drop-shadow(0 0 20px rgba(168,85,247,.35));
     }
 
     .sidebar-brand img:hover {
-
         transform: scale(1.06);
     }
 
     .sidebar-brand-title {
-
         font-size: 1.05rem;
-
         font-weight: 800;
-
         line-height: 1.1;
-
         color: #ffffff;
-
         margin-bottom: 6px;
     }
 
     .sidebar-brand-title span {
-
         color: #f5e6c8;
     }
 
     .sidebar-brand-subtitle {
-
         font-size: 0.62rem;
-
         color: rgba(255,255,255,0.72);
-
         font-weight: 500;
-
         letter-spacing: 1.2px;
-
         margin-bottom: 10px;
     }
 
     .sidebar-role {
-
         display: inline-block;
-
         padding: 5px 14px;
-
         border-radius: 999px;
-
-        background:
-            rgba(255,255,255,0.08);
-
-        border:
-            1px solid rgba(255,255,255,0.12);
-
-        color:
-            rgba(255,255,255,0.85);
-
+        background: rgba(255,255,255,0.08);
+        border: 1px solid rgba(255,255,255,0.12);
+        color: rgba(255,255,255,0.85);
         font-size: 0.72rem;
-
         font-weight: 600;
-
         letter-spacing: .5px;
-
         backdrop-filter: blur(10px);
     }
 
+    /* ============================================================
+       MENU ITEMS
+    ============================================================ */
     .sb-sidenav-menu-heading {
         font-size: 0.72rem;
         font-weight: 700;
@@ -278,26 +258,19 @@
         font-size: 0.92rem;
         font-weight: 600;
         color: rgba(255, 255, 255, 0.76) !important;
-
         border-left: 4px solid transparent;
         border-radius: 8px;
-
         margin: 0.25rem 0.6rem;
         padding: 0.78rem 0.9rem;
-
         white-space: normal !important;
         overflow-wrap: anywhere;
-
         display: flex;
         align-items: center;
         gap: 0.5rem;
-
-        /* smooth & aman */
         transition:
             background-color 0.2s ease,
             color 0.2s ease,
             box-shadow 0.2s ease;
-
         will-change: background-color;
     }
 
@@ -325,6 +298,9 @@
         font-size: 1rem;
     }
 
+    /* ============================================================
+       NESTED (SUBMENU)
+    ============================================================ */
     .sb-sidenav-menu-nested .nav-link {
         padding-left: 2.25rem !important;
         font-size: 0.82rem;
@@ -333,19 +309,27 @@
         background-color: rgba(255, 255, 255, 0.04);
     }
 
-    .sb-sidenav-collapse-arrow i {
-        transition: transform 0.18s ease;
-        color: rgba(255, 255, 255, 0.72);
-    }
+    /* ============================================================
+       COLLAPSE ARROW — Override styles.css (rotate -90deg) dengan perilaku
+       yang lebih intuitif: panah atas = menu terbuka, panah bawah = tertutup
+    ============================================================ */
 
-    .collapsed .sb-sidenav-collapse-arrow i {
-        transform: rotate(0deg);
-    }
-
-    .sb-sidenav-collapse-arrow i {
+    /* Saat menu TERBUKA (:not(.collapsed)) → panah menghadap ke atas */
+    .sb-sidenav .sb-sidenav-menu .nav .nav-link:not(.collapsed) .sb-sidenav-collapse-arrow {
         transform: rotate(-180deg);
+        transition: transform 0.18s ease;
     }
 
+    /* Saat menu TERTUTUP (.collapsed) → panah menghadap ke bawah */
+    /* Override styles.css default rotate(-90deg) menjadi rotate(0deg) */
+    .sb-sidenav .sb-sidenav-menu .nav .nav-link.collapsed .sb-sidenav-collapse-arrow {
+        transform: rotate(0deg);
+        transition: transform 0.18s ease;
+    }
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
     .sb-sidenav-footer {
         font-family: 'Poppins', sans-serif;
         font-size: 0.8rem;
@@ -356,6 +340,9 @@
         background-color: rgba(0, 0, 0, 0.2);
     }
 
+    /* ============================================================
+       SCROLLBAR
+    ============================================================ */
     .sb-sidenav-menu::-webkit-scrollbar {
         width: 4px;
     }
@@ -369,10 +356,9 @@
         border-radius: 10px;
     }
 
-    /* =========================
-    FIX SIDEBAR GLITCH
-    ========================= */
-
+    /* ============================================================
+       ANTI-FLICKER / PERFORMANCE
+    ============================================================ */
     #layoutSidenav_nav,
     .sb-sidenav,
     .sb-sidenav-menu,
@@ -382,27 +368,22 @@
         transform: translateZ(0);
     }
 
-    /* Hindari repaint berlebihan */
     .sb-sidenav * {
         box-sizing: border-box;
     }
 
-    /* Scroll lebih smooth */
     .sb-sidenav-menu {
         overflow-y: auto;
         overflow-x: hidden;
         scroll-behavior: smooth;
     }
 
-    /* Collapse Bootstrap lebih smooth */
+    /* Smooth Bootstrap collapse animation */
     .collapse {
         transition: height 0.16s ease-out !important;
     }
 
-
-    /* Prevent sidebar flicker */
     #layoutSidenav_nav {
-        will-change: auto;
         contain: layout style paint;
     }
 
